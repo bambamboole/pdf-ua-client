@@ -1,4 +1,4 @@
-import { Fragment, useRef, type CSSProperties } from "react";
+import { Fragment, useRef, useState, type CSSProperties } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -11,7 +11,8 @@ import { humanizeType } from "./lib/schema";
 import { gridTemplateForWidths } from "./lib/columns";
 import BlockDataSummary from "./BlockDataSummary";
 import ColumnResizer from "./ColumnResizer";
-import type { EditorBlock } from "./types";
+import InlineBlockEditor from "./InlineBlockEditor";
+import type { EditorBlock, Json, JsonSchema } from "./types";
 
 interface CanvasBlock {
   uid: string;
@@ -29,30 +30,42 @@ interface CanvasRow {
 
 interface Props {
   model: { rows: CanvasRow[] };
+  schema: JsonSchema;
   selectedBlockUid: string | null;
   onSelectBlock: (uid: string) => void;
   onRemoveBlock: (uid: string) => void;
   onRemoveRow: (uid: string) => void;
   onSetRowWidths: (rowUid: string, widths: string[]) => void;
+  onUpdateBlockId: (uid: string, id: string) => void;
+  onUpdateBlockConfig: (uid: string, config: Json) => void;
 }
 
 interface BlockBoxProps {
   block: CanvasBlock;
   rowUid: string;
   selected: boolean;
+  initiallyOpen: boolean;
   style?: CSSProperties;
   onSelect: (uid: string) => void;
   onRemove: (uid: string) => void;
+  schema: JsonSchema;
+  onUpdateBlockId: (uid: string, id: string) => void;
+  onUpdateBlockConfig: (uid: string, config: Json) => void;
 }
 
 function BlockBox({
   block,
   rowUid,
   selected,
+  initiallyOpen,
   style: layoutStyle,
   onSelect,
   onRemove,
+  schema,
+  onUpdateBlockId,
+  onUpdateBlockConfig,
 }: BlockBoxProps) {
+  const [settingsOpen, setSettingsOpen] = useState(initiallyOpen);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: block.uid,
     data: { source: "block", rowUid },
@@ -64,44 +77,87 @@ function BlockBox({
       ref={setNodeRef}
       style={style}
       onClick={() => onSelect(block.uid)}
+      onPointerDown={() => onSelect(block.uid)}
+      onPointerDownCapture={() => onSelect(block.uid)}
+      data-builder-block
       className={`${layoutStyle ? "" : "flex-1"} rounded border bg-white px-3 py-2 text-sm ${selected ? "border-blue-500 ring-1 ring-blue-300" : "border-gray-200"} ${isDragging ? "opacity-50" : ""}`}
     >
       <div className="flex items-center justify-between gap-2">
         <span {...listeners} {...attributes} className="cursor-grab font-medium text-gray-800">
           ⠿ {humanizeType(block.type)}
         </span>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove(block.uid);
-          }}
-          className="text-gray-400 hover:text-red-600"
-        >
-          ✕
-        </button>
+        <span className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove(block.uid);
+            }}
+            onPointerDown={(e) => e.stopPropagation()}
+            className="text-gray-400 hover:text-red-600"
+          >
+            ✕
+          </button>
+        </span>
       </div>
       <BlockDataSummary block={block as unknown as EditorBlock} />
+      <details
+        data-inline-block-details
+        open={settingsOpen}
+        className="mt-3 border-t border-gray-100 pt-2"
+        onToggle={(event) => {
+          if (event.currentTarget.open) {
+            onSelect(block.uid);
+          }
+        }}
+      >
+        <summary
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            setSettingsOpen((open) => !open);
+            onSelect(block.uid);
+          }}
+          onPointerDown={(event) => event.stopPropagation()}
+          className="cursor-pointer text-xs font-medium text-gray-500 hover:text-gray-800"
+        >
+          Settings
+        </summary>
+        <InlineBlockEditor
+          block={block as unknown as EditorBlock}
+          schema={schema}
+          onUpdateBlockId={onUpdateBlockId}
+          onUpdateBlockConfig={onUpdateBlockConfig}
+        />
+      </details>
     </div>
   );
 }
 
 interface RowProps {
   row: CanvasRow;
+  rowIndex: number;
+  schema: JsonSchema;
   selectedBlockUid: string | null;
   onSelectBlock: (uid: string) => void;
   onRemoveBlock: (uid: string) => void;
   onRemoveRow: (uid: string) => void;
   onSetRowWidths: (rowUid: string, widths: string[]) => void;
+  onUpdateBlockId: (uid: string, id: string) => void;
+  onUpdateBlockConfig: (uid: string, config: Json) => void;
 }
 
 function Row({
   row,
+  rowIndex,
+  schema,
   selectedBlockUid,
   onSelectBlock,
   onRemoveBlock,
   onRemoveRow,
   onSetRowWidths,
+  onUpdateBlockId,
+  onUpdateBlockConfig,
 }: RowProps) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: `row-${row.uid}`,
@@ -148,9 +204,13 @@ function Row({
                 block={block}
                 rowUid={row.uid}
                 selected={block.uid === selectedBlockUid}
+                initiallyOpen={rowIndex === 0 && i === 0}
                 style={widths ? { minWidth: 0 } : undefined}
                 onSelect={onSelectBlock}
                 onRemove={onRemoveBlock}
+                schema={schema}
+                onUpdateBlockId={onUpdateBlockId}
+                onUpdateBlockConfig={onUpdateBlockConfig}
               />
               {i < row.blocks.length - 1 ? (
                 <ColumnResizer
@@ -184,11 +244,14 @@ function NewRowZone() {
 
 export default function EditCanvas({
   model,
+  schema,
   selectedBlockUid,
   onSelectBlock,
   onRemoveBlock,
   onRemoveRow,
   onSetRowWidths,
+  onUpdateBlockId,
+  onUpdateBlockConfig,
 }: Props) {
   return (
     <div className="space-y-3">
@@ -196,15 +259,19 @@ export default function EditCanvas({
         items={model.rows.map((r) => `row-${r.uid}`)}
         strategy={verticalListSortingStrategy}
       >
-        {model.rows.map((row) => (
+        {model.rows.map((row, rowIndex) => (
           <Row
             key={row.uid}
             row={row}
+            rowIndex={rowIndex}
+            schema={schema}
             selectedBlockUid={selectedBlockUid}
             onSelectBlock={onSelectBlock}
             onRemoveBlock={onRemoveBlock}
             onRemoveRow={onRemoveRow}
             onSetRowWidths={onSetRowWidths}
+            onUpdateBlockId={onUpdateBlockId}
+            onUpdateBlockConfig={onUpdateBlockConfig}
           />
         ))}
       </SortableContext>

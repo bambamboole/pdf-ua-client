@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Bambamboole\PdfUaClient\Examples\InvoiceExample;
+
 use function Pest\Laravel\postJson;
 
 it('renders a posted template to html', function (): void {
@@ -65,4 +67,17 @@ it('returns 422 when posted data violates the template data contract', function 
     ]);
 
     $response->assertStatus(422);
+});
+
+it('renders the registered invoice example payload', function (): void {
+    $data = InvoiceExample::data();
+    $data['rule'] = [];
+
+    $response = postJson('/render', [
+        'template' => InvoiceExample::document(),
+        'data' => $data,
+    ]);
+
+    $response->assertSuccessful();
+    expect($response->json('html'))->toContain('ACME GmbH');
 });

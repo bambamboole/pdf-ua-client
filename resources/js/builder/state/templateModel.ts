@@ -85,6 +85,10 @@ export function toDataMap(model: EditorModel): DataMap {
   const map: DataMap = {};
   for (const row of model.rows) {
     for (const block of row.blocks) {
+      if (Object.keys(block.data ?? {}).length === 0) {
+        continue;
+      }
+
       map[block.id] = block.data ?? {};
     }
   }

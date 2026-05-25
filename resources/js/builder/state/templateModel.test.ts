@@ -59,6 +59,19 @@ describe("toDataMap", () => {
   it("maps block id to its data", () => {
     expect(toDataMap(fromTemplate(template, data))).toEqual(data);
   });
+
+  it("omits empty block data", () => {
+    const model = fromTemplate(
+      {
+        version: 1,
+        config: {},
+        rows: [{ blocks: [{ type: "divider", id: "rule" }] }],
+      },
+      {},
+    );
+
+    expect(toDataMap(model)).toEqual({});
+  });
 });
 
 describe("addBlock", () => {

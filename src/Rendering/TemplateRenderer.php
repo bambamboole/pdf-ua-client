@@ -134,6 +134,7 @@ final class TemplateRenderer
     private function validateData(Template $template, array $runtimeData): void
     {
         $schema = $this->dataSchemaCompiler->compile($template);
+        $runtimeData = $this->withoutEmptyDataForBlocksWithoutDataSchema($template, $runtimeData, $schema);
         $normalized = SchemaAwareNormalizer::normalize($runtimeData, $schema);
         $validator = new Validator;
         $result = $validator->validate($normalized, json_decode((string) json_encode($schema)));
@@ -141,6 +142,32 @@ final class TemplateRenderer
         if (! $result->isValid()) {
             throw new DataValidationException('Data failed schema validation', $result->error());
         }
+    }
+
+    /**
+     * @param  array<string, array<string, mixed>>  $runtimeData
+     * @param  array<string, mixed>  $schema
+     * @return array<string, array<string, mixed>>
+     */
+    private function withoutEmptyDataForBlocksWithoutDataSchema(Template $template, array $runtimeData, array $schema): array
+    {
+        $schemaProperties = $schema['properties'];
+        $dataBlockIds = is_array($schemaProperties) ? array_keys($schemaProperties) : [];
+        $dataBlockIdLookup = array_fill_keys($dataBlockIds, true);
+
+        foreach ($template->rows as $row) {
+            foreach ($row->blocks as $block) {
+                $id = (string) $block->id;
+
+                if (isset($dataBlockIdLookup[$id]) || ($runtimeData[$id] ?? null) !== []) {
+                    continue;
+                }
+
+                unset($runtimeData[$id]);
+            }
+        }
+
+        return $runtimeData;
     }
 
     private function wrapDocument(string $bodyHtml, Template $template, RenderContext $ctx, RenderOptions $options): string

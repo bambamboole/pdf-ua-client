@@ -70,10 +70,9 @@ it('renders a multi-block row as a presentation table with one td per block', fu
         'version' => 1,
         'config' => ['page' => ['format' => 'A4']],
         'rows' => [[
-            'columnWidths' => ['60%', '40%'],
             'blocks' => [
-                ['type' => 'text', 'id' => 'l'],
-                ['type' => 'text', 'id' => 'r'],
+                ['type' => 'text', 'id' => 'l', 'config' => ['width' => '60%']],
+                ['type' => 'text', 'id' => 'r', 'config' => ['width' => '40%']],
             ],
         ]],
     ]);
@@ -360,6 +359,69 @@ it('emits @page page-number rule only when page numbers are enabled', function (
 
     expect($this->renderer->render($without, ['x' => ['text' => 'x']]))->not->toContain('@bottom-');
     expect($this->renderer->render($with, ['x' => ['text' => 'x']]))->toContain('@bottom-right');
+});
+
+it('renders repeated footer rows and page numbers in print mode', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => [
+            'page' => [
+                'format' => 'A4',
+                'margins' => ['top' => 25, 'right' => 20, 'bottom' => 20, 'left' => 25],
+                'footer' => [
+                    'repeat' => true,
+                    'pageNumbers' => ['enabled' => true, 'position' => 'right'],
+                    'rows' => [[
+                        'blocks' => [
+                            ['type' => 'text', 'id' => 'footer_note', 'config' => ['width' => '70%']],
+                            ['type' => 'text', 'id' => 'footer_meta', 'config' => ['width' => '30%']],
+                        ],
+                    ]],
+                ],
+            ],
+        ],
+        'rows' => [['blocks' => [['type' => 'text', 'id' => 'body']]]],
+    ]);
+
+    $html = $this->renderer->render($template, [
+        'body' => ['text' => 'Body'],
+        'footer_note' => ['text' => 'Confidential'],
+        'footer_meta' => ['text' => 'ACME GmbH'],
+    ], options: new RenderOptions(mode: 'print'));
+
+    expect($html)->toContain('@page { size: A4; margin: 25mm 20mm 28mm 25mm; }');
+    expect($html)->toContain('@page { @bottom-center { content: element(pageFooter); } }');
+    expect($html)->toContain('@page { @bottom-right { content: counter(page) " / " counter(pages); font-size: 8pt; color: #9ca3af; vertical-align: bottom; padding-bottom: 4mm; } }');
+    expect($html)->toContain('<footer class="page-footer page-footer-repeated" role="contentinfo">');
+    expect($html)->toContain('<p>Confidential</p>');
+    expect($html)->toContain('position: running(pageFooter); width: 100%;');
+});
+
+it('renders footer rows inline in preview mode', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => [
+            'page' => [
+                'format' => 'A4',
+                'footer' => [
+                    'repeat' => true,
+                    'rows' => [[
+                        'blocks' => [['type' => 'text', 'id' => 'footer_note']],
+                    ]],
+                ],
+            ],
+        ],
+        'rows' => [['blocks' => [['type' => 'text', 'id' => 'body']]]],
+    ]);
+
+    $html = $this->renderer->render($template, [
+        'body' => ['text' => 'Body'],
+        'footer_note' => ['text' => 'Preview footer'],
+    ], options: new RenderOptions(mode: 'preview'));
+
+    expect($html)->not->toContain('<footer class="page-footer page-footer-repeated"');
+    expect($html)->toContain('<footer class="page-footer page-footer-preview" role="contentinfo">');
+    expect($html)->toContain('<p>Preview footer</p>');
 });
 
 it('rejects a data payload that violates the template data contract', function () {

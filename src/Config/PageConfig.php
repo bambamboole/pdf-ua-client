@@ -22,5 +22,8 @@ final readonly class PageConfig
         #[Title('Pagination')]
         #[Description('Page number display settings.')]
         public PageNumbersConfig $pageNumbers = new PageNumbersConfig,
+        #[Title('Footer')]
+        #[Description('Repeated page footer rows.')]
+        public PageFooterConfig $footer = new PageFooterConfig,
     ) {}
 }

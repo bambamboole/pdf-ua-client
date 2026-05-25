@@ -22,17 +22,15 @@ final class InvoiceExample
             ],
             'rows' => [
                 [
-                    'columnWidths' => ['58%', '42%'],
                     'blocks' => [
-                        ['type' => 'heading', 'id' => 'title', 'config' => ['level' => 1]],
-                        ['type' => 'key-value', 'id' => 'invoice-meta', 'config' => ['align' => 'right']],
+                        ['type' => 'heading', 'id' => 'title', 'config' => ['level' => 1, 'width' => '58%']],
+                        ['type' => 'key-value', 'id' => 'invoice-meta', 'config' => ['width' => '42%', 'align' => 'right']],
                     ],
                 ],
                 [
-                    'columnWidths' => ['50%', '50%'],
                     'blocks' => [
-                        ['type' => 'key-value', 'id' => 'seller'],
-                        ['type' => 'key-value', 'id' => 'buyer'],
+                        ['type' => 'key-value', 'id' => 'seller', 'config' => ['width' => '50%']],
+                        ['type' => 'key-value', 'id' => 'buyer', 'config' => ['width' => '50%']],
                     ],
                 ],
                 ['blocks' => [['type' => 'divider', 'id' => 'address-rule']]],
@@ -46,20 +44,19 @@ final class InvoiceExample
                     ],
                 ]]],
                 [
-                    'columnWidths' => ['54%', '46%'],
                     'blocks' => [
                         ['type' => 'table', 'id' => 'vat-breakdown', 'config' => [
                             'style' => 'minimal',
+                            'width' => '54%',
                             'columnAlignments' => ['left', 'right', 'right', 'right'],
                         ]],
-                        ['type' => 'key-value', 'id' => 'totals', 'config' => ['align' => 'right']],
+                        ['type' => 'key-value', 'id' => 'totals', 'config' => ['width' => '46%', 'align' => 'right']],
                     ],
                 ],
                 [
-                    'columnWidths' => ['54%', '46%'],
                     'blocks' => [
-                        ['type' => 'text', 'id' => 'notice', 'config' => ['spacing' => ['top' => 4]]],
-                        ['type' => 'key-value', 'id' => 'payment', 'config' => ['align' => 'right']],
+                        ['type' => 'text', 'id' => 'notice', 'config' => ['width' => '54%', 'spacing' => ['top' => 4]]],
+                        ['type' => 'key-value', 'id' => 'payment', 'config' => ['width' => '46%', 'align' => 'right']],
                     ],
                 ],
                 ['blocks' => [['type' => 'divider', 'id' => 'footer-rule']]],

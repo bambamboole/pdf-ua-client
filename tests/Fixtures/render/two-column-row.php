@@ -9,10 +9,9 @@ return new TestFixture(
         'config' => ['page' => ['format' => 'A4']],
         'rows' => [
             [
-                'columnWidths' => ['60%', '40%'],
                 'blocks' => [
-                    ['type' => 'text', 'id' => 'l'],
-                    ['type' => 'text', 'id' => 'r'],
+                    ['type' => 'text', 'id' => 'l', 'config' => ['width' => '60%']],
+                    ['type' => 'text', 'id' => 'r', 'config' => ['width' => '40%']],
                 ],
             ],
         ],

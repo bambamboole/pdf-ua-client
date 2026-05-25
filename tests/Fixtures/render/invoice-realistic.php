@@ -24,10 +24,9 @@ return new TestFixture(
                 ],
             ]],
             [
-                'columnWidths' => ['60%', '40%'],
                 'blocks' => [
-                    ['type' => 'text', 'id' => 'addr'],
-                    ['type' => 'key-value', 'id' => 'meta'],
+                    ['type' => 'text', 'id' => 'addr', 'config' => ['width' => '60%']],
+                    ['type' => 'key-value', 'id' => 'meta', 'config' => ['width' => '40%']],
                 ],
             ],
             ['blocks' => [
@@ -44,10 +43,9 @@ return new TestFixture(
                 ['type' => 'divider'],
             ]],
             [
-                'columnWidths' => ['60%', '40%'],
                 'blocks' => [
-                    ['type' => 'spacer'],
-                    ['type' => 'key-value', 'id' => 'totals'],
+                    ['type' => 'spacer', 'config' => ['width' => '60%']],
+                    ['type' => 'key-value', 'id' => 'totals', 'config' => ['width' => '40%']],
                 ],
             ],
             ['blocks' => [

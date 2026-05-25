@@ -23,6 +23,8 @@ use Opis\JsonSchema\Validator;
 
 final class TemplateRenderer
 {
+    private const int RepeatedFooterReserveMm = 8;
+
     private int $blockCounter = 0;
 
     /** @var array<string, true> */
@@ -54,7 +56,9 @@ final class TemplateRenderer
             $rowsHtml .= $this->renderRow($row, $runtimeData, $ctx);
         }
 
-        return $this->wrapDocument($rowsHtml, $template, $ctx, $options);
+        $footerHtml = $this->renderFooter($template, $runtimeData, $ctx, $options);
+
+        return $this->wrapDocument($rowsHtml, $footerHtml, $template, $ctx, $options);
     }
 
     /**
@@ -64,10 +68,10 @@ final class TemplateRenderer
     {
         $cells = '';
         foreach ($row->blocks as $i => $instance) {
-            $cellWidth = $row->columnWidths[$i] ?? null;
+            $cellWidth = null;
             $widthOnCell = false;
 
-            if ($cellWidth === null && count($row->blocks) > 1) {
+            if (count($row->blocks) > 1) {
                 $configWidth = $instance->config['width'] ?? null;
                 if ($configWidth !== null) {
                     $cellWidth = $configWidth;
@@ -118,6 +122,29 @@ final class TemplateRenderer
         return "<div class=\"{$id}\">{$body}</div>";
     }
 
+    /**
+     * @param  array<string, array<string, mixed>>  $runtimeData
+     */
+    private function renderFooter(Template $template, array $runtimeData, RenderContext $ctx, RenderOptions $options): string
+    {
+        $footer = $template->config->page->footer;
+
+        if ($footer->rows === []) {
+            return '';
+        }
+
+        $rowsHtml = '';
+        foreach ($footer->rows as $row) {
+            $rowsHtml .= $this->renderRow($row, $runtimeData, $ctx);
+        }
+
+        $class = $options->mode === 'print' && $footer->repeat
+            ? 'page-footer page-footer-repeated'
+            : 'page-footer page-footer-preview';
+
+        return "<footer class=\"{$class}\" role=\"contentinfo\">{$rowsHtml}</footer>";
+    }
+
     private function emitPositioningCss(RenderContext $ctx, string $id, BlockConfig $config, bool $widthOnCell = false): void
     {
         $positioning = [];
@@ -162,7 +189,7 @@ final class TemplateRenderer
         $dataBlockIds = is_array($schemaProperties) ? array_keys($schemaProperties) : [];
         $dataBlockIdLookup = array_fill_keys($dataBlockIds, true);
 
-        foreach ($template->rows as $row) {
+        foreach ($this->dataRows($template) as $row) {
             foreach ($row->blocks as $block) {
                 $id = (string) $block->id;
 
@@ -177,7 +204,16 @@ final class TemplateRenderer
         return $runtimeData;
     }
 
-    private function wrapDocument(string $bodyHtml, Template $template, RenderContext $ctx, RenderOptions $options): string
+    /** @return list<Row> */
+    private function dataRows(Template $template): array
+    {
+        return [
+            ...$template->rows,
+            ...$template->config->page->footer->rows,
+        ];
+    }
+
+    private function wrapDocument(string $bodyHtml, string $footerHtml, Template $template, RenderContext $ctx, RenderOptions $options): string
     {
         $page = $template->config->page;
         $css = $ctx->collectedCss();
@@ -196,6 +232,10 @@ final class TemplateRenderer
         $bodyTypographyBlock = $bodyTypographyProps !== '' ? "body { {$bodyTypographyProps} }" : '';
         $fontFaces = $this->fontFaceCss();
         $baseCss = $this->baseCss();
+        $hasRepeatedFooter = $options->mode === 'print' && $page->footer->repeat && $page->footer->rows !== [];
+        $bodyContent = $hasRepeatedFooter
+            ? $footerHtml."\n".$bodyHtml
+            : $bodyHtml."\n".$footerHtml;
 
         return <<<HTML
 <!DOCTYPE html>
@@ -213,7 +253,7 @@ final class TemplateRenderer
 </style>
 </head>
 <body>
-{$bodyHtml}
+{$bodyContent}
 </body>
 </html>
 HTML;
@@ -236,17 +276,27 @@ hr { border: none; border-top: 1px solid #d1d5db; margin: 2.5mm 0; }
 .data-table th { padding: 1.6mm 2.2mm; background: #f3f4f6; color: #374151; font-weight: 700; border-bottom: 1px solid #d1d5db; }
 .data-table td { padding: 1.6mm 2.2mm; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
 .data-table tbody tr:last-child td { border-bottom: 1px solid #d1d5db; }
+.page-footer { color: #6b7280; font-size: 8pt; line-height: 1.25; }
+.page-footer .row { margin: 0; }
+.page-footer-repeated { position: running(pageFooter); width: 100%; }
+.page-footer-preview { margin-top: 6mm; padding-top: 2mm; border-top: 1px solid #d1d5db; }
 CSS;
     }
 
     private function printPageCss(PageConfig $page): string
     {
-        $margin = $this->marginShorthand($page->margins);
+        $margin = $this->printMarginShorthand($page);
         $css = "@page { size: {$page->format->value}; margin: {$margin}; }";
 
-        if ($page->pageNumbers->enabled) {
-            $position = $page->pageNumbers->position->value;
-            $css .= " @page { @bottom-{$position} { content: counter(page) \" / \" counter(pages); font-size: 8pt; color: #9ca3af; } }";
+        $pageNumbers = $page->footer->pageNumbers->enabled ? $page->footer->pageNumbers : $page->pageNumbers;
+
+        if ($page->footer->repeat && $page->footer->rows !== []) {
+            $css .= ' @page { @bottom-center { content: element(pageFooter); } }';
+        }
+
+        if ($pageNumbers->enabled) {
+            $position = $pageNumbers->position->value;
+            $css .= " @page { @bottom-{$position} { content: counter(page) \" / \" counter(pages); font-size: 8pt; color: #9ca3af; vertical-align: bottom; padding-bottom: 4mm; } }";
         }
 
         return $css;
@@ -342,5 +392,24 @@ CSS;
         $left = $margins->left ?? 0;
 
         return "{$top}mm {$right}mm {$bottom}mm {$left}mm";
+    }
+
+    private function printMarginShorthand(PageConfig $page): string
+    {
+        $top = $page->margins->top ?? 0;
+        $right = $page->margins->right ?? 0;
+        $bottom = ($page->margins->bottom ?? 0) + $this->repeatedFooterReserve($page);
+        $left = $page->margins->left ?? 0;
+
+        return "{$top}mm {$right}mm {$bottom}mm {$left}mm";
+    }
+
+    private function repeatedFooterReserve(PageConfig $page): int
+    {
+        if (! $page->footer->repeat || $page->footer->rows === []) {
+            return 0;
+        }
+
+        return self::RepeatedFooterReserveMm;
     }
 }

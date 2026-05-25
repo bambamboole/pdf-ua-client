@@ -26,6 +26,7 @@ it('compiles a root schema referencing config, $defs/row, $defs/block', function
     expect($schema['properties']['rows']['items']['$ref'])->toBe('#/$defs/row');
     expect($schema['properties']['config'])->toBe(['$ref' => '#/$defs/templateConfig']);
     expect($schema['$defs']['row']['properties']['blocks']['minItems'])->toBe(1);
+    expect($schema['$defs']['row']['properties'])->not->toHaveKey('columnWidths');
 });
 
 it('declares a shared blockBase $def with the common envelope fields', function () {
@@ -68,10 +69,10 @@ it('exposes templateConfig via a $defs entry with shared $refs', function () {
 
     expect($templateConfig['properties']['page'])->toMatchArray(['$ref' => '#/$defs/pageConfig']);
     expect($templateConfig['properties']['typography'])->toHaveKey('$ref');
-    expect($schema['$defs'])->toHaveKeys(['pageConfig', 'typographyConfig', 'spacingConfig', 'pageNumbersConfig']);
+    expect($schema['$defs'])->toHaveKeys(['pageConfig', 'pageFooterConfig', 'typographyConfig', 'spacingConfig', 'pageNumbersConfig']);
 
     $pageConfig = $schema['$defs']['pageConfig'];
-    expect($pageConfig['properties'])->toHaveKeys(['format', 'locale', 'margins', 'pageNumbers']);
+    expect($pageConfig['properties'])->toHaveKeys(['format', 'locale', 'margins', 'pageNumbers', 'footer']);
     expect($pageConfig['properties']['margins'])->toMatchArray([
         '$ref' => '#/$defs/spacingConfig',
         'title' => 'Margins',
@@ -81,6 +82,26 @@ it('exposes templateConfig via a $defs entry with shared $refs', function () {
         '$ref' => '#/$defs/pageNumbersConfig',
         'title' => 'Pagination',
         'description' => 'Page number display settings.',
+    ]);
+    expect($pageConfig['properties']['footer'])->toMatchArray([
+        '$ref' => '#/$defs/pageFooterConfig',
+        'title' => 'Footer',
+        'description' => 'Repeated page footer rows.',
+    ]);
+    expect($schema['$defs']['pageFooterConfig']['properties']['repeat'])->toMatchArray([
+        'type' => 'boolean',
+        'title' => 'Repeat',
+        'description' => 'Repeat the footer on every rendered page.',
+        'default' => true,
+    ]);
+    expect($schema['$defs']['pageFooterConfig']['properties']['rows'])->toMatchArray([
+        'type' => 'array',
+        'items' => ['$ref' => '#/$defs/row'],
+    ]);
+    expect($schema['$defs']['pageFooterConfig']['properties']['pageNumbers'])->toMatchArray([
+        '$ref' => '#/$defs/pageNumbersConfig',
+        'title' => 'Pagination',
+        'description' => 'Page number display settings for this footer.',
     ]);
 });
 

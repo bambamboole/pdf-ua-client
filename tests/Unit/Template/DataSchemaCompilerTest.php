@@ -67,3 +67,24 @@ it('dataSchemaFor accepts a raw array by building it through the factory', funct
 
     expect(array_keys($schema['properties']))->toBe(['h']);
 });
+
+it('includes footer blocks in the data schema', function (): void {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => [
+            'page' => [
+                'footer' => [
+                    'rows' => [[
+                        'blocks' => [['type' => 'heading', 'id' => 'footer_heading', 'config' => ['level' => 2]]],
+                    ]],
+                ],
+            ],
+        ],
+        'rows' => [['blocks' => [['type' => 'heading', 'id' => 'body_heading', 'config' => ['level' => 1]]]]],
+    ]);
+
+    $schema = $this->compiler->compile($template);
+
+    expect($schema['properties'])->toHaveKeys(['body_heading', 'footer_heading']);
+    expect($schema['required'])->toBe(['body_heading', 'footer_heading']);
+});

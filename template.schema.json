@@ -23,104 +23,19 @@
         }
     },
     "$defs": {
-        "spacingConfig": {
+        "blockBase": {
             "type": "object",
+            "required": [
+                "type"
+            ],
             "properties": {
-                "top": {
-                    "type": [
-                        "integer",
-                        "null"
-                    ],
-                    "title": "Top",
-                    "description": "Top spacing in millimetres.",
-                    "minimum": 0
+                "type": {
+                    "type": "string"
                 },
-                "right": {
-                    "type": [
-                        "integer",
-                        "null"
-                    ],
-                    "title": "Right",
-                    "description": "Right spacing in millimetres.",
-                    "minimum": 0
-                },
-                "bottom": {
-                    "type": [
-                        "integer",
-                        "null"
-                    ],
-                    "title": "Bottom",
-                    "description": "Bottom spacing in millimetres.",
-                    "minimum": 0
-                },
-                "left": {
-                    "type": [
-                        "integer",
-                        "null"
-                    ],
-                    "title": "Left",
-                    "description": "Left spacing in millimetres.",
-                    "minimum": 0
+                "id": {
+                    "type": "string"
                 }
-            },
-            "additionalProperties": false
-        },
-        "pageNumbersConfig": {
-            "type": "object",
-            "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "title": "Enabled",
-                    "description": "Show page numbers in the page footer.",
-                    "default": false
-                },
-                "position": {
-                    "type": "string",
-                    "enum": [
-                        "left",
-                        "center",
-                        "right"
-                    ],
-                    "title": "Position",
-                    "description": "Footer position used for page numbers.",
-                    "default": "center"
-                }
-            },
-            "additionalProperties": false
-        },
-        "pageConfig": {
-            "type": "object",
-            "properties": {
-                "format": {
-                    "type": "string",
-                    "enum": [
-                        "A4",
-                        "A5",
-                        "Letter",
-                        "Legal"
-                    ],
-                    "title": "Format",
-                    "description": "Physical page size used for rendering.",
-                    "default": "A4"
-                },
-                "locale": {
-                    "type": "string",
-                    "title": "Locale",
-                    "description": "Document locale used for language-aware rendering.",
-                    "default": "de_DE"
-                },
-                "margins": {
-                    "$ref": "#/$defs/spacingConfig",
-                    "title": "Margins",
-                    "description": "Page margins in millimetres."
-                },
-                "pageNumbers": {
-                    "$ref": "#/$defs/pageNumbersConfig",
-                    "title": "Pagination",
-                    "description": "Page number display settings."
-                }
-            },
-            "additionalProperties": false
+            }
         },
         "typographyConfig": {
             "type": "object",
@@ -188,35 +103,47 @@
             },
             "additionalProperties": false
         },
-        "templateConfig": {
+        "spacingConfig": {
             "type": "object",
             "properties": {
-                "page": {
-                    "$ref": "#/$defs/pageConfig",
-                    "title": "Page",
-                    "description": "Document page setup."
+                "top": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "title": "Top",
+                    "description": "Top spacing in millimetres.",
+                    "minimum": 0
                 },
-                "typography": {
-                    "$ref": "#/$defs/typographyConfig",
-                    "title": "Typography",
-                    "description": "Default typography inherited by blocks."
+                "right": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "title": "Right",
+                    "description": "Right spacing in millimetres.",
+                    "minimum": 0
+                },
+                "bottom": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "title": "Bottom",
+                    "description": "Bottom spacing in millimetres.",
+                    "minimum": 0
+                },
+                "left": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "title": "Left",
+                    "description": "Left spacing in millimetres.",
+                    "minimum": 0
                 }
             },
             "additionalProperties": false
-        },
-        "blockBase": {
-            "type": "object",
-            "required": [
-                "type"
-            ],
-            "properties": {
-                "type": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                }
-            }
         },
         "blockConfig": {
             "type": "object",
@@ -708,15 +635,6 @@
                 "gap": {
                     "type": "integer",
                     "minimum": 0
-                },
-                "columnWidths": {
-                    "type": "array",
-                    "items": {
-                        "type": [
-                            "integer",
-                            "string"
-                        ]
-                    }
                 }
             },
             "additionalProperties": false
@@ -748,6 +666,110 @@
                     "$ref": "#/$defs/tableBlock"
                 }
             ]
+        },
+        "pageNumbersConfig": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "title": "Enabled",
+                    "description": "Show page numbers in the page footer.",
+                    "default": false
+                },
+                "position": {
+                    "type": "string",
+                    "enum": [
+                        "left",
+                        "center",
+                        "right"
+                    ],
+                    "title": "Position",
+                    "description": "Footer position used for page numbers.",
+                    "default": "center"
+                }
+            },
+            "additionalProperties": false
+        },
+        "pageFooterConfig": {
+            "type": "object",
+            "properties": {
+                "repeat": {
+                    "type": "boolean",
+                    "title": "Repeat",
+                    "description": "Repeat the footer on every rendered page.",
+                    "default": true
+                },
+                "rows": {
+                    "type": "array",
+                    "title": "Rows",
+                    "description": "Footer rows rendered after the page body.",
+                    "items": {
+                        "$ref": "#/$defs/row"
+                    },
+                    "default": []
+                },
+                "pageNumbers": {
+                    "$ref": "#/$defs/pageNumbersConfig",
+                    "title": "Pagination",
+                    "description": "Page number display settings for this footer."
+                }
+            },
+            "additionalProperties": false
+        },
+        "pageConfig": {
+            "type": "object",
+            "properties": {
+                "format": {
+                    "type": "string",
+                    "enum": [
+                        "A4",
+                        "A5",
+                        "Letter",
+                        "Legal"
+                    ],
+                    "title": "Format",
+                    "description": "Physical page size used for rendering.",
+                    "default": "A4"
+                },
+                "locale": {
+                    "type": "string",
+                    "title": "Locale",
+                    "description": "Document locale used for language-aware rendering.",
+                    "default": "de_DE"
+                },
+                "margins": {
+                    "$ref": "#/$defs/spacingConfig",
+                    "title": "Margins",
+                    "description": "Page margins in millimetres."
+                },
+                "pageNumbers": {
+                    "$ref": "#/$defs/pageNumbersConfig",
+                    "title": "Pagination",
+                    "description": "Page number display settings."
+                },
+                "footer": {
+                    "$ref": "#/$defs/pageFooterConfig",
+                    "title": "Footer",
+                    "description": "Repeated page footer rows."
+                }
+            },
+            "additionalProperties": false
+        },
+        "templateConfig": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "$ref": "#/$defs/pageConfig",
+                    "title": "Page",
+                    "description": "Document page setup."
+                },
+                "typography": {
+                    "$ref": "#/$defs/typographyConfig",
+                    "title": "Typography",
+                    "description": "Default typography inherited by blocks."
+                }
+            },
+            "additionalProperties": false
         }
     },
     "examples": [
@@ -776,40 +798,40 @@
             },
             "rows": [
                 {
-                    "columnWidths": [
-                        "58%",
-                        "42%"
-                    ],
                     "blocks": [
                         {
                             "type": "heading",
                             "id": "title",
                             "config": {
-                                "level": 1
+                                "level": 1,
+                                "width": "58%"
                             }
                         },
                         {
                             "type": "key-value",
                             "id": "invoice-meta",
                             "config": {
+                                "width": "42%",
                                 "align": "right"
                             }
                         }
                     ]
                 },
                 {
-                    "columnWidths": [
-                        "50%",
-                        "50%"
-                    ],
                     "blocks": [
                         {
                             "type": "key-value",
-                            "id": "seller"
+                            "id": "seller",
+                            "config": {
+                                "width": "50%"
+                            }
                         },
                         {
                             "type": "key-value",
-                            "id": "buyer"
+                            "id": "buyer",
+                            "config": {
+                                "width": "50%"
+                            }
                         }
                     ]
                 },
@@ -849,16 +871,13 @@
                     ]
                 },
                 {
-                    "columnWidths": [
-                        "54%",
-                        "46%"
-                    ],
                     "blocks": [
                         {
                             "type": "table",
                             "id": "vat-breakdown",
                             "config": {
                                 "style": "minimal",
+                                "width": "54%",
                                 "columnAlignments": [
                                     "left",
                                     "right",
@@ -871,21 +890,19 @@
                             "type": "key-value",
                             "id": "totals",
                             "config": {
+                                "width": "46%",
                                 "align": "right"
                             }
                         }
                     ]
                 },
                 {
-                    "columnWidths": [
-                        "54%",
-                        "46%"
-                    ],
                     "blocks": [
                         {
                             "type": "text",
                             "id": "notice",
                             "config": {
+                                "width": "54%",
                                 "spacing": {
                                     "top": 4
                                 }
@@ -895,6 +912,7 @@
                             "type": "key-value",
                             "id": "payment",
                             "config": {
+                                "width": "46%",
                                 "align": "right"
                             }
                         }

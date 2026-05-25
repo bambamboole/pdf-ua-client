@@ -30,7 +30,6 @@ return new TestFixture(
                 ],
             ]],
             [
-                'columnWidths' => ['50%', '50%'],
                 'blocks' => [
                     [
                         'type' => 'text',
@@ -40,6 +39,7 @@ return new TestFixture(
                     [
                         'type' => 'text',
                         'id' => 't3',
+                        'config' => ['width' => '50%'],
                     ],
                 ],
             ],

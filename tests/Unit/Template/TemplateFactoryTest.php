@@ -51,6 +51,8 @@ it('applies defaults for omitted page fields', function () {
     expect($template->config->page->format)->toBe(PageFormat::A5);
     expect($template->config->page->locale)->toBe('de_DE');
     expect($template->config->page->margins->top)->toBe(20);
+    expect($template->config->page->margins->right)->toBe(20);
+    expect($template->config->page->margins->bottom)->toBe(20);
     expect($template->config->page->margins->left)->toBe(25);
     expect($template->config->page->pageNumbers->enabled)->toBeFalse();
     expect($template->config->page->pageNumbers->position)->toBe(PageNumberPosition::Center);
@@ -65,6 +67,34 @@ it('builds page number settings with a backed enum position', function () {
 
     expect($template->config->page->pageNumbers->enabled)->toBeTrue();
     expect($template->config->page->pageNumbers->position)->toBe(PageNumberPosition::Right);
+});
+
+it('builds footer rows and footer page numbers', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => [
+            'page' => [
+                'footer' => [
+                    'repeat' => true,
+                    'pageNumbers' => ['enabled' => true, 'position' => 'right'],
+                    'rows' => [[
+                        'blocks' => [
+                            ['type' => 'test-fixture', 'id' => 'footer_note', 'config' => ['width' => '70%']],
+                            ['type' => 'test-fixture', 'id' => 'footer_meta', 'config' => ['width' => '30%']],
+                        ],
+                    ]],
+                ],
+            ],
+        ],
+        'rows' => [],
+    ]);
+
+    expect($template->config->page->footer->repeat)->toBeTrue();
+    expect($template->config->page->footer->pageNumbers->enabled)->toBeTrue();
+    expect($template->config->page->footer->pageNumbers->position)->toBe(PageNumberPosition::Right);
+    expect($template->config->page->footer->rows)->toHaveCount(1);
+    expect($template->config->page->footer->rows[0]->blocks[0]->id)->toBe('footer_note');
+    expect($template->config->page->footer->rows[0]->blocks[0]->config['width'])->toBe('70%');
 });
 
 it('parses nested per-block config', function () {

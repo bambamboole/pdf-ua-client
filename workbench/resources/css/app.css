@@ -2,3 +2,36 @@
 
 @source "../js";
 @source "../../../resources/js";
+
+.template-builder {
+  --builder-bg: #eef1f4;
+  --builder-surface: #f8fafc;
+  --builder-panel: #ffffff;
+  --builder-raised: #ffffff;
+  --builder-field: #ffffff;
+  --builder-field-ink: #1c2430;
+  --builder-sidebar: #111722;
+  --builder-sidebar-panel: #171e2b;
+  --builder-sidebar-border: #2f3949;
+  --builder-stroke: #d8dee8;
+  --builder-stroke-strong: #aeb8c8;
+  --builder-ink: #1c2430;
+  --builder-muted: #687489;
+  --builder-muted-strong: #445065;
+  --builder-accent: #2563eb;
+  --builder-accent-soft: #dbeafe;
+  --builder-danger: #dc2626;
+  --builder-radius: 0.375rem;
+  --builder-shadow: 0 20px 45px rgb(15 23 42 / 0.08);
+}
+
+.template-builder__sidebar {
+  --builder-panel: var(--builder-sidebar-panel);
+  --builder-raised: #202838;
+  --builder-field: #f8fafc;
+  --builder-field-ink: #1c2430;
+  --builder-stroke: var(--builder-sidebar-border);
+  --builder-ink: #e8edf5;
+  --builder-muted: #9aa6ba;
+  --builder-muted-strong: #c4ccda;
+}

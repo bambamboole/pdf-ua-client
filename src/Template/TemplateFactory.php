@@ -11,6 +11,7 @@ use Bambamboole\PdfUaClient\Config\TemplateConfig;
 use Bambamboole\PdfUaClient\Config\TypographyConfig;
 use Bambamboole\PdfUaClient\Enums\FontWeight;
 use Bambamboole\PdfUaClient\Enums\PageFormat;
+use Bambamboole\PdfUaClient\Enums\PageNumberPosition;
 use Bambamboole\PdfUaClient\Exceptions\TemplateValidationException;
 use Bambamboole\PdfUaClient\Support\SchemaAwareNormalizer;
 use Opis\JsonSchema\Validator;
@@ -63,8 +64,8 @@ final readonly class TemplateFactory
             : new SpacingConfig(20, 20, 20, 25);
 
         $pageNumbers = isset($data['pageNumbers'])
-            ? new PageNumbersConfig(position: (string) (((array) $data['pageNumbers'])['position'] ?? 'center'))
-            : null;
+            ? $this->buildPageNumbersConfig((array) $data['pageNumbers'])
+            : new PageNumbersConfig;
 
         $format = isset($data['format'])
             ? PageFormat::from((string) $data['format'])
@@ -86,6 +87,15 @@ final readonly class TemplateFactory
             right: isset($data['right']) ? (int) $data['right'] : null,
             bottom: isset($data['bottom']) ? (int) $data['bottom'] : null,
             left: isset($data['left']) ? (int) $data['left'] : null,
+        );
+    }
+
+    /** @param array<string, mixed> $data */
+    private function buildPageNumbersConfig(array $data): PageNumbersConfig
+    {
+        return new PageNumbersConfig(
+            enabled: isset($data['enabled']) ? (bool) $data['enabled'] : true,
+            position: PageNumberPosition::from((string) ($data['position'] ?? PageNumberPosition::Center->value)),
         );
     }
 

@@ -128,7 +128,7 @@ final class TemplateRenderer
 
         match ($config->align) {
             Align::Center => array_push($positioning, 'margin-left: auto', 'margin-right: auto'),
-            Align::Right => $positioning[] = 'margin-left: auto',
+            Align::Right => array_push($positioning, 'margin-left: auto', 'text-align: right'),
             default => null,
         };
 
@@ -195,7 +195,7 @@ final class TemplateRenderer
         $bodyTypographyProps = $this->cssRulesFor($template->config->typography)[''] ?? '';
         $bodyTypographyBlock = $bodyTypographyProps !== '' ? "body { {$bodyTypographyProps} }" : '';
         $fontFaces = $this->fontFaceCss();
-        $baseCss = 'hr { border: none; }';
+        $baseCss = $this->baseCss();
 
         return <<<HTML
 <!DOCTYPE html>
@@ -219,13 +219,33 @@ final class TemplateRenderer
 HTML;
     }
 
+    private function baseCss(): string
+    {
+        return <<<'CSS'
+body { color: #111827; line-height: 1.35; }
+p { margin: 0 0 2mm; }
+h1, h2, h3, h4, h5, h6 { margin: 0 0 3mm; line-height: 1.12; color: #111827; }
+hr { border: none; border-top: 1px solid #d1d5db; margin: 2.5mm 0; }
+.row { width: 100%; border-collapse: collapse; margin: 0 0 3mm; }
+.row > tbody > tr > td, .row > tr > td { vertical-align: top; padding: 0; }
+.key-value { display: inline-table; border-collapse: collapse; text-align: left; }
+.key-value td { padding: 0.65mm 0 0.65mm 3mm; vertical-align: top; }
+.key-value td:first-child { padding-left: 0; color: #6b7280; font-weight: 600; }
+.key-value td:last-child { color: #111827; font-weight: 500; }
+.data-table { width: 100%; border-collapse: collapse; text-align: left; }
+.data-table th { padding: 1.6mm 2.2mm; background: #f3f4f6; color: #374151; font-weight: 700; border-bottom: 1px solid #d1d5db; }
+.data-table td { padding: 1.6mm 2.2mm; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+.data-table tbody tr:last-child td { border-bottom: 1px solid #d1d5db; }
+CSS;
+    }
+
     private function printPageCss(PageConfig $page): string
     {
         $margin = $this->marginShorthand($page->margins);
         $css = "@page { size: {$page->format->value}; margin: {$margin}; }";
 
-        if ($page->pageNumbers !== null) {
-            $position = $page->pageNumbers->position;
+        if ($page->pageNumbers->enabled) {
+            $position = $page->pageNumbers->position->value;
             $css .= " @page { @bottom-{$position} { content: counter(page) \" / \" counter(pages); font-size: 8pt; color: #9ca3af; } }";
         }
 

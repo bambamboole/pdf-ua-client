@@ -57,6 +57,6 @@ final readonly class TableBlock implements BlockInterface
         }
         $tbody .= '</tbody>';
 
-        return "<table>{$colgroup}{$thead}{$tbody}</table>";
+        return "<table class=\"data-table\">{$colgroup}{$thead}{$tbody}</table>";
     }
 }

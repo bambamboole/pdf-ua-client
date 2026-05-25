@@ -28,6 +28,6 @@ final readonly class KeyValueBlock implements BlockInterface
             $rows .= '<tr><td>'.e($pair->label).'</td><td>'.e($pair->value).'</td></tr>';
         }
 
-        return "<table><tbody>{$rows}</tbody></table>";
+        return "<table class=\"key-value\"><tbody>{$rows}</tbody></table>";
     }
 }

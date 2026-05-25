@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 return [
-    'base_url' => env('PDF_UA_API_URL', 'http://pdf-ua-api:8888'),
+    'base_url' => env('PDF_UA_API_URL', 'http://127.0.0.1:8888'),
     'token' => env('PDF_UA_API_TOKEN'),
     'timeout' => env('PDF_UA_API_TIMEOUT', 30),
     'retry' => [

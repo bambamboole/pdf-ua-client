@@ -1,6 +1,6 @@
 import { lazy, Suspense, useState } from "react";
 import type { EditorBlock, Json, JsonSchema } from "./types";
-import { getBlockConfigSchema, getBlockTitle } from "./lib/schema";
+import { getBlockConfigSchema } from "./lib/schema";
 
 const SettingsForm = lazy(() => import("./SettingsForm"));
 
@@ -17,41 +17,44 @@ export default function InlineBlockEditor({
   onUpdateBlockId,
   onUpdateBlockConfig,
 }: Props) {
-  const [tab, setTab] = useState<"content" | "config">("content");
+  const [tab, setTab] = useState<"settings" | "config">("settings");
 
   return (
-    <div data-inline-block-editor className="mt-3 border-t border-gray-100 pt-3">
+    <div data-inline-block-editor className="mt-3 border-t border-[var(--builder-stroke)] pt-3">
       <div className="mb-3 flex gap-1">
         <button
           type="button"
-          onClick={() => setTab("content")}
-          className={`rounded px-2 py-1 text-xs font-medium ${tab === "content" ? "bg-gray-800 text-white" : "text-gray-500 hover:bg-gray-100"}`}
+          onClick={() => setTab("settings")}
+          className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${tab === "settings" ? "bg-[var(--builder-ink)] text-white" : "text-[var(--builder-muted)] hover:bg-[var(--builder-surface)] hover:text-[var(--builder-ink)]"}`}
         >
-          Content
+          Settings
         </button>
         <button
           type="button"
           onClick={() => setTab("config")}
-          className={`rounded px-2 py-1 text-xs font-medium ${tab === "config" ? "bg-gray-800 text-white" : "text-gray-500 hover:bg-gray-100"}`}
+          className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${tab === "config" ? "bg-[var(--builder-ink)] text-white" : "text-[var(--builder-muted)] hover:bg-[var(--builder-surface)] hover:text-[var(--builder-ink)]"}`}
         >
           Config
         </button>
       </div>
-      {tab === "content" ? (
+      {tab === "settings" ? (
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">Block id</label>
+          <label className="mb-1 block text-xs font-medium text-[var(--builder-muted-strong)]">
+            Block id
+          </label>
           <input
             key={block.uid}
-            className="block w-full rounded border border-gray-300 px-2 py-1 font-mono text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="block w-full rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-field)] px-2 py-1 font-mono text-sm text-[var(--builder-ink)] focus:border-[var(--builder-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--builder-accent-soft)]"
             defaultValue={block.id}
             onBlur={(event) => onUpdateBlockId(block.uid, event.target.value)}
           />
-          <p className="mt-1 text-xs text-gray-400">
-            {getBlockTitle(schema, block.type)} data key for injection
-          </p>
         </div>
       ) : (
-        <Suspense fallback={<div className="h-24 animate-pulse rounded bg-gray-100" />}>
+        <Suspense
+          fallback={
+            <div className="h-24 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-surface)]" />
+          }
+        >
           <SettingsForm
             schema={getBlockConfigSchema(schema, block.type)}
             formData={block.config ?? {}}

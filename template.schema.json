@@ -31,6 +31,8 @@
                         "integer",
                         "null"
                     ],
+                    "title": "Top",
+                    "description": "Top spacing in millimetres.",
                     "minimum": 0
                 },
                 "right": {
@@ -38,6 +40,8 @@
                         "integer",
                         "null"
                     ],
+                    "title": "Right",
+                    "description": "Right spacing in millimetres.",
                     "minimum": 0
                 },
                 "bottom": {
@@ -45,6 +49,8 @@
                         "integer",
                         "null"
                     ],
+                    "title": "Bottom",
+                    "description": "Bottom spacing in millimetres.",
                     "minimum": 0
                 },
                 "left": {
@@ -52,6 +58,8 @@
                         "integer",
                         "null"
                     ],
+                    "title": "Left",
+                    "description": "Left spacing in millimetres.",
                     "minimum": 0
                 }
             },
@@ -60,8 +68,21 @@
         "pageNumbersConfig": {
             "type": "object",
             "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "title": "Enabled",
+                    "description": "Show page numbers in the page footer.",
+                    "default": false
+                },
                 "position": {
                     "type": "string",
+                    "enum": [
+                        "left",
+                        "center",
+                        "right"
+                    ],
+                    "title": "Position",
+                    "description": "Footer position used for page numbers.",
                     "default": "center"
                 }
             },
@@ -78,17 +99,25 @@
                         "Letter",
                         "Legal"
                     ],
+                    "title": "Format",
+                    "description": "Physical page size used for rendering.",
                     "default": "A4"
                 },
                 "locale": {
                     "type": "string",
+                    "title": "Locale",
+                    "description": "Document locale used for language-aware rendering.",
                     "default": "de_DE"
                 },
                 "margins": {
-                    "$ref": "#/$defs/spacingConfig"
+                    "$ref": "#/$defs/spacingConfig",
+                    "title": "Margins",
+                    "description": "Page margins in millimetres."
                 },
                 "pageNumbers": {
-                    "$ref": "#/$defs/pageNumbersConfig"
+                    "$ref": "#/$defs/pageNumbersConfig",
+                    "title": "Pagination",
+                    "description": "Page number display settings."
                 }
             },
             "additionalProperties": false
@@ -108,13 +137,17 @@
                     "enumNames": [
                         "Inter",
                         "Georgia"
-                    ]
+                    ],
+                    "title": "Font family",
+                    "description": "Registered font key used for this text."
                 },
                 "size": {
                     "type": [
                         "integer",
                         "null"
-                    ]
+                    ],
+                    "title": "Font size",
+                    "description": "Font size in points."
                 },
                 "weight": {
                     "type": [
@@ -127,7 +160,9 @@
                         500,
                         600,
                         700
-                    ]
+                    ],
+                    "title": "Font weight",
+                    "description": "Numeric font weight."
                 },
                 "align": {
                     "type": [
@@ -138,13 +173,17 @@
                         "left",
                         "center",
                         "right"
-                    ]
+                    ],
+                    "title": "Text alignment",
+                    "description": "Text alignment for this typography scope."
                 },
                 "color": {
                     "type": [
                         "string",
                         "null"
-                    ]
+                    ],
+                    "title": "Text color",
+                    "description": "CSS color value used for text."
                 }
             },
             "additionalProperties": false
@@ -153,10 +192,14 @@
             "type": "object",
             "properties": {
                 "page": {
-                    "$ref": "#/$defs/pageConfig"
+                    "$ref": "#/$defs/pageConfig",
+                    "title": "Page",
+                    "description": "Document page setup."
                 },
                 "typography": {
-                    "$ref": "#/$defs/typographyConfig"
+                    "$ref": "#/$defs/typographyConfig",
+                    "title": "Typography",
+                    "description": "Default typography inherited by blocks."
                 }
             },
             "additionalProperties": false
@@ -179,17 +222,22 @@
             "type": "object",
             "properties": {
                 "typography": {
-                    "$ref": "#/$defs/typographyConfig"
+                    "$ref": "#/$defs/typographyConfig",
+                    "title": "Typography",
+                    "description": "Overrides the page typography for this block."
                 },
                 "spacing": {
-                    "$ref": "#/$defs/spacingConfig"
+                    "$ref": "#/$defs/spacingConfig",
+                    "title": "Spacing",
+                    "description": "Outer spacing around this block in millimetres."
                 },
                 "width": {
                     "type": [
                         "string",
                         "null"
                     ],
-                    "title": "Width"
+                    "title": "Width",
+                    "description": "CSS width for this block, such as 50%, 80mm, or auto."
                 },
                 "align": {
                     "type": [
@@ -201,7 +249,8 @@
                         "center",
                         "right"
                     ],
-                    "title": "Alignment"
+                    "title": "Alignment",
+                    "description": "Horizontal placement of this block within its row cell."
                 }
             }
         },
@@ -215,6 +264,7 @@
                 "level": {
                     "type": "integer",
                     "title": "Level",
+                    "description": "Heading level from 1 for the largest heading through 6 for the smallest.",
                     "minimum": 1,
                     "maximum": 6,
                     "default": 2
@@ -333,6 +383,8 @@
             "properties": {
                 "maxHeight": {
                     "type": "integer",
+                    "title": "Maximum height",
+                    "description": "Maximum rendered image height in pixels.",
                     "minimum": 1,
                     "default": 60
                 }
@@ -388,6 +440,8 @@
             "properties": {
                 "height": {
                     "type": "integer",
+                    "title": "Height",
+                    "description": "Spacer height in millimetres.",
                     "minimum": 0,
                     "default": 5
                 }
@@ -427,15 +481,21 @@
             "properties": {
                 "thickness": {
                     "type": "integer",
+                    "title": "Thickness",
+                    "description": "Line thickness in points.",
                     "default": 1
                 },
                 "lineColor": {
                     "type": "string",
+                    "title": "Line color",
+                    "description": "Hex color used for the divider line.",
                     "pattern": "^#[0-9A-Fa-f]{3,8}$",
                     "default": "#d1d5db"
                 },
                 "style": {
                     "type": "string",
+                    "title": "Line style",
+                    "description": "CSS border style used for the divider line.",
                     "default": "solid"
                 }
             },
@@ -474,6 +534,8 @@
             "properties": {
                 "labelWidth": {
                     "type": "string",
+                    "title": "Label width",
+                    "description": "CSS width for the first column containing labels.",
                     "default": "30mm"
                 }
             },
@@ -551,7 +613,9 @@
                     ],
                     "items": {
                         "type": "string"
-                    }
+                    },
+                    "title": "Column alignments",
+                    "description": "Text alignment per table column, ordered from left to right."
                 },
                 "columnWidths": {
                     "type": [
@@ -563,10 +627,14 @@
                             "integer",
                             "string"
                         ]
-                    }
+                    },
+                    "title": "Column widths",
+                    "description": "Column widths as millimetres or CSS width values, ordered from left to right."
                 },
                 "style": {
                     "type": "string",
+                    "title": "Style",
+                    "description": "Visual table style preset.",
                     "default": "striped"
                 }
             },
@@ -688,44 +756,146 @@
             "version": 1,
             "config": {
                 "page": {
-                    "format": "A4"
+                    "format": "A4",
+                    "locale": "de_DE",
+                    "margins": {
+                        "top": 20,
+                        "right": 20,
+                        "bottom": 20,
+                        "left": 25
+                    },
+                    "pageNumbers": {
+                        "enabled": true,
+                        "position": "center"
+                    }
+                },
+                "typography": {
+                    "family": "Inter",
+                    "size": 10
                 }
             },
             "rows": [
                 {
+                    "columnWidths": [
+                        "58%",
+                        "42%"
+                    ],
                     "blocks": [
                         {
                             "type": "heading",
-                            "id": "company",
+                            "id": "title",
                             "config": {
-                                "level": 1,
-                                "width": "60%"
+                                "level": 1
                             }
                         },
                         {
                             "type": "key-value",
                             "id": "invoice-meta",
                             "config": {
-                                "align": "right",
-                                "width": "40%"
+                                "align": "right"
                             }
+                        }
+                    ]
+                },
+                {
+                    "columnWidths": [
+                        "50%",
+                        "50%"
+                    ],
+                    "blocks": [
+                        {
+                            "type": "key-value",
+                            "id": "seller"
+                        },
+                        {
+                            "type": "key-value",
+                            "id": "buyer"
                         }
                     ]
                 },
                 {
                     "blocks": [
                         {
-                            "type": "key-value",
-                            "id": "from",
+                            "type": "divider",
+                            "id": "address-rule"
+                        }
+                    ]
+                },
+                {
+                    "blocks": [
+                        {
+                            "type": "table",
+                            "id": "items",
                             "config": {
-                                "width": "50%"
+                                "style": "striped",
+                                "columnAlignments": [
+                                    "center",
+                                    "left",
+                                    "right",
+                                    "right",
+                                    "right",
+                                    "right"
+                                ],
+                                "columnWidths": [
+                                    "7%",
+                                    "38%",
+                                    "12%",
+                                    "16%",
+                                    "11%",
+                                    "16%"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "columnWidths": [
+                        "54%",
+                        "46%"
+                    ],
+                    "blocks": [
+                        {
+                            "type": "table",
+                            "id": "vat-breakdown",
+                            "config": {
+                                "style": "minimal",
+                                "columnAlignments": [
+                                    "left",
+                                    "right",
+                                    "right",
+                                    "right"
+                                ]
                             }
                         },
                         {
                             "type": "key-value",
-                            "id": "to",
+                            "id": "totals",
                             "config": {
-                                "width": "50%"
+                                "align": "right"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "columnWidths": [
+                        "54%",
+                        "46%"
+                    ],
+                    "blocks": [
+                        {
+                            "type": "text",
+                            "id": "notice",
+                            "config": {
+                                "spacing": {
+                                    "top": 4
+                                }
+                            }
+                        },
+                        {
+                            "type": "key-value",
+                            "id": "payment",
+                            "config": {
+                                "align": "right"
                             }
                         }
                     ]
@@ -734,26 +904,7 @@
                     "blocks": [
                         {
                             "type": "divider",
-                            "id": "rule"
-                        }
-                    ]
-                },
-                {
-                    "blocks": [
-                        {
-                            "type": "table",
-                            "id": "items"
-                        }
-                    ]
-                },
-                {
-                    "blocks": [
-                        {
-                            "type": "key-value",
-                            "id": "totals",
-                            "config": {
-                                "align": "right"
-                            }
+                            "id": "footer-rule"
                         }
                     ]
                 },

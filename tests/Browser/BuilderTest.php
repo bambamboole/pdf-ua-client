@@ -10,19 +10,25 @@ it('loads the builder without browser smoke failures', function (): void {
         ->assertSee('Format')
         ->assertNoSmoke()
         ->assertScript('document.querySelector("aside.border-l") === null')
-        ->assertScript('document.querySelector("iframe") === null');
+        ->assertScript('document.querySelector("iframe") === null')
+        ->assertScript('document.querySelector(".template-builder") !== null');
 });
 
 it('opens block settings inline on the selected block', function (): void {
     $page = visit('/')
         ->click('Invoice')
-        ->assertSee('ACME GmbH')
+        ->assertSee('PDF UA Kit GmbH')
         ->assertNoJavaScriptErrors();
 
     $page
-        ->assertSee('Content')
+        ->assertSee('Example data')
+        ->assertSee('Settings')
         ->assertSee('Config')
+        ->assertSee('More')
+        ->assertDontSee('Content')
+        ->assertScript('document.querySelector("main [data-inline-block-editor] input[readonly]") === null')
         ->assertScript('document.querySelector("aside.border-l") === null')
+        ->assertScript('[...document.querySelectorAll("[data-builder-tabs] button")].every((button) => button.textContent.trim() !== "Example Data")')
         ->assertScript('document.querySelector("main [data-inline-block-details][open] [data-inline-block-editor]") !== null');
 });
 
@@ -37,11 +43,11 @@ it('sizes the build canvas to the selected page format', function (): void {
 it('renders the invoice example preview and matches the browser screenshot', function (): void {
     visit('/')
         ->click('Invoice')
-        ->click('Render')
+        ->click('HTML')
         ->wait(1)
         ->assertNoJavaScriptErrors()
         ->assertNoConsoleLogs()
         ->assertScript('document.querySelector("iframe")?.getAttribute("sandbox") === ""')
-        ->withinFrame('iframe', fn ($frame) => $frame->assertSee('ACME GmbH'))
+        ->withinFrame('iframe', fn ($frame) => $frame->assertSee('PDF UA Kit GmbH'))
         ->assertScreenshotMatches(fullPage: false, openDiff: false);
 });

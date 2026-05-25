@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import type { FieldTemplateProps } from "@rjsf/utils";
 import { describe, expect, it } from "vitest";
-import { FieldTemplate } from "./templates";
+import { DescriptionFieldTemplate, FieldTemplate } from "./templates";
 
 describe("FieldTemplate", () => {
   it("does not render a separate label for object fields", () => {
@@ -28,5 +28,38 @@ describe("FieldTemplate", () => {
 
     expect(html).not.toContain("<label");
     expect(html).toContain("<legend>Typography</legend>");
+  });
+
+  it("renders scalar descriptions as compact help text below the input", () => {
+    const props = {
+      id: "root_width",
+      classNames: "",
+      style: {},
+      label: "Width",
+      required: false,
+      description: (
+        <DescriptionFieldTemplate
+          id="root_width__description"
+          description="CSS width for this block."
+          registry={{} as never}
+          schema={{}}
+          uiSchema={{}}
+        />
+      ),
+      errors: undefined,
+      help: undefined,
+      hidden: false,
+      schema: { type: "string" },
+      registry: {},
+      children: <input id="root_width" />,
+    } as FieldTemplateProps;
+
+    const html = renderToStaticMarkup(<FieldTemplate {...props} />);
+
+    expect(html.indexOf('<input id="root_width"/>')).toBeLessThan(
+      html.indexOf('id="root_width__description"'),
+    );
+    expect(html).toContain("text-[10px]");
+    expect(html).toContain("CSS width for this block.");
   });
 });

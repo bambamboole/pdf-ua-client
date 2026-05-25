@@ -21,9 +21,10 @@ function PaletteItem({ schema, type }: PaletteItemProps) {
       ref={setNodeRef}
       {...listeners}
       {...attributes}
-      className={`w-full cursor-grab rounded border border-gray-200 bg-white px-3 py-2 text-left text-sm font-medium text-gray-800 hover:bg-gray-50 ${isDragging ? "opacity-50" : ""}`}
+      className={`w-full cursor-grab rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-panel)] px-3 py-2 text-left text-sm font-medium text-[var(--builder-ink)] transition hover:border-[var(--builder-muted)] hover:bg-[var(--builder-raised)] ${isDragging ? "opacity-50" : ""}`}
     >
-      + {getBlockTitle(schema, type)}
+      <span className="mr-2 text-[var(--builder-muted)]">+</span>
+      {getBlockTitle(schema, type)}
     </button>
   );
 }
@@ -44,18 +45,20 @@ export default function BlockPalette({
   onUpdateTemplateConfig,
 }: Props) {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       <div>
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">Blocks</h2>
-        <div className="space-y-1">
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--builder-muted)]">
+          Blocks
+        </h2>
+        <div className="space-y-1.5">
           {listBlockTypes(schema).map((type) => (
             <PaletteItem key={type} schema={schema} type={type} />
           ))}
         </div>
       </div>
       {examples.length > 0 && (
-        <div className="space-y-1 border-t border-gray-200 pt-3">
-          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+        <div className="space-y-1.5 border-t border-[var(--builder-stroke)] pt-4">
+          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--builder-muted)]">
             Examples
           </h2>
           {examples.map((ex) => (
@@ -63,7 +66,7 @@ export default function BlockPalette({
               key={ex.title}
               type="button"
               onClick={() => onLoadExample(ex)}
-              className="w-full rounded border border-gray-200 bg-white px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+              className="w-full rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-panel)] px-3 py-2 text-left text-sm font-medium text-[var(--builder-ink)] transition hover:border-[var(--builder-muted)] hover:bg-[var(--builder-raised)]"
             >
               {ex.title}
             </button>

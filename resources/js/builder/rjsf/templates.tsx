@@ -28,7 +28,7 @@ export function BaseInputTemplate(props: BaseInputTemplateProps) {
   return (
     <input
       id={id}
-      className="block w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100"
+      className="block w-full rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-field)] px-2 py-1 text-sm text-[var(--builder-field-ink)] focus:border-[var(--builder-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--builder-accent-soft)] disabled:bg-[var(--builder-surface)]"
       value={value ?? ""}
       placeholder={placeholder}
       required={required}
@@ -68,9 +68,12 @@ export function FieldTemplate(props: FieldTemplateProps) {
   return (
     <div className={`mb-3 ${classNames ?? ""}`} style={style}>
       {label && !rendersOwnLegend && (
-        <label htmlFor={id} className="mb-1 block text-xs font-medium text-gray-600">
+        <label
+          htmlFor={id}
+          className="mb-1 block text-xs font-medium text-[var(--builder-muted-strong)]"
+        >
           {label}
-          {required ? <span className="text-red-500"> *</span> : null}
+          {required ? <span className="text-[var(--builder-danger)]"> *</span> : null}
         </label>
       )}
       {description}
@@ -84,13 +87,13 @@ export function FieldTemplate(props: FieldTemplateProps) {
 export function ObjectFieldTemplate(props: ObjectFieldTemplateProps) {
   const { title, description, properties } = props;
   return (
-    <fieldset className="mb-3 rounded border border-gray-200 p-3">
+    <fieldset className="mb-3 rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-panel)] p-3">
       {title && (
-        <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-gray-400">
+        <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-[var(--builder-muted)]">
           {title}
         </legend>
       )}
-      {description && <p className="mb-2 text-xs text-gray-500">{description}</p>}
+      {description && <p className="mb-2 text-xs text-[var(--builder-muted)]">{description}</p>}
       {properties.map((el) => (
         <div key={el.name}>{el.content}</div>
       ))}
@@ -116,7 +119,7 @@ export function SelectWidget(props: WidgetProps) {
   return (
     <select
       id={id}
-      className="block w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+      className="block w-full rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-field)] px-2 py-1 text-sm text-[var(--builder-field-ink)] focus:border-[var(--builder-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--builder-accent-soft)] disabled:bg-[var(--builder-surface)]"
       value={value ?? ""}
       required={required}
       disabled={disabled || readonly}

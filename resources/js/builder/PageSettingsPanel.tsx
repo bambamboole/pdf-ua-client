@@ -12,11 +12,15 @@ interface Props {
 
 export default function PageSettingsPanel({ schema, config, onUpdateTemplateConfig }: Props) {
   return (
-    <div className="border-t border-gray-200 pt-3">
-      <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+    <div className="border-t border-[var(--builder-stroke)] pt-4">
+      <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--builder-muted)]">
         Page settings
       </h2>
-      <Suspense fallback={<div className="h-28 animate-pulse rounded bg-gray-200" />}>
+      <Suspense
+        fallback={
+          <div className="h-28 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-raised)]" />
+        }
+      >
         <SettingsForm
           schema={getTemplateConfigSchema(schema)}
           formData={config ?? {}}

@@ -30,5 +30,7 @@ export default function BlockDataSummary({ block }: { block: EditorBlock }) {
     default:
       summary = "";
   }
-  return summary ? <span className="truncate text-xs text-gray-400">{summary}</span> : null;
+  return summary ? (
+    <span className="truncate text-xs text-[var(--builder-muted)]">{summary}</span>
+  ) : null;
 }

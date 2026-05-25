@@ -7,7 +7,6 @@ import type {
   Json,
   Template,
 } from "../types";
-import { defaultData } from "../lib/blockData";
 
 function uid(): string {
   return crypto.randomUUID();
@@ -56,7 +55,7 @@ export function fromTemplate(template: Template, data: DataMap = {}): EditorMode
             id,
             type: block.type as BlockType,
             config: (block.config ?? {}) as Json,
-            data: (data[id] ?? defaultData(block.type)) as Json,
+            data: (data[id] ?? {}) as Json,
           };
         }),
       }),
@@ -99,15 +98,15 @@ function newRow(block: EditorBlock): EditorRow {
 export function addBlock(
   model: EditorModel,
   type: BlockType | string,
-  opts: { rowUid?: string | null; index?: number | null } = {},
+  opts: { rowUid?: string | null; index?: number | null; data?: Json } = {},
 ): EditorModel {
-  const { rowUid = null, index = null } = opts;
+  const { rowUid = null, index = null, data = {} } = opts;
   const block: EditorBlock = {
     uid: uid(),
     id: uniqueBlockId(model, type),
     type: type as BlockType,
     config: {},
-    data: defaultData(type),
+    data,
   };
   if (rowUid === null) {
     return { ...model, rows: [...model.rows, newRow(block)] };
@@ -230,24 +229,6 @@ export function updateBlockId(model: EditorModel, blockUid: string, rawId: strin
 
 export function updateTemplateConfig(model: EditorModel, config: Json): EditorModel {
   return { ...model, config };
-}
-
-export function insertRows(model: EditorModel, rows: EditorRow[]): EditorModel {
-  const taken = new Set(model.rows.flatMap((r) => r.blocks.map((b) => b.id)));
-  const reided = rows.map((row) => ({
-    ...row,
-    uid: crypto.randomUUID(),
-    blocks: row.blocks.map((b) => {
-      const id = makeUnique(b.id, taken);
-      taken.add(id);
-      return { ...b, uid: crypto.randomUUID(), id };
-    }),
-  }));
-  return { ...model, rows: [...model.rows, ...reided] };
-}
-
-export function replaceModel(_model: EditorModel, template: Template, data: DataMap): EditorModel {
-  return fromTemplate(template, data);
 }
 
 export interface FoundBlock {

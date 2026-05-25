@@ -4,14 +4,19 @@ declare(strict_types=1);
 namespace Bambamboole\PdfUaClient\Blocks;
 
 use Bambamboole\PdfUaClient\Attributes\Block;
+use Bambamboole\PdfUaClient\Attributes\Example;
+use Bambamboole\PdfUaClient\Attributes\Title;
 use Bambamboole\PdfUaClient\Config\ImageConfig;
 use Bambamboole\PdfUaClient\Contracts\BlockInterface;
 
 #[Block('image', config: ImageConfig::class)]
+#[Title('Image')]
 final class ImageBlock implements BlockInterface
 {
     public function __construct(
+        #[Example('https://placehold.co/200x80')]
         public readonly string $src,
+        #[Example('Logo')]
         public readonly string $alt = '',
     ) {}
 

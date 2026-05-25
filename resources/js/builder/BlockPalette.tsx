@@ -1,13 +1,14 @@
 import { useDraggable } from "@dnd-kit/core";
-import type { EditorRow, JsonSchema } from "./types";
-import { listBlockTypes, humanizeType } from "./lib/schema";
-import { presets } from "./presets";
+import type { JsonSchema } from "./types";
+import { listBlockTypes, getBlockTitle } from "./lib/schema";
+import { listExamples } from "./lib/examples";
 
 interface PaletteItemProps {
+  schema: JsonSchema;
   type: string;
 }
 
-function PaletteItem({ type }: PaletteItemProps) {
+function PaletteItem({ schema, type }: PaletteItemProps) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `palette-${type}`,
     data: { source: "palette", type },
@@ -21,7 +22,7 @@ function PaletteItem({ type }: PaletteItemProps) {
       {...attributes}
       className={`w-full cursor-grab rounded border border-gray-200 bg-white px-3 py-2 text-left text-sm font-medium text-gray-800 hover:bg-gray-50 ${isDragging ? "opacity-50" : ""}`}
     >
-      + {humanizeType(type)}
+      + {getBlockTitle(schema, type)}
     </button>
   );
 }
@@ -30,49 +31,39 @@ interface Props {
   schema: JsonSchema;
   onSelectPage: () => void;
   onExport: () => void;
-  onInsertPreset: (rows: EditorRow[]) => void;
-  onLoadInvoice: () => void;
+  onLoadExample: (document: Record<string, unknown>) => void;
 }
 
-export default function BlockPalette({
-  schema,
-  onSelectPage,
-  onExport,
-  onInsertPreset,
-  onLoadInvoice,
-}: Props) {
+export default function BlockPalette({ schema, onSelectPage, onExport, onLoadExample }: Props) {
+  const examples = listExamples(schema);
+
   return (
     <div className="flex flex-col gap-3">
       <div>
         <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">Blocks</h2>
         <div className="space-y-1">
           {listBlockTypes(schema).map((type) => (
-            <PaletteItem key={type} type={type} />
+            <PaletteItem key={type} schema={schema} type={type} />
           ))}
         </div>
       </div>
-      <div className="space-y-1 border-t border-gray-200 pt-3">
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
-          Presets
-        </h2>
-        {presets.map((preset) => (
-          <button
-            key={preset.name}
-            type="button"
-            onClick={() => onInsertPreset(preset.build())}
-            className="w-full rounded border border-gray-200 bg-white px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
-          >
-            + {preset.name}
-          </button>
-        ))}
-        <button
-          type="button"
-          onClick={onLoadInvoice}
-          className="mt-2 w-full rounded bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-500"
-        >
-          Load invoice example
-        </button>
-      </div>
+      {examples.length > 0 && (
+        <div className="space-y-1 border-t border-gray-200 pt-3">
+          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+            Examples
+          </h2>
+          {examples.map((ex) => (
+            <button
+              key={ex.title}
+              type="button"
+              onClick={() => onLoadExample(ex.document)}
+              className="w-full rounded border border-gray-200 bg-white px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+            >
+              {ex.title}
+            </button>
+          ))}
+        </div>
+      )}
       <div className="space-y-2 border-t border-gray-200 pt-3">
         <button
           type="button"

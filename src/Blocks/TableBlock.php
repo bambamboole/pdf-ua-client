@@ -4,10 +4,13 @@ declare(strict_types=1);
 namespace Bambamboole\PdfUaClient\Blocks;
 
 use Bambamboole\PdfUaClient\Attributes\Block;
+use Bambamboole\PdfUaClient\Attributes\Example;
+use Bambamboole\PdfUaClient\Attributes\Title;
 use Bambamboole\PdfUaClient\Config\TableConfig;
 use Bambamboole\PdfUaClient\Contracts\BlockInterface;
 
 #[Block('table', config: TableConfig::class)]
+#[Title('Table')]
 final class TableBlock implements BlockInterface
 {
     /**
@@ -15,7 +18,9 @@ final class TableBlock implements BlockInterface
      * @param  list<list<string>>  $rows
      */
     public function __construct(
+        #[Example(['Column A', 'Column B'])]
         public readonly array $headers,
+        #[Example([['A1', 'B1'], ['A2', 'B2']])]
         public readonly array $rows,
     ) {}
 

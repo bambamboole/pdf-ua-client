@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { getBlockSubschemas, getTemplateConfigSchema } from "./schema";
+import { getBlockSubschemas, getBlockTitle, getTemplateConfigSchema } from "./schema";
+import type { JsonSchema } from "../types";
 
 // Minimal schema shaped like the real compiled one (camelCase def names).
 const schema = {
@@ -52,5 +53,25 @@ describe("getTemplateConfigSchema", () => {
     const result = getTemplateConfigSchema(schema);
     expect((result.properties as any).page).toBeTruthy();
     expect(result.$defs).toBe(schema.$defs);
+  });
+});
+
+describe("getBlockTitle", () => {
+  it("reads the props def title, falling back to humanizeType", () => {
+    const titleSchema = {
+      $defs: {
+        block: { oneOf: [{ $ref: "#/$defs/keyValueBlock" }, { $ref: "#/$defs/tableBlock" }] },
+        keyValueBlock: {
+          properties: { type: { const: "key-value" }, props: { $ref: "#/$defs/keyValueProps" } },
+        },
+        keyValueProps: { type: "object", title: "Key / Value", properties: {} },
+        tableBlock: {
+          properties: { type: { const: "table" }, props: { $ref: "#/$defs/tableProps" } },
+        },
+        tableProps: { type: "object", properties: {} },
+      },
+    } as JsonSchema;
+    expect(getBlockTitle(titleSchema, "key-value")).toBe("Key / Value");
+    expect(getBlockTitle(titleSchema, "table")).toBe("Table");
   });
 });

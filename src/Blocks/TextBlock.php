@@ -4,13 +4,21 @@ declare(strict_types=1);
 namespace Bambamboole\PdfUaClient\Blocks;
 
 use Bambamboole\PdfUaClient\Attributes\Block;
+use Bambamboole\PdfUaClient\Attributes\Description;
+use Bambamboole\PdfUaClient\Attributes\Example;
+use Bambamboole\PdfUaClient\Attributes\Title;
 use Bambamboole\PdfUaClient\Config\BlockConfig;
 use Bambamboole\PdfUaClient\Contracts\BlockInterface;
 
 #[Block('text')]
+#[Title('Text')]
+#[Description('A paragraph of text.')]
 final class TextBlock implements BlockInterface
 {
-    public function __construct(public readonly string $text) {}
+    public function __construct(
+        #[Example('Thank you for your business.')]
+        public readonly string $text,
+    ) {}
 
     public function render(BlockConfig $config): string
     {

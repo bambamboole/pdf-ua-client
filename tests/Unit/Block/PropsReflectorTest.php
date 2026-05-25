@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Bambamboole\PdfUaClient\Attributes\ArrayOf;
 use Bambamboole\PdfUaClient\Attributes\Block;
 use Bambamboole\PdfUaClient\Attributes\Description;
+use Bambamboole\PdfUaClient\Attributes\Example;
 use Bambamboole\PdfUaClient\Attributes\Format;
 use Bambamboole\PdfUaClient\Attributes\Length;
 use Bambamboole\PdfUaClient\Attributes\Max;
@@ -184,4 +185,18 @@ it('emits the backing value as the default for a backed enum constructor paramet
     $schema = (new PropsReflector)->reflect(PageConfig::class);
 
     expect($schema['properties']['format']['default'])->toBe('A4');
+});
+
+it('emits examples from the Example attribute', function (): void {
+    $class = new class('x')
+    {
+        public function __construct(
+            #[Example('Sample heading')]
+            public readonly string $text,
+        ) {}
+    };
+
+    $schema = (new PropsReflector)->reflect($class::class);
+
+    expect($schema['properties']['text']['examples'])->toBe(['Sample heading']);
 });

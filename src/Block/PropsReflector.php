@@ -7,6 +7,7 @@ use BackedEnum;
 use Bambamboole\PdfUaClient\Attributes\ArrayOf;
 use Bambamboole\PdfUaClient\Attributes\Block;
 use Bambamboole\PdfUaClient\Attributes\Description;
+use Bambamboole\PdfUaClient\Attributes\Example;
 use Bambamboole\PdfUaClient\Attributes\Format;
 use Bambamboole\PdfUaClient\Attributes\Length;
 use Bambamboole\PdfUaClient\Attributes\Max;
@@ -296,6 +297,9 @@ final class PropsReflector
         }
         foreach ($param->getAttributes(Format::class) as $attr) {
             $schema['format'] = $attr->newInstance()->value;
+        }
+        foreach ($param->getAttributes(Example::class) as $attr) {
+            $schema['examples'] = [$attr->newInstance()->value];
         }
 
         if ($param->isDefaultValueAvailable() && ! isset($schema['$ref'])) {

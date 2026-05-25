@@ -5,6 +5,7 @@ namespace Bambamboole\PdfUaClient\Config;
 
 use Bambamboole\PdfUaClient\Attributes\Max;
 use Bambamboole\PdfUaClient\Attributes\Min;
+use Bambamboole\PdfUaClient\Attributes\Title;
 use Bambamboole\PdfUaClient\Enums\Align;
 
 final readonly class HeadingConfig extends BlockConfig
@@ -14,7 +15,7 @@ final readonly class HeadingConfig extends BlockConfig
         ?SpacingConfig $spacing = null,
         ?string $width = null,
         ?Align $align = null,
-        #[Min(1)] #[Max(6)]
+        #[Min(1)] #[Max(6)] #[Title('Level')]
         public int $level = 2,
     ) {
         parent::__construct($typography, $spacing, $width, $align);

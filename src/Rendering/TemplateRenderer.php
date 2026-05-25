@@ -23,7 +23,7 @@ use Opis\JsonSchema\Validator;
 
 final class TemplateRenderer
 {
-    private const int RepeatedFooterReserveMm = 12;
+    private const int RepeatedFooterReserveMm = 8;
 
     private int $blockCounter = 0;
 

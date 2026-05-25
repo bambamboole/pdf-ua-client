@@ -15,6 +15,7 @@ use Bambamboole\PdfUaClient\Blocks\SpacerBlock;
 use Bambamboole\PdfUaClient\Blocks\TableBlock;
 use Bambamboole\PdfUaClient\Blocks\TextBlock;
 use Bambamboole\PdfUaClient\Console\ExportDataSchemaCommand;
+use Bambamboole\PdfUaClient\Console\ExportExamplesCommand;
 use Bambamboole\PdfUaClient\Console\ExportSchemaCommand;
 use Bambamboole\PdfUaClient\Examples\InvoiceExample;
 use Bambamboole\PdfUaClient\Fonts\FontRegistry;
@@ -41,7 +42,8 @@ final class PdfUaClientServiceProvider extends PackageServiceProvider
             ->hasViews('pdf-ua-client')
             ->hasTranslations()
             ->hasCommand(ExportSchemaCommand::class)
-            ->hasCommand(ExportDataSchemaCommand::class);
+            ->hasCommand(ExportDataSchemaCommand::class)
+            ->hasCommand(ExportExamplesCommand::class);
     }
 
     public function packageRegistered(): void

@@ -1,0 +1,29 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Docs/Introduction" />
+
+# pdf-ua-client
+
+`pdf-ua-client` is a PHP library for producing **accessible, PDF/UA-compliant
+PDFs** from a structured template model. You describe a document as rows of
+blocks (headings, text, tables, key–value lists, images, …), bind runtime data
+to it, and the renderer emits tagged, accessible output.
+
+## Why PDF/UA?
+
+PDF/UA (ISO 14289) is the standard for universally accessible PDFs: a logical
+reading order, tagged structure, and text alternatives so assistive technology
+can navigate the document. `pdf-ua-client` makes that structure the default
+rather than an afterthought.
+
+## Why a template model?
+
+Templates separate _layout_ (the blocks and their configuration) from _data_
+(the values bound at render time), so the same template can render many
+documents and the accessible structure is defined once.
+
+## What's in these docs
+
+- **Installation** — install the package and render your first document.
+- **Templates & Blocks** — the template model and the available blocks.
+- **Builder** — an interactive, in-browser template builder (client-side demo).

@@ -70,14 +70,12 @@ it('returns 422 when posted data violates the template data contract', function 
 });
 
 it('renders the registered invoice example payload', function (): void {
-    $data = InvoiceExample::data();
-    $data['rule'] = [];
-
     $response = postJson('/render', [
         'template' => InvoiceExample::document(),
-        'data' => $data,
+        'data' => InvoiceExample::data(),
     ]);
 
     $response->assertSuccessful();
-    expect($response->json('html'))->toContain('ACME GmbH');
+    expect($response->json('html'))->toContain('PDF UA Kit GmbH')
+        ->toContain('RE-2026-001234');
 });

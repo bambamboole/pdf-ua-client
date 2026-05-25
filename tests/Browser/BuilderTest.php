@@ -16,7 +16,7 @@ it('loads the builder without browser smoke failures', function (): void {
 it('opens block settings inline on the selected block', function (): void {
     $page = visit('/')
         ->click('Invoice')
-        ->assertSee('ACME GmbH')
+        ->assertSee('PDF UA Kit GmbH')
         ->assertNoJavaScriptErrors();
 
     $page
@@ -42,6 +42,6 @@ it('renders the invoice example preview and matches the browser screenshot', fun
         ->assertNoJavaScriptErrors()
         ->assertNoConsoleLogs()
         ->assertScript('document.querySelector("iframe")?.getAttribute("sandbox") === ""')
-        ->withinFrame('iframe', fn ($frame) => $frame->assertSee('ACME GmbH'))
+        ->withinFrame('iframe', fn ($frame) => $frame->assertSee('PDF UA Kit GmbH'))
         ->assertScreenshotMatches(fullPage: false, openDiff: false);
 });

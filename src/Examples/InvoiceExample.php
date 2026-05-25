@@ -11,19 +11,58 @@ final class InvoiceExample
         return [
             'title' => 'Invoice',
             'version' => 1,
-            'config' => ['page' => ['format' => 'A4']],
+            'config' => [
+                'page' => [
+                    'format' => 'A4',
+                    'locale' => 'de_DE',
+                    'margins' => ['top' => 20, 'right' => 20, 'bottom' => 20, 'left' => 25],
+                    'pageNumbers' => ['position' => 'center'],
+                ],
+                'typography' => ['family' => 'Inter', 'size' => 10],
+            ],
             'rows' => [
-                ['blocks' => [
-                    ['type' => 'heading', 'id' => 'company', 'config' => ['level' => 1, 'width' => '60%']],
-                    ['type' => 'key-value', 'id' => 'invoice-meta', 'config' => ['align' => 'right', 'width' => '40%']],
-                ]],
-                ['blocks' => [
-                    ['type' => 'key-value', 'id' => 'from', 'config' => ['width' => '50%']],
-                    ['type' => 'key-value', 'id' => 'to', 'config' => ['width' => '50%']],
-                ]],
-                ['blocks' => [['type' => 'divider', 'id' => 'rule']]],
-                ['blocks' => [['type' => 'table', 'id' => 'items']]],
-                ['blocks' => [['type' => 'key-value', 'id' => 'totals', 'config' => ['align' => 'right']]]],
+                [
+                    'columnWidths' => ['58%', '42%'],
+                    'blocks' => [
+                        ['type' => 'heading', 'id' => 'title', 'config' => ['level' => 1]],
+                        ['type' => 'key-value', 'id' => 'invoice-meta', 'config' => ['align' => 'right']],
+                    ],
+                ],
+                [
+                    'columnWidths' => ['50%', '50%'],
+                    'blocks' => [
+                        ['type' => 'key-value', 'id' => 'seller'],
+                        ['type' => 'key-value', 'id' => 'buyer'],
+                    ],
+                ],
+                ['blocks' => [['type' => 'divider', 'id' => 'address-rule']]],
+                ['blocks' => [[
+                    'type' => 'table',
+                    'id' => 'items',
+                    'config' => [
+                        'style' => 'striped',
+                        'columnAlignments' => ['center', 'left', 'right', 'right', 'right', 'right'],
+                        'columnWidths' => ['7%', '38%', '12%', '16%', '11%', '16%'],
+                    ],
+                ]]],
+                [
+                    'columnWidths' => ['54%', '46%'],
+                    'blocks' => [
+                        ['type' => 'table', 'id' => 'vat-breakdown', 'config' => [
+                            'style' => 'minimal',
+                            'columnAlignments' => ['left', 'right', 'right', 'right'],
+                        ]],
+                        ['type' => 'key-value', 'id' => 'totals', 'config' => ['align' => 'right']],
+                    ],
+                ],
+                [
+                    'columnWidths' => ['54%', '46%'],
+                    'blocks' => [
+                        ['type' => 'text', 'id' => 'notice', 'config' => ['spacing' => ['top' => 4]]],
+                        ['type' => 'key-value', 'id' => 'payment', 'config' => ['align' => 'right']],
+                    ],
+                ],
+                ['blocks' => [['type' => 'divider', 'id' => 'footer-rule']]],
                 ['blocks' => [['type' => 'text', 'id' => 'footer']]],
             ],
         ];
@@ -33,24 +72,55 @@ final class InvoiceExample
     public static function data(): array
     {
         return [
-            'company' => ['text' => 'ACME GmbH'],
+            'title' => ['text' => 'Invoice RE-2026-001234'],
             'invoice-meta' => ['entries' => [
-                ['label' => 'Invoice', 'value' => '2026-001'],
-                ['label' => 'Date', 'value' => '2026-05-25'],
-                ['label' => 'Due', 'value' => '2026-06-08'],
+                ['label' => 'Invoice number', 'value' => 'RE-2026-001234'],
+                ['label' => 'Issue date', 'value' => '2026-02-17'],
+                ['label' => 'Due date', 'value' => '2026-03-19'],
+                ['label' => 'Currency', 'value' => 'EUR'],
             ]],
-            'from' => ['entries' => [['label' => 'From', 'value' => 'ACME GmbH, Main St 1']]],
-            'to' => ['entries' => [['label' => 'Bill to', 'value' => 'Beta Ltd, 2nd Ave']]],
+            'seller' => ['entries' => [
+                ['label' => 'Seller', 'value' => 'PDF UA Kit GmbH'],
+                ['label' => 'Address', 'value' => 'Musterstraße 1, 10115 Berlin, DE'],
+                ['label' => 'Contact', 'value' => 'Max Mustermann'],
+                ['label' => 'Email', 'value' => 'billing@pdfua-kit.example'],
+                ['label' => 'VAT ID', 'value' => 'DE123456789'],
+            ]],
+            'buyer' => ['entries' => [
+                ['label' => 'Buyer', 'value' => 'Musterkunde AG'],
+                ['label' => 'Address', 'value' => 'Käuferweg 2, 80331 München, DE'],
+                ['label' => 'Email', 'value' => 'invoice@musterkunde.example'],
+                ['label' => 'Buyer reference', 'value' => '04011000-12345-67'],
+            ]],
             'items' => [
-                'headers' => ['Description', 'Qty', 'Unit', 'Amount'],
-                'rows' => [['Consulting', '10', '€100', '€1000'], ['License', '1', '€250', '€250']],
+                'headers' => ['#', 'Description', 'Qty', 'Unit price', 'VAT', 'Total'],
+                'rows' => [
+                    ['1', 'Accessible PDF template implementation', '40', '95,00 €', '19%', '3.800,00 €'],
+                    ['2', 'Document structure and tagging review', '16', '85,00 €', '19%', '1.360,00 €'],
+                    ['3', 'Project management and acceptance testing', '8', '90,00 €', '19%', '720,00 €'],
+                    ['4', 'Annual hosting and maintenance package', '1', '240,00 €', '19%', '240,00 €'],
+                ],
+            ],
+            'vat-breakdown' => [
+                'headers' => ['VAT category', 'Rate', 'Taxable amount', 'VAT amount'],
+                'rows' => [
+                    ['Standard rate', '19%', '6.120,00 €', '1.162,80 €'],
+                ],
             ],
             'totals' => ['entries' => [
-                ['label' => 'Subtotal', 'value' => '€1250'],
-                ['label' => 'Tax (19%)', 'value' => '€237.50'],
-                ['label' => 'Total', 'value' => '€1487.50'],
+                ['label' => 'Net amount', 'value' => '6.120,00 €'],
+                ['label' => 'VAT 19%', 'value' => '1.162,80 €'],
+                ['label' => 'Grand total', 'value' => '7.282,80 €'],
+                ['label' => 'Amount due', 'value' => '7.282,80 €'],
             ]],
-            'footer' => ['text' => 'Payment due within 14 days. Thank you for your business.'],
+            'notice' => ['text' => 'Please transfer the amount due within 30 days. Include the invoice number as the payment reference.'],
+            'payment' => ['entries' => [
+                ['label' => 'Bank', 'value' => 'Musterbank Berlin'],
+                ['label' => 'IBAN', 'value' => 'DE89370400440532013000'],
+                ['label' => 'BIC', 'value' => 'COBADEFFXXX'],
+                ['label' => 'Payment reference', 'value' => 'RE-2026-001234'],
+            ]],
+            'footer' => ['text' => 'PDF UA Kit GmbH · Musterstraße 1 · 10115 Berlin · Germany · VAT ID DE123456789 · Invoice was created electronically and is valid without signature.'],
         ];
     }
 }

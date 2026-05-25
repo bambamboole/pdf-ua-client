@@ -688,44 +688,145 @@
             "version": 1,
             "config": {
                 "page": {
-                    "format": "A4"
+                    "format": "A4",
+                    "locale": "de_DE",
+                    "margins": {
+                        "top": 20,
+                        "right": 20,
+                        "bottom": 20,
+                        "left": 25
+                    },
+                    "pageNumbers": {
+                        "position": "center"
+                    }
+                },
+                "typography": {
+                    "family": "Inter",
+                    "size": 10
                 }
             },
             "rows": [
                 {
+                    "columnWidths": [
+                        "58%",
+                        "42%"
+                    ],
                     "blocks": [
                         {
                             "type": "heading",
-                            "id": "company",
+                            "id": "title",
                             "config": {
-                                "level": 1,
-                                "width": "60%"
+                                "level": 1
                             }
                         },
                         {
                             "type": "key-value",
                             "id": "invoice-meta",
                             "config": {
-                                "align": "right",
-                                "width": "40%"
+                                "align": "right"
                             }
+                        }
+                    ]
+                },
+                {
+                    "columnWidths": [
+                        "50%",
+                        "50%"
+                    ],
+                    "blocks": [
+                        {
+                            "type": "key-value",
+                            "id": "seller"
+                        },
+                        {
+                            "type": "key-value",
+                            "id": "buyer"
                         }
                     ]
                 },
                 {
                     "blocks": [
                         {
-                            "type": "key-value",
-                            "id": "from",
+                            "type": "divider",
+                            "id": "address-rule"
+                        }
+                    ]
+                },
+                {
+                    "blocks": [
+                        {
+                            "type": "table",
+                            "id": "items",
                             "config": {
-                                "width": "50%"
+                                "style": "striped",
+                                "columnAlignments": [
+                                    "center",
+                                    "left",
+                                    "right",
+                                    "right",
+                                    "right",
+                                    "right"
+                                ],
+                                "columnWidths": [
+                                    "7%",
+                                    "38%",
+                                    "12%",
+                                    "16%",
+                                    "11%",
+                                    "16%"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "columnWidths": [
+                        "54%",
+                        "46%"
+                    ],
+                    "blocks": [
+                        {
+                            "type": "table",
+                            "id": "vat-breakdown",
+                            "config": {
+                                "style": "minimal",
+                                "columnAlignments": [
+                                    "left",
+                                    "right",
+                                    "right",
+                                    "right"
+                                ]
                             }
                         },
                         {
                             "type": "key-value",
-                            "id": "to",
+                            "id": "totals",
                             "config": {
-                                "width": "50%"
+                                "align": "right"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "columnWidths": [
+                        "54%",
+                        "46%"
+                    ],
+                    "blocks": [
+                        {
+                            "type": "text",
+                            "id": "notice",
+                            "config": {
+                                "spacing": {
+                                    "top": 4
+                                }
+                            }
+                        },
+                        {
+                            "type": "key-value",
+                            "id": "payment",
+                            "config": {
+                                "align": "right"
                             }
                         }
                     ]
@@ -734,26 +835,7 @@
                     "blocks": [
                         {
                             "type": "divider",
-                            "id": "rule"
-                        }
-                    ]
-                },
-                {
-                    "blocks": [
-                        {
-                            "type": "table",
-                            "id": "items"
-                        }
-                    ]
-                },
-                {
-                    "blocks": [
-                        {
-                            "type": "key-value",
-                            "id": "totals",
-                            "config": {
-                                "align": "right"
-                            }
+                            "id": "footer-rule"
                         }
                     ]
                 },

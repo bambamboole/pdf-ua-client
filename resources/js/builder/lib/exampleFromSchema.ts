@@ -3,7 +3,7 @@ import type { JsonSchema } from "../types";
 function resolveRef(root: JsonSchema, node: Record<string, unknown>): Record<string, unknown> {
   const ref = node.$ref;
   if (typeof ref === "string" && ref.startsWith("#/$defs/")) {
-    const defs = (root as any).$defs as Record<string, Record<string, unknown>> | undefined;
+    const defs = root.$defs as Record<string, Record<string, unknown>> | undefined;
     return defs?.[ref.slice("#/$defs/".length)] ?? node;
   }
   return node;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Bambamboole\PdfUaClient\Block\BlockRegistry;
 use Bambamboole\PdfUaClient\Block\PropsReflector;
+use Bambamboole\PdfUaClient\Blocks\TableBlock;
 use Bambamboole\PdfUaClient\Template\ExampleRegistry;
 use Bambamboole\PdfUaClient\Template\TemplateSchemaCompiler;
 use Bambamboole\PdfUaClient\Tests\Fixtures\TestFixtureBlock;
@@ -87,4 +88,20 @@ it('composes a per-block config schema from its parent via allOf and only emits 
 
     $baseConfig = $schema['$defs']['blockConfig'];
     expect($baseConfig['properties'])->toHaveKeys(['typography', 'spacing', 'width', 'align']);
+});
+
+it('emits renderable array item schemas for table config lists', function () {
+    $this->registry->register(TableBlock::class);
+
+    $schema = $this->compiler->compile($this->registry);
+    $tableConfig = $schema['$defs']['tableConfig']['properties'];
+
+    expect($tableConfig['columnAlignments'])->toMatchArray([
+        'type' => ['array', 'null'],
+        'items' => ['type' => 'string'],
+    ]);
+    expect($tableConfig['columnWidths'])->toMatchArray([
+        'type' => ['array', 'null'],
+        'items' => ['type' => ['integer', 'string']],
+    ]);
 });

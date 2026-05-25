@@ -3,9 +3,10 @@ import { customizeValidator } from "@rjsf/validator-ajv8";
 import Ajv2020 from "ajv/dist/2020";
 import type { Json, JsonSchema } from "./types";
 import { rjsfTemplates, rjsfWidgets } from "./rjsf/templates";
+import { imageUploadUiSchema } from "./lib/imageUpload";
 
 const validator = customizeValidator({ AjvClass: Ajv2020 });
-const uiSchema = { "ui:submitButtonOptions": { norender: true } };
+const baseUiSchema = { "ui:submitButtonOptions": { norender: true } };
 
 interface Props {
   schema: JsonSchema;
@@ -14,6 +15,8 @@ interface Props {
 }
 
 export default function SettingsForm({ schema, formData, onChange }: Props) {
+  const uiSchema = { ...baseUiSchema, ...imageUploadUiSchema(schema) };
+
   return (
     <Form
       schema={schema}

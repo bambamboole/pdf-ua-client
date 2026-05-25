@@ -18,6 +18,7 @@ it('models a complete realistic invoice document structure', function () {
     ]);
     expect($document['config']['typography'])->toBe(['family' => 'Inter', 'size' => 10]);
     expect($blocks->keys()->all())->toContain(
+        'logo',
         'seller',
         'buyer',
         'invoice-meta',
@@ -27,6 +28,11 @@ it('models a complete realistic invoice document structure', function () {
         'payment',
         'footer',
     );
+    expect($blocks->get('logo'))->toMatchArray([
+        'type' => 'image',
+        'id' => 'logo',
+        'config' => ['width' => '58%', 'maxHeight' => 28],
+    ]);
     expect($blocks->get('items')['config'])->toMatchArray([
         'style' => 'striped',
         'columnAlignments' => ['center', 'left', 'right', 'right', 'right', 'right'],
@@ -36,6 +42,8 @@ it('models a complete realistic invoice document structure', function () {
 it('provides realistic seller, buyer, line items, totals, and payment data', function () {
     $data = InvoiceExample::data();
 
+    expect($data['logo']['src'])->toStartWith('data:image/');
+    expect($data['logo']['alt'])->toBe('PDF UA Kit GmbH logo');
     expect($data['seller']['entries'])->toContain(
         ['label' => 'Seller', 'value' => 'PDF UA Kit GmbH'],
         ['label' => 'VAT ID', 'value' => 'DE123456789'],

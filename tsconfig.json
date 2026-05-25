@@ -16,5 +16,5 @@
       "@builder/*": ["resources/js/builder/*"]
     }
   },
-  "include": ["resources/js", "workbench/resources/js"]
+  "include": ["resources/js", "workbench/resources/js", "stories"]
 }

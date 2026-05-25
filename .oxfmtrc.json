@@ -8,6 +8,7 @@
     "viewer/**",
     "workbench/**",
     "tests/Fixtures/json-schema-2020-12/**",
+    "stories/data/**",
     "template.schema.json",
     "composer.json",
     "composer.lock",

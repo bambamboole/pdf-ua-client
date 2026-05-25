@@ -14,6 +14,7 @@
     "vendor",
     "public/build",
     "dist",
+    "storybook-static",
     "storage",
     "viewer",
     "workbench",

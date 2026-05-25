@@ -4,14 +4,20 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "node:path";
 
+const isStorybook = process.env.STORYBOOK === "true";
+
 export default defineConfig({
   plugins: [
-    laravel({
-      input: ["workbench/resources/css/app.css", "workbench/resources/js/app.tsx"],
-      publicDirectory: "vendor/orchestra/testbench-core/laravel/public",
-      buildDirectory: "build",
-      refresh: ["workbench/resources/**", "workbench/routes/**", "resources/js/builder/**"],
-    }),
+    ...(isStorybook
+      ? []
+      : [
+          laravel({
+            input: ["workbench/resources/css/app.css", "workbench/resources/js/app.tsx"],
+            publicDirectory: "vendor/orchestra/testbench-core/laravel/public",
+            buildDirectory: "build",
+            refresh: ["workbench/resources/**", "workbench/routes/**", "resources/js/builder/**"],
+          }),
+        ]),
     react(),
     tailwindcss(),
   ],

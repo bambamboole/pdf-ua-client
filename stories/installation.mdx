@@ -1,0 +1,57 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Docs/Installation" />
+
+# Installation
+
+Install the package with Composer:
+
+```bash
+composer require bambamboole/pdf-ua-client
+```
+
+## Configure the API endpoint
+
+Rendering to PDF is performed by the `pdf-ua-api` service. Point the client at
+your instance:
+
+```dotenv
+PDF_UA_API_URL=https://your-pdf-ua-api.example.com
+PDF_UA_API_TOKEN=your-token
+```
+
+For local development you can run the API with Docker and target it:
+
+```bash
+docker compose up -d
+# PDF_UA_API_URL=http://localhost:8888
+```
+
+## Your first render
+
+Build a template, bind data, and render:
+
+```php
+use Bambamboole\PdfUaClient\Rendering\RenderOptions;
+use Bambamboole\PdfUaClient\Rendering\TemplateRenderer;
+use Bambamboole\PdfUaClient\Template\TemplateFactory;
+
+$factory = app(TemplateFactory::class);
+$renderer = app(TemplateRenderer::class);
+
+$template = $factory->fromArray([
+    'version' => 1,
+    'config' => [],
+    'rows' => [
+        ['blocks' => [['type' => 'heading', 'id' => 'title', 'config' => ['level' => 1]]]],
+    ],
+]);
+
+$html = $renderer->render(
+    $template,
+    ['title' => ['text' => 'Hello']],
+    new RenderOptions(mode: 'preview', title: 'Hello'),
+);
+```
+
+See **Templates & Blocks** for the full template model.

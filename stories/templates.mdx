@@ -1,0 +1,49 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+import schema from "./data/schema.json";
+import { listBlockTypes, getBlockTitle } from "@builder/lib/schema";
+
+<Meta title="Docs/Templates & Blocks" />
+
+# Templates & Blocks
+
+A template is a versioned document made of **rows**, and each row holds one or
+more **blocks**. Blocks carry `config` (layout, styling, and block-specific options such as a heading's level) and bind to runtime
+`data` by `id`.
+
+```json
+{
+  "version": 1,
+  "config": {},
+  "rows": [{ "blocks": [{ "type": "heading", "id": "title", "config": { "level": 1 } }] }]
+}
+```
+
+## Rows and columns
+
+A row with multiple blocks lays them out as columns; `columnWidths` controls the
+relative widths. Data is bound per block via its `id`.
+
+## Available blocks
+
+The renderer ships with these block types:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ textAlign: "left" }}>Type</th>
+      <th style={{ textAlign: "left" }}>Name</th>
+    </tr>
+  </thead>
+  <tbody>
+    {listBlockTypes(schema).map((type) => (
+      <tr key={type}>
+        <td>
+          <code>{type}</code>
+        </td>
+        <td>{getBlockTitle(schema, type)}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+Use the **Builder** to assemble a template visually and inspect its JSON.

@@ -1,0 +1,922 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://pdfuakit.com/schemas/pdf-ua-client-template-v1.json",
+    "type": "object",
+    "required": [
+        "version",
+        "config",
+        "rows"
+    ],
+    "properties": {
+        "version": {
+            "const": 1,
+            "type": "integer"
+        },
+        "config": {
+            "$ref": "#/$defs/templateConfig"
+        },
+        "rows": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/row"
+            }
+        }
+    },
+    "$defs": {
+        "spacingConfig": {
+            "type": "object",
+            "properties": {
+                "top": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "title": "Top",
+                    "description": "Top spacing in millimetres.",
+                    "minimum": 0
+                },
+                "right": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "title": "Right",
+                    "description": "Right spacing in millimetres.",
+                    "minimum": 0
+                },
+                "bottom": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "title": "Bottom",
+                    "description": "Bottom spacing in millimetres.",
+                    "minimum": 0
+                },
+                "left": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "title": "Left",
+                    "description": "Left spacing in millimetres.",
+                    "minimum": 0
+                }
+            },
+            "additionalProperties": false
+        },
+        "pageNumbersConfig": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "title": "Enabled",
+                    "description": "Show page numbers in the page footer.",
+                    "default": false
+                },
+                "position": {
+                    "type": "string",
+                    "enum": [
+                        "left",
+                        "center",
+                        "right"
+                    ],
+                    "title": "Position",
+                    "description": "Footer position used for page numbers.",
+                    "default": "center"
+                }
+            },
+            "additionalProperties": false
+        },
+        "pageConfig": {
+            "type": "object",
+            "properties": {
+                "format": {
+                    "type": "string",
+                    "enum": [
+                        "A4",
+                        "A5",
+                        "Letter",
+                        "Legal"
+                    ],
+                    "title": "Format",
+                    "description": "Physical page size used for rendering.",
+                    "default": "A4"
+                },
+                "locale": {
+                    "type": "string",
+                    "title": "Locale",
+                    "description": "Document locale used for language-aware rendering.",
+                    "default": "de_DE"
+                },
+                "margins": {
+                    "$ref": "#/$defs/spacingConfig",
+                    "title": "Margins",
+                    "description": "Page margins in millimetres."
+                },
+                "pageNumbers": {
+                    "$ref": "#/$defs/pageNumbersConfig",
+                    "title": "Pagination",
+                    "description": "Page number display settings."
+                }
+            },
+            "additionalProperties": false
+        },
+        "typographyConfig": {
+            "type": "object",
+            "properties": {
+                "family": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "enum": [
+                        "Inter",
+                        "Georgia"
+                    ],
+                    "enumNames": [
+                        "Inter",
+                        "Georgia"
+                    ],
+                    "title": "Font family",
+                    "description": "Registered font key used for this text."
+                },
+                "size": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "title": "Font size",
+                    "description": "Font size in points."
+                },
+                "weight": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "enum": [
+                        300,
+                        400,
+                        500,
+                        600,
+                        700
+                    ],
+                    "title": "Font weight",
+                    "description": "Numeric font weight."
+                },
+                "align": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "enum": [
+                        "left",
+                        "center",
+                        "right"
+                    ],
+                    "title": "Text alignment",
+                    "description": "Text alignment for this typography scope."
+                },
+                "color": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "title": "Text color",
+                    "description": "CSS color value used for text."
+                }
+            },
+            "additionalProperties": false
+        },
+        "templateConfig": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "$ref": "#/$defs/pageConfig",
+                    "title": "Page",
+                    "description": "Document page setup."
+                },
+                "typography": {
+                    "$ref": "#/$defs/typographyConfig",
+                    "title": "Typography",
+                    "description": "Default typography inherited by blocks."
+                }
+            },
+            "additionalProperties": false
+        },
+        "blockBase": {
+            "type": "object",
+            "required": [
+                "type"
+            ],
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "blockConfig": {
+            "type": "object",
+            "properties": {
+                "typography": {
+                    "$ref": "#/$defs/typographyConfig",
+                    "title": "Typography",
+                    "description": "Overrides the page typography for this block."
+                },
+                "spacing": {
+                    "$ref": "#/$defs/spacingConfig",
+                    "title": "Spacing",
+                    "description": "Outer spacing around this block in millimetres."
+                },
+                "width": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "title": "Width",
+                    "description": "CSS width for this block, such as 50%, 80mm, or auto."
+                },
+                "align": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "enum": [
+                        "left",
+                        "center",
+                        "right"
+                    ],
+                    "title": "Alignment",
+                    "description": "Horizontal placement of this block within its row cell."
+                }
+            }
+        },
+        "headingConfig": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockConfig"
+                }
+            ],
+            "properties": {
+                "level": {
+                    "type": "integer",
+                    "title": "Level",
+                    "description": "Heading level from 1 for the largest heading through 6 for the smallest.",
+                    "minimum": 1,
+                    "maximum": 6,
+                    "default": 2
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "headingProps": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string",
+                    "examples": [
+                        "Invoice 2026-001"
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "text"
+            ],
+            "title": "Heading",
+            "description": "A section heading (h1\u2013h6)."
+        },
+        "headingBlock": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockBase"
+                }
+            ],
+            "properties": {
+                "type": {
+                    "const": "heading",
+                    "type": "string"
+                },
+                "config": {
+                    "$ref": "#/$defs/headingConfig"
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "textProps": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string",
+                    "examples": [
+                        "Thank you for your business."
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "text"
+            ],
+            "title": "Text",
+            "description": "A paragraph of text."
+        },
+        "textBlock": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockBase"
+                }
+            ],
+            "properties": {
+                "type": {
+                    "const": "text",
+                    "type": "string"
+                },
+                "config": {
+                    "$ref": "#/$defs/blockConfig"
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "htmlProps": {
+            "type": "object",
+            "properties": {
+                "html": {
+                    "type": "string",
+                    "examples": [
+                        "<p>Custom HTML</p>"
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "html"
+            ],
+            "title": "HTML",
+            "description": "Raw HTML escape hatch."
+        },
+        "htmlBlock": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockBase"
+                }
+            ],
+            "properties": {
+                "type": {
+                    "const": "html",
+                    "type": "string"
+                },
+                "config": {
+                    "$ref": "#/$defs/blockConfig"
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "imageConfig": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockConfig"
+                }
+            ],
+            "properties": {
+                "maxHeight": {
+                    "type": "integer",
+                    "title": "Maximum height",
+                    "description": "Maximum rendered image height in pixels.",
+                    "minimum": 1,
+                    "default": 60
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "imageProps": {
+            "type": "object",
+            "properties": {
+                "src": {
+                    "type": "string",
+                    "examples": [
+                        "https://placehold.co/200x80"
+                    ]
+                },
+                "alt": {
+                    "type": "string",
+                    "examples": [
+                        "Logo"
+                    ],
+                    "default": ""
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "src"
+            ],
+            "title": "Image"
+        },
+        "imageBlock": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockBase"
+                }
+            ],
+            "properties": {
+                "type": {
+                    "const": "image",
+                    "type": "string"
+                },
+                "config": {
+                    "$ref": "#/$defs/imageConfig"
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "spacerConfig": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockConfig"
+                }
+            ],
+            "properties": {
+                "height": {
+                    "type": "integer",
+                    "title": "Height",
+                    "description": "Spacer height in millimetres.",
+                    "minimum": 0,
+                    "default": 5
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "spacerProps": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false,
+            "title": "Spacer",
+            "description": "Vertical spacing."
+        },
+        "spacerBlock": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockBase"
+                }
+            ],
+            "properties": {
+                "type": {
+                    "const": "spacer",
+                    "type": "string"
+                },
+                "config": {
+                    "$ref": "#/$defs/spacerConfig"
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "dividerConfig": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockConfig"
+                }
+            ],
+            "properties": {
+                "thickness": {
+                    "type": "integer",
+                    "title": "Thickness",
+                    "description": "Line thickness in points.",
+                    "default": 1
+                },
+                "lineColor": {
+                    "type": "string",
+                    "title": "Line color",
+                    "description": "Hex color used for the divider line.",
+                    "pattern": "^#[0-9A-Fa-f]{3,8}$",
+                    "default": "#d1d5db"
+                },
+                "style": {
+                    "type": "string",
+                    "title": "Line style",
+                    "description": "CSS border style used for the divider line.",
+                    "default": "solid"
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "dividerProps": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false,
+            "title": "Divider",
+            "description": "A horizontal rule."
+        },
+        "dividerBlock": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockBase"
+                }
+            ],
+            "properties": {
+                "type": {
+                    "const": "divider",
+                    "type": "string"
+                },
+                "config": {
+                    "$ref": "#/$defs/dividerConfig"
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "keyValueConfig": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockConfig"
+                }
+            ],
+            "properties": {
+                "labelWidth": {
+                    "type": "string",
+                    "title": "Label width",
+                    "description": "CSS width for the first column containing labels.",
+                    "default": "30mm"
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "keyValueProps": {
+            "type": "object",
+            "properties": {
+                "entries": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "label": {
+                                "type": "string",
+                                "examples": [
+                                    "Label"
+                                ]
+                            },
+                            "value": {
+                                "type": "string",
+                                "examples": [
+                                    "Value"
+                                ]
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "label",
+                            "value"
+                        ]
+                    },
+                    "examples": [
+                        [
+                            {
+                                "label": "Label",
+                                "value": "Value"
+                            }
+                        ]
+                    ],
+                    "default": []
+                }
+            },
+            "additionalProperties": false,
+            "title": "Key / Value"
+        },
+        "keyValueBlock": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockBase"
+                }
+            ],
+            "properties": {
+                "type": {
+                    "const": "key-value",
+                    "type": "string"
+                },
+                "config": {
+                    "$ref": "#/$defs/keyValueConfig"
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "tableConfig": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockConfig"
+                }
+            ],
+            "properties": {
+                "columnAlignments": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "type": "string"
+                    },
+                    "title": "Column alignments",
+                    "description": "Text alignment per table column, ordered from left to right."
+                },
+                "columnWidths": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "type": [
+                            "integer",
+                            "string"
+                        ]
+                    },
+                    "title": "Column widths",
+                    "description": "Column widths as millimetres or CSS width values, ordered from left to right."
+                },
+                "style": {
+                    "type": "string",
+                    "title": "Style",
+                    "description": "Visual table style preset.",
+                    "default": "striped"
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "tableProps": {
+            "type": "object",
+            "properties": {
+                "headers": {
+                    "type": "array",
+                    "examples": [
+                        [
+                            "Column A",
+                            "Column B"
+                        ]
+                    ]
+                },
+                "rows": {
+                    "type": "array",
+                    "examples": [
+                        [
+                            [
+                                "A1",
+                                "B1"
+                            ],
+                            [
+                                "A2",
+                                "B2"
+                            ]
+                        ]
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "headers",
+                "rows"
+            ],
+            "title": "Table"
+        },
+        "tableBlock": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockBase"
+                }
+            ],
+            "properties": {
+                "type": {
+                    "const": "table",
+                    "type": "string"
+                },
+                "config": {
+                    "$ref": "#/$defs/tableConfig"
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "row": {
+            "type": "object",
+            "required": [
+                "blocks"
+            ],
+            "properties": {
+                "blocks": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/$defs/block"
+                    }
+                },
+                "gap": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "columnWidths": {
+                    "type": "array",
+                    "items": {
+                        "type": [
+                            "integer",
+                            "string"
+                        ]
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "block": {
+            "oneOf": [
+                {
+                    "$ref": "#/$defs/headingBlock"
+                },
+                {
+                    "$ref": "#/$defs/textBlock"
+                },
+                {
+                    "$ref": "#/$defs/htmlBlock"
+                },
+                {
+                    "$ref": "#/$defs/imageBlock"
+                },
+                {
+                    "$ref": "#/$defs/spacerBlock"
+                },
+                {
+                    "$ref": "#/$defs/dividerBlock"
+                },
+                {
+                    "$ref": "#/$defs/keyValueBlock"
+                },
+                {
+                    "$ref": "#/$defs/tableBlock"
+                }
+            ]
+        }
+    },
+    "examples": [
+        {
+            "title": "Invoice",
+            "version": 1,
+            "config": {
+                "page": {
+                    "format": "A4",
+                    "locale": "de_DE",
+                    "margins": {
+                        "top": 20,
+                        "right": 20,
+                        "bottom": 20,
+                        "left": 25
+                    },
+                    "pageNumbers": {
+                        "enabled": true,
+                        "position": "center"
+                    }
+                },
+                "typography": {
+                    "family": "Inter",
+                    "size": 10
+                }
+            },
+            "rows": [
+                {
+                    "columnWidths": [
+                        "58%",
+                        "42%"
+                    ],
+                    "blocks": [
+                        {
+                            "type": "heading",
+                            "id": "title",
+                            "config": {
+                                "level": 1
+                            }
+                        },
+                        {
+                            "type": "key-value",
+                            "id": "invoice-meta",
+                            "config": {
+                                "align": "right"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "columnWidths": [
+                        "50%",
+                        "50%"
+                    ],
+                    "blocks": [
+                        {
+                            "type": "key-value",
+                            "id": "seller"
+                        },
+                        {
+                            "type": "key-value",
+                            "id": "buyer"
+                        }
+                    ]
+                },
+                {
+                    "blocks": [
+                        {
+                            "type": "divider",
+                            "id": "address-rule"
+                        }
+                    ]
+                },
+                {
+                    "blocks": [
+                        {
+                            "type": "table",
+                            "id": "items",
+                            "config": {
+                                "style": "striped",
+                                "columnAlignments": [
+                                    "center",
+                                    "left",
+                                    "right",
+                                    "right",
+                                    "right",
+                                    "right"
+                                ],
+                                "columnWidths": [
+                                    "7%",
+                                    "38%",
+                                    "12%",
+                                    "16%",
+                                    "11%",
+                                    "16%"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "columnWidths": [
+                        "54%",
+                        "46%"
+                    ],
+                    "blocks": [
+                        {
+                            "type": "table",
+                            "id": "vat-breakdown",
+                            "config": {
+                                "style": "minimal",
+                                "columnAlignments": [
+                                    "left",
+                                    "right",
+                                    "right",
+                                    "right"
+                                ]
+                            }
+                        },
+                        {
+                            "type": "key-value",
+                            "id": "totals",
+                            "config": {
+                                "align": "right"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "columnWidths": [
+                        "54%",
+                        "46%"
+                    ],
+                    "blocks": [
+                        {
+                            "type": "text",
+                            "id": "notice",
+                            "config": {
+                                "spacing": {
+                                    "top": 4
+                                }
+                            }
+                        },
+                        {
+                            "type": "key-value",
+                            "id": "payment",
+                            "config": {
+                                "align": "right"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "blocks": [
+                        {
+                            "type": "divider",
+                            "id": "footer-rule"
+                        }
+                    ]
+                },
+                {
+                    "blocks": [
+                        {
+                            "type": "text",
+                            "id": "footer"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

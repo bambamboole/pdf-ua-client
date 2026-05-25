@@ -84,7 +84,8 @@ export default function TemplateBuilder({
   }, []);
 
   const blockData = useCallback(
-    (type: string): Json => exampleFromSchema(getBlockSubschemas(schema, type).props, schema) as Json,
+    (type: string): Json =>
+      exampleFromSchema(getBlockSubschemas(schema, type).props, schema) as Json,
     [schema],
   );
 

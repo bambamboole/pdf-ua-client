@@ -3,7 +3,7 @@ import Form from "@rjsf/core";
 import { customizeValidator } from "@rjsf/validator-ajv8";
 import Ajv2020 from "ajv/dist/2020";
 import type { EditorBlock, Json, JsonSchema } from "./types";
-import { getBlockConfigSchema, getTemplateConfigSchema, humanizeType } from "./lib/schema";
+import { getBlockConfigSchema, getBlockTitle, getTemplateConfigSchema } from "./lib/schema";
 import { rjsfTemplates, rjsfWidgets } from "./rjsf/templates";
 
 const validator = customizeValidator({ AjvClass: Ajv2020 });
@@ -82,7 +82,7 @@ export default function Inspector({
           onBlur={(e) => onUpdateBlockId(block.uid, e.target.value)}
         />
         <p className="mt-1 text-xs text-gray-400">
-          {humanizeType(block.type)} — data key for injection
+          {getBlockTitle(schema, block.type)} — data key for injection
         </p>
       </div>
       <Collapsible title="Config">

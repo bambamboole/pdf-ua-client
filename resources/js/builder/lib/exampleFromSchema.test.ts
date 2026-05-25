@@ -12,7 +12,10 @@ describe("exampleFromSchema", () => {
     expect(exampleFromSchema({ type: "integer", default: 2 }, root)).toBe(2);
   });
   it("builds an object from property examples", () => {
-    const s: JsonSchema = { type: "object", properties: { text: { type: "string", examples: ["T"] } } };
+    const s: JsonSchema = {
+      type: "object",
+      properties: { text: { type: "string", examples: ["T"] } },
+    };
     expect(exampleFromSchema(s, root)).toEqual({ text: "T" });
   });
   it("builds a one-item array from item examples (key-value style)", () => {
@@ -21,19 +24,32 @@ describe("exampleFromSchema", () => {
       properties: {
         entries: {
           type: "array",
-          items: { type: "object", properties: { label: { type: "string", examples: ["L"] }, value: { type: "string", examples: ["V"] } } },
+          items: {
+            type: "object",
+            properties: {
+              label: { type: "string", examples: ["L"] },
+              value: { type: "string", examples: ["V"] },
+            },
+          },
         },
       },
     };
     expect(exampleFromSchema(s, root)).toEqual({ entries: [{ label: "L", value: "V" }] });
   });
   it("uses an array-valued example directly (table headers)", () => {
-    const s: JsonSchema = { type: "object", properties: { headers: { type: "array", examples: [["A", "B"]] } } };
+    const s: JsonSchema = {
+      type: "object",
+      properties: { headers: { type: "array", examples: [["A", "B"]] } },
+    };
     expect(exampleFromSchema(s, root)).toEqual({ headers: ["A", "B"] });
   });
   it("resolves a $ref against the root $defs", () => {
-    const rootWithDefs: JsonSchema = { $defs: { pair: { type: "object", properties: { k: { type: "string", examples: ["x"] } } } } } as JsonSchema;
-    expect(exampleFromSchema({ $ref: "#/$defs/pair" } as JsonSchema, rootWithDefs)).toEqual({ k: "x" });
+    const rootWithDefs: JsonSchema = {
+      $defs: { pair: { type: "object", properties: { k: { type: "string", examples: ["x"] } } } },
+    } as JsonSchema;
+    expect(exampleFromSchema({ $ref: "#/$defs/pair" } as JsonSchema, rootWithDefs)).toEqual({
+      k: "x",
+    });
   });
   it("type-based fallbacks", () => {
     expect(exampleFromSchema({ type: "string" }, root)).toBe("");

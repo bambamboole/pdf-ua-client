@@ -7,7 +7,9 @@ const doc = {
   title: "Invoice",
   version: 1,
   config: { page: { format: "A4" } },
-  rows: [{ blocks: [{ type: "heading", id: "title", config: { level: 1 }, props: { text: "Hi" } }] }],
+  rows: [
+    { blocks: [{ type: "heading", id: "title", config: { level: 1 }, props: { text: "Hi" } }] },
+  ],
 };
 
 describe("listExamples", () => {

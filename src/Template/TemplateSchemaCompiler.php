@@ -96,7 +96,7 @@ final class TemplateSchemaCompiler
             '$defs' => $allDefs === [] ? new stdClass : $allDefs,
         ];
 
-        $examples = $this->examples->all();
+        $examples = array_map(static fn (array $entry): array => $entry['template'], $this->examples->all());
         if ($examples !== []) {
             $schema['examples'] = $examples;
         }

@@ -72,6 +72,11 @@ export function getBlockSubschemas(
   };
 }
 
+export function getBlockTitle(schema: JsonSchema, type: string): string {
+  const props = getBlockSubschemas(schema, type).props as { title?: unknown };
+  return typeof props.title === "string" ? props.title : humanizeType(type);
+}
+
 export function getBlockConfigSchema(schema: JsonSchema, type: string): JsonSchema {
   return getBlockSubschemas(schema, type).config;
 }

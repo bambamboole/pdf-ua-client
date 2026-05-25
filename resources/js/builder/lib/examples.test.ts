@@ -1,35 +1,32 @@
 import { describe, it, expect } from "vitest";
 import { listExamples, loadExample } from "./examples";
 import { toTemplate, toDataMap } from "../state/templateModel";
-import type { JsonSchema } from "../types";
 
-const doc = {
+const entry = {
   title: "Invoice",
-  version: 1,
-  config: { page: { format: "A4" } },
-  rows: [
-    { blocks: [{ type: "heading", id: "title", config: { level: 1 }, props: { text: "Hi" } }] },
-  ],
+  template: {
+    version: 1,
+    config: { page: { format: "A4" } },
+    rows: [{ blocks: [{ type: "heading", id: "title", config: { level: 1 } }] }],
+  },
+  data: { title: { text: "Hi" } },
 };
 
 describe("listExamples", () => {
-  it("lists titled examples, with an index fallback", () => {
-    expect(
-      listExamples({ examples: [doc, { version: 1, config: {}, rows: [] }] } as JsonSchema),
-    ).toEqual([
-      { title: "Invoice", document: doc },
-      { title: "Example 2", document: { version: 1, config: {}, rows: [] } },
+  it("lists titled entries with an index fallback", () => {
+    expect(listExamples([entry, { template: { version: 1, config: {}, rows: [] }, data: {} }])).toEqual([
+      { title: "Invoice", template: entry.template, data: entry.data },
+      { title: "Example 2", template: { version: 1, config: {}, rows: [] }, data: {} },
     ]);
-    expect(listExamples({} as JsonSchema)).toEqual([]);
+    expect(listExamples(undefined)).toEqual([]);
   });
 });
 
 describe("loadExample", () => {
-  it("splits inline props into the data map and strips title/props", () => {
-    const model = loadExample(doc as Record<string, unknown>);
+  it("builds an editor model from template + data", () => {
+    const model = loadExample(entry);
     expect(toDataMap(model)).toEqual({ title: { text: "Hi" } });
     const out = toTemplate(model);
     expect(out.rows[0].blocks[0]).toEqual({ type: "heading", id: "title", config: { level: 1 } });
-    expect(JSON.stringify(out)).not.toContain("Hi");
   });
 });

@@ -7,6 +7,7 @@ import Inspector from "./Inspector";
 import PageCanvas from "./PageCanvas";
 import DataView from "./DataView";
 import { getPageFormat, getBlockTitle, getBlockSubschemas } from "./lib/schema";
+import { listExamples, loadExample } from "./lib/examples";
 import {
   fromTemplate,
   toTemplate,
@@ -23,11 +24,11 @@ import {
   setRowWidths,
 } from "./state/templateModel";
 import { exampleFromSchema } from "./lib/exampleFromSchema";
-import { loadExample } from "./lib/examples";
 import type { DataMap, Json, JsonSchema, Template } from "./types";
 
 interface Props {
   schema: JsonSchema;
+  examples?: unknown;
   initialTemplate: Template;
   initialData?: DataMap;
   renderTemplate: (t: unknown, d: unknown) => Promise<string>;
@@ -41,6 +42,7 @@ function rowIndexById(model: ReturnType<typeof fromTemplate>, rowSortableId: str
 
 export default function TemplateBuilder({
   schema,
+  examples,
   initialTemplate,
   initialData,
   renderTemplate,
@@ -178,10 +180,11 @@ export default function TemplateBuilder({
         <aside className="w-64 shrink-0 overflow-y-auto border-r border-gray-200 bg-gray-50 p-4">
           <BlockPalette
             schema={schema}
+            examples={listExamples(examples)}
             onSelectPage={selectPage}
             onExport={handleExport}
-            onLoadExample={(document) => {
-              setModel(() => loadExample(document));
+            onLoadExample={(entry) => {
+              setModel(() => loadExample(entry));
               setSelectedBlockUid(null);
               setPageSelected(false);
             }}

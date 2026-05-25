@@ -49,3 +49,20 @@ it('injects posted data as runtime data by block id', function (): void {
     $response->assertOk();
     expect($response->json('html'))->toContain('<h1>Injected Heading</h1>');
 });
+
+it('returns 422 when posted data violates the template data contract', function (): void {
+    $response = postJson('/render', [
+        'template' => [
+            'version' => 1,
+            'config' => ['page' => ['format' => 'A4']],
+            'rows' => [
+                ['blocks' => [
+                    ['type' => 'heading', 'id' => 'h', 'config' => ['level' => 1]],
+                ]],
+            ],
+        ],
+        'data' => [],
+    ]);
+
+    $response->assertStatus(422);
+});

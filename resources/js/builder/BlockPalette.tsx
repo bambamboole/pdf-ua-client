@@ -1,7 +1,7 @@
 import { useDraggable } from "@dnd-kit/core";
 import type { JsonSchema } from "./types";
 import { listBlockTypes, getBlockTitle } from "./lib/schema";
-import { listExamples } from "./lib/examples";
+import type { ExampleEntry } from "./lib/examples";
 
 interface PaletteItemProps {
   schema: JsonSchema;
@@ -29,14 +29,19 @@ function PaletteItem({ schema, type }: PaletteItemProps) {
 
 interface Props {
   schema: JsonSchema;
+  examples: ExampleEntry[];
   onSelectPage: () => void;
   onExport: () => void;
-  onLoadExample: (document: Record<string, unknown>) => void;
+  onLoadExample: (entry: ExampleEntry) => void;
 }
 
-export default function BlockPalette({ schema, onSelectPage, onExport, onLoadExample }: Props) {
-  const examples = listExamples(schema);
-
+export default function BlockPalette({
+  schema,
+  examples,
+  onSelectPage,
+  onExport,
+  onLoadExample,
+}: Props) {
   return (
     <div className="flex flex-col gap-3">
       <div>
@@ -56,7 +61,7 @@ export default function BlockPalette({ schema, onSelectPage, onExport, onLoadExa
             <button
               key={ex.title}
               type="button"
-              onClick={() => onLoadExample(ex.document)}
+              onClick={() => onLoadExample(ex)}
               className="w-full rounded border border-gray-200 bg-white px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
             >
               {ex.title}

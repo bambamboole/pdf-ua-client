@@ -4,7 +4,7 @@ import { listExamples } from "@builder/lib/examples";
 import type { DataMap, JsonSchema, Template } from "@builder/types";
 import schema from "./data/schema.json";
 import examples from "./data/examples.json";
-import { renderStub } from "./support/renderStub";
+import { renderPdfStub, renderStub } from "./support/renderStub";
 
 const emptyTemplate: Template = { version: 1, config: {}, rows: [] };
 const firstExample = listExamples(examples)[0];
@@ -35,6 +35,7 @@ export const Empty: Story = {
     initialTemplate: emptyTemplate,
     initialData: {},
     renderTemplate: renderStub,
+    renderPdf: renderPdfStub,
   },
 };
 
@@ -45,5 +46,6 @@ export const Invoice: Story = {
     initialTemplate: (firstExample?.template ?? emptyTemplate) as unknown as Template,
     initialData: (firstExample?.data ?? {}) as DataMap,
     renderTemplate: renderStub,
+    renderPdf: renderPdfStub,
   },
 };

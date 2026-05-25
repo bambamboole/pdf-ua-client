@@ -13,3 +13,7 @@ export function renderStub(template: unknown, _data: unknown): Promise<string> {
     </div>`,
   );
 }
+
+export function renderPdfStub(_template: unknown, _data: unknown): Promise<Blob> {
+  return Promise.reject(new Error("PDF preview requires the PHP backend. This is a static demo."));
+}

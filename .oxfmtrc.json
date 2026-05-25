@@ -1,0 +1,21 @@
+{
+  "ignorePatterns": [
+    "node_modules/**",
+    "vendor/**",
+    "public/build/**",
+    "dist/**",
+    "storage/**",
+    "viewer/**",
+    "workbench/**",
+    "tests/Fixtures/json-schema-2020-12/**",
+    "template.schema.json",
+    "composer.json",
+    "composer.lock",
+    "phpstan.neon.dist",
+    "phpstan-baseline.neon",
+    "pint.json",
+    "testbench.yaml",
+    "rector.php",
+    "*.md"
+  ]
+}

@@ -11,6 +11,8 @@ use Bambamboole\PdfUaClient\Config\SpacingConfig;
 use Bambamboole\PdfUaClient\Contracts\EmitsCss;
 use Bambamboole\PdfUaClient\Enums\Align;
 use Bambamboole\PdfUaClient\Exceptions\DataValidationException;
+use Bambamboole\PdfUaClient\Fonts\FontDefinition;
+use Bambamboole\PdfUaClient\Fonts\FontRegistry;
 use Bambamboole\PdfUaClient\Support\CssRuleEmitter;
 use Bambamboole\PdfUaClient\Support\SchemaAwareNormalizer;
 use Bambamboole\PdfUaClient\Template\BlockInstance;
@@ -23,9 +25,13 @@ final class TemplateRenderer
 {
     private int $blockCounter = 0;
 
+    /** @var array<string, true> */
+    private array $usedFontKeys = [];
+
     public function __construct(
         private readonly BlockHydrator $hydrator,
         private readonly DataSchemaCompiler $dataSchemaCompiler,
+        private readonly ?FontRegistry $fonts = null,
     ) {}
 
     /**
@@ -37,6 +43,7 @@ final class TemplateRenderer
         RenderOptions $options = new RenderOptions,
     ): string {
         $this->blockCounter = 0;
+        $this->usedFontKeys = [];
 
         $this->validateData($template, $runtimeData);
 
@@ -94,7 +101,7 @@ final class TemplateRenderer
         $id = "block-{$this->blockCounter}";
         $body = $hydrated->render();
 
-        foreach (CssRuleEmitter::for($config) as $suffix => $props) {
+        foreach ($this->cssRulesFor($config) as $suffix => $props) {
             $selector = ".{$id}".($suffix !== '' ? " {$suffix}" : '');
             $ctx->css("{$selector} { {$props} }");
         }
@@ -185,8 +192,9 @@ final class TemplateRenderer
             ? 'body { padding: '.$this->marginShorthand($page->margins).'; }'
             : '';
 
-        $bodyTypographyProps = CssRuleEmitter::for($template->config->typography)[''] ?? '';
+        $bodyTypographyProps = $this->cssRulesFor($template->config->typography)[''] ?? '';
         $bodyTypographyBlock = $bodyTypographyProps !== '' ? "body { {$bodyTypographyProps} }" : '';
+        $fontFaces = $this->fontFaceCss();
         $baseCss = 'hr { border: none; }';
 
         return <<<HTML
@@ -198,6 +206,7 @@ final class TemplateRenderer
 <style>
 {$pageBlock}
 {$bodyPadding}
+{$fontFaces}
 {$bodyTypographyBlock}
 {$baseCss}
 {$css}
@@ -221,6 +230,88 @@ HTML;
         }
 
         return $css;
+    }
+
+    /** @return array<string, string> */
+    private function cssRulesFor(?object $config): array
+    {
+        $rules = CssRuleEmitter::for($config);
+
+        foreach ($rules as $suffix => $props) {
+            $rules[$suffix] = $this->resolveRegisteredFontFamilies($props);
+        }
+
+        return $rules;
+    }
+
+    private function resolveRegisteredFontFamilies(string $props): string
+    {
+        if ($this->fonts === null) {
+            return $props;
+        }
+
+        return (string) preg_replace_callback(
+            "/font-family: '([^']+)';/",
+            function (array $matches): string {
+                $key = $matches[1];
+                $font = $this->fonts->get($key);
+
+                if ($font === null) {
+                    return $matches[0];
+                }
+
+                $this->usedFontKeys[$key] = true;
+
+                return "font-family: '{$this->cssString($font->family)}';";
+            },
+            $props,
+        );
+    }
+
+    private function fontFaceCss(): string
+    {
+        if ($this->fonts === null || $this->usedFontKeys === []) {
+            return '';
+        }
+
+        $rules = [];
+        foreach (array_keys($this->usedFontKeys) as $key) {
+            $font = $this->fonts->get($key);
+            if ($font === null || $font->url === null) {
+                continue;
+            }
+
+            $rules[] = $this->fontFaceRule($font);
+        }
+
+        return implode("\n", $rules);
+    }
+
+    private function fontFaceRule(FontDefinition $font): string
+    {
+        $declarations = [
+            "font-family: '{$this->cssString($font->family)}'",
+            "src: url(\"{$this->cssUrl($font->url)}\") format(\"{$this->cssString($font->format)}\")",
+        ];
+
+        if ($font->weight !== null) {
+            $declarations[] = "font-weight: {$font->weight}";
+        }
+
+        $declarations[] = "font-style: {$font->style}";
+        $declarations[] = "font-display: {$font->display}";
+
+        return '@font-face { '.implode('; ', $declarations).'; }';
+    }
+
+    private function cssString(string $value): string
+    {
+        return str_replace(['\\', "'"], ['\\\\', "\\'"], $value);
+    }
+
+    private function cssUrl(string $value): string
+    {
+        return str_replace(['\\', '"', ')'], ['\\\\', '\"', '\)'], $value);
     }
 
     private function marginShorthand(SpacingConfig $margins): string

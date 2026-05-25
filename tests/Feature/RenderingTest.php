@@ -15,6 +15,7 @@ use Bambamboole\PdfUaClient\Blocks\TableBlock;
 use Bambamboole\PdfUaClient\Blocks\TextBlock;
 use Bambamboole\PdfUaClient\Exceptions\DataValidationException;
 use Bambamboole\PdfUaClient\Exceptions\TemplateValidationException;
+use Bambamboole\PdfUaClient\Fonts\FontRegistry;
 use Bambamboole\PdfUaClient\Rendering\RenderOptions;
 use Bambamboole\PdfUaClient\Rendering\TemplateRenderer;
 use Bambamboole\PdfUaClient\Template\DataSchemaCompiler;
@@ -39,9 +40,11 @@ beforeEach(function () {
 
     $reflector = new PropsReflector;
     $this->factory = new TemplateFactory($registry, new TemplateSchemaCompiler($reflector, new ExampleRegistry));
+    $this->fonts = new FontRegistry;
     $this->renderer = new TemplateRenderer(
         new BlockHydrator($registry),
         new DataSchemaCompiler($reflector, $registry, $this->factory),
+        $this->fonts,
     );
 });
 
@@ -127,6 +130,31 @@ it('emits per-block typography as a wrapper-class-scoped CSS rule', function () 
 
     expect($html)->toContain('<div class="block-1"><h2>A</h2></div>');
     expect($html)->toContain(".block-1 { font-family: 'Inter'; font-size: 14pt; }");
+});
+
+it('resolves registered font keys to font face rules and CSS families', function () {
+    $this->fonts->register(
+        key: 'inter',
+        label: 'Inter',
+        family: 'Inter',
+        url: 'https://example.test/inter.woff2',
+        weight: '400 700',
+    );
+
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['format' => 'A4'], 'typography' => ['family' => 'inter', 'size' => 10]],
+        'rows' => [
+            ['blocks' => [['type' => 'heading', 'id' => 'h', 'config' => ['level' => 2, 'typography' => ['family' => 'inter']]]]],
+        ],
+    ]);
+
+    $html = $this->renderer->render($template, ['h' => ['text' => 'A']]);
+
+    expect(substr_count($html, '@font-face'))->toBe(1);
+    expect($html)->toContain("font-family: 'Inter'");
+    expect($html)->toContain('src: url("https://example.test/inter.woff2") format("woff2")');
+    expect($html)->not->toContain("font-family: 'inter'");
 });
 
 it('emits per-block alignment as a wrapper-class-scoped CSS rule', function () {

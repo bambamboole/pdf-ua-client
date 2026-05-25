@@ -225,6 +225,9 @@
                 }
             },
             "additionalProperties": false,
+            "required": [
+                "text"
+            ],
             "title": "Heading",
             "description": "A section heading (h1\u2013h6)."
         },
@@ -238,9 +241,6 @@
                 "type": {
                     "const": "heading",
                     "type": "string"
-                },
-                "props": {
-                    "$ref": "#/$defs/headingProps"
                 },
                 "config": {
                     "$ref": "#/$defs/headingConfig"
@@ -259,6 +259,9 @@
                 }
             },
             "additionalProperties": false,
+            "required": [
+                "text"
+            ],
             "title": "Text",
             "description": "A paragraph of text."
         },
@@ -272,9 +275,6 @@
                 "type": {
                     "const": "text",
                     "type": "string"
-                },
-                "props": {
-                    "$ref": "#/$defs/textProps"
                 },
                 "config": {
                     "$ref": "#/$defs/blockConfig"
@@ -293,6 +293,9 @@
                 }
             },
             "additionalProperties": false,
+            "required": [
+                "html"
+            ],
             "title": "HTML",
             "description": "Raw HTML escape hatch."
         },
@@ -306,9 +309,6 @@
                 "type": {
                     "const": "html",
                     "type": "string"
-                },
-                "props": {
-                    "$ref": "#/$defs/htmlProps"
                 },
                 "config": {
                     "$ref": "#/$defs/blockConfig"
@@ -349,6 +349,9 @@
                 }
             },
             "additionalProperties": false,
+            "required": [
+                "src"
+            ],
             "title": "Image"
         },
         "imageBlock": {
@@ -361,9 +364,6 @@
                 "type": {
                     "const": "image",
                     "type": "string"
-                },
-                "props": {
-                    "$ref": "#/$defs/imageProps"
                 },
                 "config": {
                     "$ref": "#/$defs/imageConfig"
@@ -403,9 +403,6 @@
                 "type": {
                     "const": "spacer",
                     "type": "string"
-                },
-                "props": {
-                    "$ref": "#/$defs/spacerProps"
                 },
                 "config": {
                     "$ref": "#/$defs/spacerConfig"
@@ -454,9 +451,6 @@
                     "const": "divider",
                     "type": "string"
                 },
-                "props": {
-                    "$ref": "#/$defs/dividerProps"
-                },
                 "config": {
                     "$ref": "#/$defs/dividerConfig"
                 }
@@ -498,7 +492,11 @@
                                 ]
                             }
                         },
-                        "additionalProperties": false
+                        "additionalProperties": false,
+                        "required": [
+                            "label",
+                            "value"
+                        ]
                     },
                     "examples": [
                         [
@@ -524,9 +522,6 @@
                 "type": {
                     "const": "key-value",
                     "type": "string"
-                },
-                "props": {
-                    "$ref": "#/$defs/keyValueProps"
                 },
                 "config": {
                     "$ref": "#/$defs/keyValueConfig"
@@ -589,6 +584,10 @@
                 }
             },
             "additionalProperties": false,
+            "required": [
+                "headers",
+                "rows"
+            ],
             "title": "Table"
         },
         "tableBlock": {
@@ -601,9 +600,6 @@
                 "type": {
                     "const": "table",
                     "type": "string"
-                },
-                "props": {
-                    "$ref": "#/$defs/tableProps"
                 },
                 "config": {
                     "$ref": "#/$defs/tableConfig"

@@ -126,3 +126,10 @@ it('accepts deeply nested empty configs', function () {
 
     expect($template->version)->toBe(1);
 });
+
+it('rejects a block that carries inline props', function () {
+    expect(fn () => $this->factory->fromArray([
+        'version' => 1, 'config' => [],
+        'rows' => [['blocks' => [['type' => 'test-fixture', 'props' => ['text' => 'x']]]]],
+    ]))->toThrow(TemplateValidationException::class);
+});

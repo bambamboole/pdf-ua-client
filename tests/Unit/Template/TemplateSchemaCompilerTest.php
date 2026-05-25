@@ -50,8 +50,10 @@ it('composes per-block defs from blockBase via allOf with unevaluatedProperties:
     expect($blockDef['allOf'])->toBe([['$ref' => '#/$defs/blockBase']]);
     expect($blockDef['unevaluatedProperties'])->toBeFalse();
     expect($blockDef['properties']['type'])->toBe(['const' => 'test-fixture', 'type' => 'string']);
-    expect($blockDef['properties']['props'])->toBe(['$ref' => '#/$defs/testFixtureProps']);
+    expect($blockDef['properties'])->not->toHaveKey('props');
     expect($blockDef['properties']['config'])->toBe(['$ref' => '#/$defs/testFixtureBlockConfig']);
+    expect($schema['$defs'])->toHaveKey('testFixtureProps');
+    expect($schema['$defs']['testFixtureProps'])->toHaveKey('properties');
     expect($blockDef)->not->toHaveKey('additionalProperties');
 });
 

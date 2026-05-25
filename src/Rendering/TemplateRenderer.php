@@ -128,7 +128,7 @@ final class TemplateRenderer
 
         match ($config->align) {
             Align::Center => array_push($positioning, 'margin-left: auto', 'margin-right: auto'),
-            Align::Right => $positioning[] = 'margin-left: auto',
+            Align::Right => array_push($positioning, 'margin-left: auto', 'text-align: right'),
             default => null,
         };
 
@@ -195,7 +195,7 @@ final class TemplateRenderer
         $bodyTypographyProps = $this->cssRulesFor($template->config->typography)[''] ?? '';
         $bodyTypographyBlock = $bodyTypographyProps !== '' ? "body { {$bodyTypographyProps} }" : '';
         $fontFaces = $this->fontFaceCss();
-        $baseCss = 'hr { border: none; }';
+        $baseCss = $this->baseCss();
 
         return <<<HTML
 <!DOCTYPE html>
@@ -217,6 +217,26 @@ final class TemplateRenderer
 </body>
 </html>
 HTML;
+    }
+
+    private function baseCss(): string
+    {
+        return <<<'CSS'
+body { color: #111827; line-height: 1.45; }
+p { margin: 0 0 3mm; }
+h1, h2, h3, h4, h5, h6 { margin: 0 0 4mm; line-height: 1.15; color: #111827; }
+hr { border: none; border-top: 1px solid #d1d5db; margin: 5mm 0; }
+.row { width: 100%; border-collapse: collapse; margin: 0 0 4mm; }
+.row > tbody > tr > td, .row > tr > td { vertical-align: top; padding: 0; }
+.key-value { display: inline-table; border-collapse: collapse; text-align: left; }
+.key-value td { padding: 1.1mm 0 1.1mm 3mm; vertical-align: top; border-bottom: 1px solid #e5e7eb; }
+.key-value td:first-child { padding-left: 0; color: #6b7280; font-weight: 600; }
+.key-value td:last-child { color: #111827; font-weight: 500; }
+.data-table { width: 100%; border-collapse: collapse; text-align: left; }
+.data-table th { padding: 2mm 2.4mm; background: #f3f4f6; color: #374151; font-weight: 700; border-bottom: 1px solid #d1d5db; }
+.data-table td { padding: 2mm 2.4mm; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+.data-table tbody tr:last-child td { border-bottom: 1px solid #d1d5db; }
+CSS;
     }
 
     private function printPageCss(PageConfig $page): string

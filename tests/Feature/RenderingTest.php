@@ -218,7 +218,7 @@ it('emits no per-class rule for blocks whose config emits no CSS', function () {
     expect($html)->not->toContain('.block-1 {');
 });
 
-it('emits a hr { border: none; } base rule once per rendered document', function () {
+it('emits base document and table styling once per rendered document', function () {
     $template = $this->factory->fromArray([
         'version' => 1,
         'config' => ['page' => ['format' => 'A4']],
@@ -227,7 +227,9 @@ it('emits a hr { border: none; } base rule once per rendered document', function
 
     $html = $this->renderer->render($template, ['x' => ['text' => 'x']]);
 
-    expect(substr_count((string) $html, 'hr { border: none; }'))->toBe(1);
+    expect(substr_count((string) $html, 'hr { border: none; border-top: 1px solid #d1d5db; margin: 5mm 0; }'))->toBe(1);
+    expect($html)->toContain('.key-value { display: inline-table; border-collapse: collapse; text-align: left; }');
+    expect($html)->toContain('.data-table { width: 100%; border-collapse: collapse; text-align: left; }');
 });
 
 it('emits template typography once on the body and lets CSS inheritance handle the rest', function () {
@@ -292,7 +294,7 @@ it('emits width and centered align as a wrapper-class-scoped positioning rule', 
     expect($html)->toContain('.block-1 { width: 50%; margin-left: auto; margin-right: auto; }');
 });
 
-it('emits right align as a single margin-left: auto declaration', function () {
+it('emits right align as margin-left auto with right-aligned inline content', function () {
     $template = $this->factory->fromArray([
         'version' => 1,
         'config' => ['page' => ['format' => 'A4']],
@@ -307,7 +309,7 @@ it('emits right align as a single margin-left: auto declaration', function () {
 
     $html = $this->renderer->render($template, ['h' => ['text' => 'Right']]);
 
-    expect($html)->toContain('.block-1 { width: 30mm; margin-left: auto; }');
+    expect($html)->toContain('.block-1 { width: 30mm; margin-left: auto; text-align: right; }');
 });
 
 it('emits no positioning rule when width and align are both unset', function () {

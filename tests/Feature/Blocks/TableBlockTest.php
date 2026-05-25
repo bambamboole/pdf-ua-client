@@ -16,7 +16,7 @@ it('renders headers and rows inside a <table>', function () {
 
     $html = (string) $block->render(new TableConfig);
 
-    expect($html)->toContain('<table>');
+    expect($html)->toContain('<table class="data-table">');
     expect($html)->toContain('<thead>');
     expect($html)->toContain('<th>Description</th>');
     expect($html)->toContain('<td>Service</td>');

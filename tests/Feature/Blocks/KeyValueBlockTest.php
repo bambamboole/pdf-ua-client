@@ -14,7 +14,7 @@ it('renders a label/value table with rows for each pair', function () {
 
     $html = (string) $block->render(new KeyValueConfig);
 
-    expect($html)->toContain('<table>');
+    expect($html)->toContain('<table class="key-value">');
     expect($html)->toContain('IBAN');
     expect($html)->toContain('DE89 3704 0044 0532 0130 00');
     expect($html)->toContain('BIC');

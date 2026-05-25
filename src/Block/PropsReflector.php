@@ -15,6 +15,8 @@ use Bambamboole\PdfUaClient\Attributes\Min;
 use Bambamboole\PdfUaClient\Attributes\Pattern;
 use Bambamboole\PdfUaClient\Attributes\Title;
 use Bambamboole\PdfUaClient\Config\BlockConfig;
+use Bambamboole\PdfUaClient\Config\TypographyConfig;
+use Bambamboole\PdfUaClient\Fonts\FontRegistry;
 use Bambamboole\PdfUaClient\Template\SchemaRegistry;
 use InvalidArgumentException;
 use ReflectionClass;
@@ -27,6 +29,8 @@ use stdClass;
 
 final class PropsReflector
 {
+    public function __construct(private readonly ?FontRegistry $fonts = null) {}
+
     /**
      * @param  class-string  $class
      * @return array<string, mixed>
@@ -270,6 +274,7 @@ final class PropsReflector
     {
         $type = $param->getType();
         $schema = $this->schemaForType($type, $param, $registry);
+        $schema = $this->applySpecializedSchema($param, $schema);
 
         foreach ($param->getAttributes(Title::class) as $attr) {
             $schema['title'] = $attr->newInstance()->text;
@@ -314,6 +319,30 @@ final class PropsReflector
         }
 
         return $schema;
+    }
+
+    /**
+     * @param  array<string, mixed>  $schema
+     * @return array<string, mixed>
+     */
+    private function applySpecializedSchema(ReflectionParameter $param, array $schema): array
+    {
+        if (! $this->isTypographyFamilyParameter($param) || $this->fonts === null || $this->fonts->all() === []) {
+            return $schema;
+        }
+
+        $schema['type'] = ['string', 'null'];
+        $fonts = array_values($this->fonts->all());
+        $schema['enum'] = [...array_map(static fn ($font): string => $font->key, $fonts), null];
+        $schema['enumNames'] = [...array_map(static fn ($font): string => $font->label, $fonts), 'Default'];
+
+        return $schema;
+    }
+
+    private function isTypographyFamilyParameter(ReflectionParameter $param): bool
+    {
+        return $param->getDeclaringClass()?->getName() === TypographyConfig::class
+            && $param->getName() === 'family';
     }
 
     /** @return array<string, mixed> */

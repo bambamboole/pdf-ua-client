@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Bambamboole\PdfUaClient\Block\BlockRegistry;
 use Bambamboole\PdfUaClient\Block\PropsReflector;
 use Bambamboole\PdfUaClient\Blocks\TableBlock;
+use Bambamboole\PdfUaClient\Fonts\FontRegistry;
 use Bambamboole\PdfUaClient\Template\ExampleRegistry;
 use Bambamboole\PdfUaClient\Template\TemplateSchemaCompiler;
 use Bambamboole\PdfUaClient\Tests\Fixtures\TestFixtureBlock;
@@ -103,5 +104,24 @@ it('emits renderable array item schemas for table config lists', function () {
     expect($tableConfig['columnWidths'])->toMatchArray([
         'type' => ['array', 'null'],
         'items' => ['type' => ['integer', 'string']],
+    ]);
+});
+
+it('emits registered fonts as select options for typography family', function () {
+    $fonts = new FontRegistry;
+    $fonts->register(
+        key: 'inter',
+        label: 'Inter',
+        family: 'Inter',
+        url: 'https://example.test/inter.woff2',
+    );
+    $compiler = new TemplateSchemaCompiler(new PropsReflector($fonts), new ExampleRegistry);
+
+    $schema = $compiler->compile($this->registry);
+
+    expect($schema['$defs']['typographyConfig']['properties']['family'])->toMatchArray([
+        'type' => ['string', 'null'],
+        'enum' => ['inter', null],
+        'enumNames' => ['Inter', 'Default'],
     ]);
 });

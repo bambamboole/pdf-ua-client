@@ -1,8 +1,17 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import {
+  DndContext,
+  DragOverlay,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
+import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import BlockPalette from "./BlockPalette";
 import EditCanvas from "./EditCanvas";
+import DataView from "./DataView";
 import { getPageFormat, getBlockTitle, getBlockSubschemas } from "./lib/schema";
 import { listExamples, loadExample } from "./lib/examples";
 import { dataSchemaForTemplate } from "./lib/dataSchema";
@@ -22,11 +31,11 @@ import {
   setRowWidths,
 } from "./state/templateModel";
 import { exampleFromSchema } from "./lib/exampleFromSchema";
-import type { DataMap, Json, JsonSchema, Template } from "./types";
+import { useLatest } from "./useLatest";
+import type { DataMap, DragData, EditorModel, Json, JsonSchema, Template } from "./types";
 
 const PageCanvas = lazy(() => import("./PageCanvas"));
 const PdfCanvas = lazy(() => import("./PdfCanvas"));
-const DataView = lazy(() => import("./DataView"));
 const SchemaView = lazy(() => import("./SchemaView"));
 
 type BuilderTab = "build" | "schema" | "html" | "pdf";
@@ -38,17 +47,21 @@ const tabs: Array<{ key: BuilderTab; label: string }> = [
   { key: "pdf", label: "PDF" },
 ];
 
-interface Props {
+export interface TemplateBuilderProps {
   schema: JsonSchema;
   examples?: unknown;
   initialTemplate: Template;
   initialData?: DataMap;
-  renderTemplate: (t: unknown, d: unknown) => Promise<string>;
-  renderPdf: (t: unknown, d: unknown) => Promise<Blob>;
-  onChange?: (t: unknown) => void;
+  renderTemplate: (template: Template, data: DataMap) => Promise<string>;
+  renderPdf: (template: Template, data: DataMap) => Promise<Blob>;
+  onChange?: (template: Template) => void;
 }
 
-function rowIndexById(model: ReturnType<typeof fromTemplate>, rowSortableId: string): number {
+function errorMessage(cause: unknown): string {
+  return cause instanceof Error ? cause.message : String(cause);
+}
+
+function rowIndexById(model: EditorModel, rowSortableId: string): number {
   const uid = rowSortableId.replace(/^row-/, "");
   return model.rows.findIndex((r) => r.uid === uid);
 }
@@ -61,7 +74,7 @@ export default function TemplateBuilder({
   renderTemplate,
   renderPdf,
   onChange,
-}: Props) {
+}: TemplateBuilderProps) {
   const [model, setModel] = useState(() => fromTemplate(initialTemplate, initialData));
   const [selectedBlockUid, setSelectedBlockUid] = useState<string | null>(null);
   const [tab, setTab] = useState<BuilderTab>("build");
@@ -71,10 +84,16 @@ export default function TemplateBuilder({
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pdfDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pdfUrlRef = useRef<string | null>(null);
+  const renderTemplateRef = useLatest(renderTemplate);
+  const renderPdfRef = useLatest(renderPdf);
+  const onChangeRef = useLatest(onChange);
   const template = useMemo(() => toTemplate(model), [model]);
   const data = useMemo(() => toDataMap(model), [model]);
   const dataSchema = useMemo(() => dataSchemaForTemplate(schema, template), [schema, template]);
@@ -90,22 +109,42 @@ export default function TemplateBuilder({
   }, []);
 
   useEffect(() => {
-    if (onChange) {
-      onChange(template);
+    onChangeRef.current?.(template);
+  }, [template, onChangeRef]);
+
+  useEffect(() => {
+    if (tab !== "html") {
+      return;
     }
+
+    let cancelled = false;
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
+
     debounceRef.current = setTimeout(() => {
-      renderTemplate(template, data)
+      renderTemplateRef
+        .current(template, data)
         .then((result) => {
-          setHtml(result);
-          setError(null);
+          if (!cancelled) {
+            setHtml(result);
+            setError(null);
+          }
         })
-        .catch((cause: unknown) => setError(String((cause as Error)?.message ?? cause)));
+        .catch((cause: unknown) => {
+          if (!cancelled) {
+            setError(errorMessage(cause));
+          }
+        });
     }, 300);
-    return () => clearTimeout(debounceRef.current!);
-  }, [template, data, renderTemplate, onChange]);
+
+    return () => {
+      cancelled = true;
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, [tab, template, data, renderTemplateRef]);
 
   useEffect(
     () => () => {
@@ -130,7 +169,8 @@ export default function TemplateBuilder({
     }
 
     pdfDebounceRef.current = setTimeout(() => {
-      renderPdf(template, data)
+      renderPdfRef
+        .current(template, data)
         .then((blob) => {
           if (cancelled) {
             return;
@@ -141,7 +181,7 @@ export default function TemplateBuilder({
         })
         .catch((cause: unknown) => {
           if (!cancelled) {
-            setPdfError(String((cause as Error)?.message ?? cause));
+            setPdfError(errorMessage(cause));
           }
         })
         .finally(() => {
@@ -157,7 +197,7 @@ export default function TemplateBuilder({
         clearTimeout(pdfDebounceRef.current);
       }
     };
-  }, [tab, template, data, renderPdf, replacePdfUrl]);
+  }, [tab, template, data, renderPdfRef, replacePdfUrl]);
 
   const selectBlock = useCallback((uid: string) => setSelectedBlockUid(uid), []);
 
@@ -173,23 +213,26 @@ export default function TemplateBuilder({
       if (!over) {
         return;
       }
-      const a = (active.data.current ?? {}) as { source?: string; type?: string; rowUid?: string };
-      const o = (over.data.current ?? {}) as { source?: string; type?: string; rowUid?: string };
+      const a = active.data.current as DragData | undefined;
+      const o = over.data.current as DragData | undefined;
+      if (!a || !o) {
+        return;
+      }
 
       if (a.source === "palette") {
         if (o.source === "newrow") {
-          setModel((m) => addBlock(m, a.type!, { rowUid: null, data: blockData(a.type!) }));
+          setModel((m) => addBlock(m, a.type, { rowUid: null, data: blockData(a.type) }));
         } else if (o.source === "block") {
           setModel((m) => {
             const found = findBlock(m, String(over.id));
-            return addBlock(m, a.type!, {
+            return addBlock(m, a.type, {
               rowUid: o.rowUid,
               index: found ? found.blockIndex : null,
-              data: blockData(a.type!),
+              data: blockData(a.type),
             });
           });
         } else if (o.source === "row") {
-          setModel((m) => addBlock(m, a.type!, { rowUid: o.rowUid, data: blockData(a.type!) }));
+          setModel((m) => addBlock(m, a.type, { rowUid: o.rowUid, data: blockData(a.type) }));
         }
         return;
       }
@@ -200,21 +243,16 @@ export default function TemplateBuilder({
         } else if (o.source === "block") {
           setModel((m) => {
             const found = findBlock(m, String(over.id));
-            return moveBlock(
-              m,
-              String(active.id),
-              o.rowUid ?? null,
-              found ? found.blockIndex : null,
-            );
+            return moveBlock(m, String(active.id), o.rowUid, found ? found.blockIndex : null);
           });
         } else if (o.source === "row") {
-          setModel((m) => moveBlock(m, String(active.id), o.rowUid ?? null, null));
+          setModel((m) => moveBlock(m, String(active.id), o.rowUid, null));
         }
         return;
       }
 
       if (a.source === "row" && o.source === "row" && active.id !== over.id) {
-        setModel((m) => moveRow(m, a.rowUid!, rowIndexById(m, String(over.id))));
+        setModel((m) => moveRow(m, a.rowUid, rowIndexById(m, String(over.id))));
       }
     },
     [blockData],
@@ -240,8 +278,8 @@ export default function TemplateBuilder({
       sensors={sensors}
       onDragEnd={handleDragEnd}
       onDragStart={(e: DragStartEvent) => {
-        const d = (e.active.data.current ?? {}) as { type?: string };
-        setActiveLabel(d.type ? getBlockTitle(schema, d.type) : "Block");
+        const a = e.active.data.current as DragData | undefined;
+        setActiveLabel(a?.source === "palette" ? getBlockTitle(schema, a.type) : "Block");
       }}
     >
       <div className="template-builder flex h-screen bg-[var(--builder-bg)] text-[var(--builder-ink)]">
@@ -313,13 +351,7 @@ export default function TemplateBuilder({
                       Live
                     </span>
                   </div>
-                  <Suspense
-                    fallback={
-                      <div className="h-24 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-surface)]" />
-                    }
-                  >
-                    <DataView data={data} />
-                  </Suspense>
+                  <DataView data={data} />
                 </section>
               </div>
             ) : tab === "schema" ? (

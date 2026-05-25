@@ -10,6 +10,7 @@ use Bambamboole\PdfUaClient\Attributes\Length;
 use Bambamboole\PdfUaClient\Attributes\Max;
 use Bambamboole\PdfUaClient\Attributes\Min;
 use Bambamboole\PdfUaClient\Attributes\Pattern;
+use Bambamboole\PdfUaClient\Attributes\Title;
 use Bambamboole\PdfUaClient\Block\PropsReflector;
 use Bambamboole\PdfUaClient\Config\BlockConfig;
 use Bambamboole\PdfUaClient\Config\PageConfig;
@@ -59,6 +60,9 @@ final class AttrBlock implements BlockInterface
         #[Pattern('^#[0-9A-Fa-f]{6}$')] public readonly string $hex = '#000000',
         #[Format('email')] public readonly string $email = '',
         #[Description('Vertical spacing in mm')] public readonly int $gap = 0,
+        #[Title('Heading level')]
+        #[Description('Pick 1 (largest) through 6 (smallest).')]
+        public readonly int $headingLevel = 2,
     ) {}
 
     public function render(BlockConfig $config): string
@@ -90,6 +94,12 @@ it('applies #[Length] / #[Pattern] / #[Format] / #[Description]', function () {
     expect($schema['properties']['hex']['pattern'])->toBe('^#[0-9A-Fa-f]{6}$');
     expect($schema['properties']['email']['format'])->toBe('email');
     expect($schema['properties']['gap']['description'])->toBe('Vertical spacing in mm');
+});
+
+it('applies #[Title] alongside #[Description] on the same parameter', function () {
+    $schema = (new PropsReflector)->reflect(AttrBlock::class);
+    expect($schema['properties']['headingLevel']['title'])->toBe('Heading level');
+    expect($schema['properties']['headingLevel']['description'])->toBe('Pick 1 (largest) through 6 (smallest).');
 });
 
 final readonly class Pair

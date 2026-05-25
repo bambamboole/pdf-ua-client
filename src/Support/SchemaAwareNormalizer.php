@@ -36,7 +36,7 @@ final class SchemaAwareNormalizer
                 }
 
                 $variant = self::resolveVariant($branch, $defs);
-                if ($variant !== null && self::discriminatorMatches($variant, (string) $value['type'], $defs)) {
+                if ($variant !== null && self::branchMatchesType($branch, $variant, (string) $value['type'], $defs)) {
                     return self::walk($value, $variant, $defs);
                 }
             }
@@ -96,7 +96,9 @@ final class SchemaAwareNormalizer
             $resolved = self::flattenAllOf($resolved, $defs);
 
             if (isset($resolved['properties']) && is_array($resolved['properties'])) {
-                $properties = $resolved['properties'] + $properties;
+                // Child properties win on key collisions (e.g. a type const overrides
+                // the parent's loose `type: string` schema for that same key).
+                $properties = $properties + $resolved['properties'];
             }
         }
 
@@ -135,14 +137,24 @@ final class SchemaAwareNormalizer
     }
 
     /**
-     * Read the type discriminator from a variant schema, taking allOf
-     * composition into account.
+     * Match a oneOf branch against the runtime `type` value.
      *
+     * Two shapes are supported:
+     *   - inheritance-aware: `{ $ref: <perBlockDef> }` — discriminator comes
+     *     from the referenced def's flattened `properties.type.const`.
+     *   - legacy: `{ if: { properties: { type: { const: ... } } }, then: ... }`.
+     *
+     * @param  array<string, mixed>  $branch
      * @param  array<string, mixed>  $variant
      * @param  array<string, array<string, mixed>>  $defs
      */
-    private static function discriminatorMatches(array $variant, string $type, array $defs): bool
+    private static function branchMatchesType(array $branch, array $variant, string $type, array $defs): bool
     {
+        $legacyConst = $branch['if']['properties']['type']['const'] ?? null;
+        if (is_string($legacyConst)) {
+            return $legacyConst === $type;
+        }
+
         $flattened = self::flattenAllOf($variant, $defs);
         $const = $flattened['properties']['type']['const'] ?? null;
 

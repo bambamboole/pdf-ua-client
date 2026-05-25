@@ -13,8 +13,15 @@ it('renders the builder page with the compiled schema prop', function (): void {
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('Builder')
-            ->where('schema.$defs.block.properties.type.enum', [
-                'heading', 'text', 'html', 'image', 'spacer', 'divider', 'key-value', 'table',
+            ->where('schema.$defs.block.oneOf', [
+                ['$ref' => '#/$defs/headingBlock'],
+                ['$ref' => '#/$defs/textBlock'],
+                ['$ref' => '#/$defs/htmlBlock'],
+                ['$ref' => '#/$defs/imageBlock'],
+                ['$ref' => '#/$defs/spacerBlock'],
+                ['$ref' => '#/$defs/dividerBlock'],
+                ['$ref' => '#/$defs/keyValueBlock'],
+                ['$ref' => '#/$defs/tableBlock'],
             ])
         );
 });

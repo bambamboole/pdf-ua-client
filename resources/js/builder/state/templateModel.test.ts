@@ -42,8 +42,8 @@ describe("fromTemplate", () => {
     expect(m.rows[0].blocks[0].data).toEqual({ text: "Hi" });
     expect(m.rows[0].blocks[0].uid).toBeTruthy();
   });
-  it("seeds default data when the data map lacks an id", () => {
-    expect(fromTemplate(template).rows[0].blocks[0].data).toEqual({ text: "Heading" });
+  it("leaves block data empty when the data map lacks an id", () => {
+    expect(fromTemplate(template).rows[0].blocks[0].data).toEqual({});
   });
 });
 
@@ -65,12 +65,21 @@ describe("toDataMap", () => {
 });
 
 describe("addBlock", () => {
-  it("adds a block with a unique id and default data", () => {
-    const m = addBlock(fromTemplate(template, data), "table", { rowUid: null });
+  it("adds a block with a unique id and the provided data", () => {
+    const m = addBlock(fromTemplate(template, data), "table", {
+      rowUid: null,
+      data: { headers: ["X"], rows: [["1"]] },
+    });
     const added = m.rows[m.rows.length - 1].blocks[0];
     expect(added.type).toBe("table");
     expect(added.id).toBe("table-1");
-    expect(added.data).toHaveProperty("headers");
+    expect(added.data).toEqual({ headers: ["X"], rows: [["1"]] });
+  });
+  it("defaults to empty data when none is provided", () => {
+    const m = addBlock(fromTemplate(template, data), "table", { rowUid: null });
+    const added = m.rows[m.rows.length - 1].blocks[0];
+    expect(added.id).toBe("table-1");
+    expect(added.data).toEqual({});
   });
   it("makes ids unique across the model", () => {
     let m = addBlock(fromTemplate(template, data), "heading", { rowUid: null });

@@ -23,7 +23,8 @@ it('opens block settings inline on the selected block', function (): void {
         ->assertSee('Content')
         ->assertSee('Config')
         ->assertScript('document.querySelector("aside.border-l") === null')
-        ->assertScript('document.querySelector("main [data-inline-block-details][open] [data-inline-block-editor]") !== null');
+        ->assertScript('document.querySelector("main [data-inline-block-details][open] [data-inline-block-editor]") !== null')
+        ->assertScript('document.querySelector("[data-inline-block-editor]")?.getBoundingClientRect().width <= 260');
 });
 
 it('renders the invoice example preview and matches the browser screenshot', function (): void {

@@ -59,6 +59,10 @@
             "npm run fmt"
         ],
         "schema": "@php bin/export-schema.php",
+        "build:storybook-data": [
+            "@php artisan pdf-ua-client:schema-export stories/data/schema.json",
+            "@php artisan pdf-ua-client:examples-export stories/data/examples.json"
+        ],
         "post-autoload-dump": [
             "@clear",
             "@prepare"

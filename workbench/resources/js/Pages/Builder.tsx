@@ -1,5 +1,5 @@
-import TemplateBuilder from '@builder/TemplateBuilder';
-import type { JsonSchema, Template } from '@builder/types';
+import { TemplateBuilder } from '@builder';
+import type { DataMap, JsonSchema, Template } from '@builder';
 
 function xsrfToken(): string {
     const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
@@ -7,7 +7,7 @@ function xsrfToken(): string {
     return match ? decodeURIComponent(match[1]) : '';
 }
 
-async function renderTemplate(template: unknown, data: unknown): Promise<string> {
+async function renderTemplate(template: Template, data: DataMap): Promise<string> {
     const response = await fetch('/render', {
         method: 'POST',
         credentials: 'same-origin',
@@ -28,7 +28,7 @@ async function renderTemplate(template: unknown, data: unknown): Promise<string>
     return payload.html;
 }
 
-async function renderPdf(template: unknown, data: unknown): Promise<Blob> {
+async function renderPdf(template: Template, data: DataMap): Promise<Blob> {
     const response = await fetch('/pdf', {
         method: 'POST',
         credentials: 'same-origin',

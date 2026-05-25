@@ -1,8 +1,10 @@
+import type { DataMap, Template } from "@builder";
+
 function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-export function renderStub(template: unknown, _data: unknown): Promise<string> {
+export function renderStub(template: Template, _data: DataMap): Promise<string> {
   const json = escapeHtml(JSON.stringify(template, null, 2));
 
   return Promise.resolve(
@@ -14,6 +16,6 @@ export function renderStub(template: unknown, _data: unknown): Promise<string> {
   );
 }
 
-export function renderPdfStub(_template: unknown, _data: unknown): Promise<Blob> {
+export function renderPdfStub(_template: Template, _data: DataMap): Promise<Blob> {
   return Promise.reject(new Error("PDF preview requires the PHP backend. This is a static demo."));
 }

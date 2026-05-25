@@ -1,6 +1,6 @@
 import { useDraggable } from "@dnd-kit/core";
 import PageSettingsPanel from "./PageSettingsPanel";
-import type { Json, JsonSchema } from "./types";
+import type { DragData, Json, JsonSchema } from "./types";
 import { listBlockTypes, getBlockTitle } from "./lib/schema";
 import type { ExampleEntry } from "./lib/examples";
 
@@ -12,7 +12,7 @@ interface PaletteItemProps {
 function PaletteItem({ schema, type }: PaletteItemProps) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `palette-${type}`,
-    data: { source: "palette", type },
+    data: { source: "palette", type } satisfies DragData,
   });
 
   return (

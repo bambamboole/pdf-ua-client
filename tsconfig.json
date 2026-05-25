@@ -13,6 +13,7 @@
     "types": ["vite/client"],
     "baseUrl": ".",
     "paths": {
+      "@builder": ["resources/js/builder/index.ts"],
       "@builder/*": ["resources/js/builder/*"]
     }
   },

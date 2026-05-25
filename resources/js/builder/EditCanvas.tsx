@@ -13,24 +13,10 @@ import { getBlockTitle } from "./lib/schema";
 import BlockDataSummary from "./BlockDataSummary";
 import ColumnResizer from "./ColumnResizer";
 import InlineBlockEditor from "./InlineBlockEditor";
-import type { EditorBlock, Json, JsonSchema } from "./types";
-
-interface CanvasBlock {
-  uid: string;
-  id: string;
-  type: string;
-  config: Record<string, unknown>;
-  data: Record<string, unknown>;
-}
-
-interface CanvasRow {
-  uid: string;
-  gap: number | null;
-  blocks: CanvasBlock[];
-}
+import type { DragData, EditorBlock, EditorRow, Json, JsonSchema } from "./types";
 
 interface Props {
-  model: { rows: CanvasRow[] };
+  model: { rows: EditorRow[] };
   schema: JsonSchema;
   format: string;
   selectedBlockUid: string | null;
@@ -43,7 +29,7 @@ interface Props {
 }
 
 interface BlockBoxProps {
-  block: CanvasBlock;
+  block: EditorBlock;
   rowUid: string;
   selected: boolean;
   initiallyOpen: boolean;
@@ -70,7 +56,7 @@ function BlockBox({
   const [settingsOpen, setSettingsOpen] = useState(initiallyOpen);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: block.uid,
-    data: { source: "block", rowUid },
+    data: { source: "block", rowUid } satisfies DragData,
   });
   const style = { transform: CSS.Transform.toString(transform), transition, ...layoutStyle };
 
@@ -78,8 +64,6 @@ function BlockBox({
     <div
       ref={setNodeRef}
       style={style}
-      onClick={() => onSelect(block.uid)}
-      onPointerDown={() => onSelect(block.uid)}
       onPointerDownCapture={() => onSelect(block.uid)}
       data-builder-block
       className={`${layoutStyle ? "" : "flex-1"} rounded-[var(--builder-radius)] border bg-[var(--builder-panel)] px-3 py-2 text-sm shadow-sm transition ${selected ? "border-[var(--builder-accent)] ring-2 ring-[var(--builder-accent-soft)]" : "border-[var(--builder-stroke)] hover:border-[var(--builder-stroke-strong)]"} ${isDragging ? "opacity-50" : ""}`}
@@ -113,7 +97,7 @@ function BlockBox({
           </button>
         </span>
       </div>
-      <BlockDataSummary block={block as unknown as EditorBlock} />
+      <BlockDataSummary block={block} />
       <details
         data-inline-block-details
         open={settingsOpen}
@@ -137,7 +121,7 @@ function BlockBox({
           More
         </summary>
         <InlineBlockEditor
-          block={block as unknown as EditorBlock}
+          block={block}
           schema={schema}
           onUpdateBlockId={onUpdateBlockId}
           onUpdateBlockConfig={onUpdateBlockConfig}
@@ -148,7 +132,7 @@ function BlockBox({
 }
 
 interface RowProps {
-  row: CanvasRow;
+  row: EditorRow;
   rowIndex: number;
   schema: JsonSchema;
   selectedBlockUid: string | null;
@@ -174,11 +158,11 @@ function Row({
 }: RowProps) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: `row-${row.uid}`,
-    data: { source: "row", rowUid: row.uid },
+    data: { source: "row", rowUid: row.uid } satisfies DragData,
   });
   const { setNodeRef: setDropRef } = useDroppable({
     id: `rowdrop-${row.uid}`,
-    data: { source: "row", rowUid: row.uid },
+    data: { source: "row", rowUid: row.uid } satisfies DragData,
   });
   const style = { transform: CSS.Transform.toString(transform), transition };
   const containerRef = useRef<HTMLDivElement>(null);
@@ -252,7 +236,10 @@ function Row({
 }
 
 function NewRowZone() {
-  const { setNodeRef, isOver } = useDroppable({ id: "new-row", data: { source: "newrow" } });
+  const { setNodeRef, isOver } = useDroppable({
+    id: "new-row",
+    data: { source: "newrow" } satisfies DragData,
+  });
   return (
     <div
       ref={setNodeRef}

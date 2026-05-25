@@ -1,13 +1,3 @@
-export type BlockType =
-  | "heading"
-  | "text"
-  | "html"
-  | "image"
-  | "spacer"
-  | "divider"
-  | "key-value"
-  | "table";
-
 export type Json = Record<string, unknown>;
 export type JsonSchema = Record<string, unknown>;
 
@@ -30,7 +20,7 @@ export interface Template {
 export interface EditorBlock {
   uid: string;
   id: string;
-  type: BlockType;
+  type: string;
   config: Json;
   data: Json;
 }
@@ -46,3 +36,9 @@ export interface EditorModel {
 }
 
 export type DataMap = Record<string, Json>;
+
+export type DragData =
+  | { source: "palette"; type: string }
+  | { source: "block"; rowUid: string }
+  | { source: "row"; rowUid: string }
+  | { source: "newrow" };

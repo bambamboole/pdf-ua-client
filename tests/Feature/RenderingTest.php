@@ -326,16 +326,16 @@ it('emits no positioning rule when width and align are both unset', function () 
     expect($html)->not->toContain('.block-1 {');
 });
 
-it('emits @page page-number rule only when pageNumbers is configured', function () {
+it('emits @page page-number rule only when page numbers are enabled', function () {
     $without = $this->factory->fromArray([
         'version' => 1,
-        'config' => ['page' => ['format' => 'A4']],
+        'config' => ['page' => ['format' => 'A4', 'pageNumbers' => ['enabled' => false, 'position' => 'right']]],
         'rows' => [['blocks' => [['type' => 'text', 'id' => 'x']]]],
     ]);
 
     $with = $this->factory->fromArray([
         'version' => 1,
-        'config' => ['page' => ['format' => 'A4', 'pageNumbers' => ['position' => 'right']]],
+        'config' => ['page' => ['format' => 'A4', 'pageNumbers' => ['enabled' => true, 'position' => 'right']]],
         'rows' => [['blocks' => [['type' => 'text', 'id' => 'x']]]],
     ]);
 

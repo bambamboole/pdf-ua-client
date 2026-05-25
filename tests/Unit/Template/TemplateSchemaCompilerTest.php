@@ -66,13 +66,54 @@ it('exposes templateConfig via a $defs entry with shared $refs', function () {
     expect($templateConfig['properties'])->toHaveKeys(['page', 'typography']);
     expect($templateConfig)->not->toHaveKey('required');
 
-    expect($templateConfig['properties']['page'])->toBe(['$ref' => '#/$defs/pageConfig']);
+    expect($templateConfig['properties']['page'])->toMatchArray(['$ref' => '#/$defs/pageConfig']);
     expect($templateConfig['properties']['typography'])->toHaveKey('$ref');
-    expect($schema['$defs'])->toHaveKeys(['pageConfig', 'typographyConfig', 'spacingConfig']);
+    expect($schema['$defs'])->toHaveKeys(['pageConfig', 'typographyConfig', 'spacingConfig', 'pageNumbersConfig']);
 
     $pageConfig = $schema['$defs']['pageConfig'];
     expect($pageConfig['properties'])->toHaveKeys(['format', 'locale', 'margins', 'pageNumbers']);
-    expect($pageConfig['properties']['margins'])->toBe(['$ref' => '#/$defs/spacingConfig']);
+    expect($pageConfig['properties']['margins'])->toMatchArray([
+        '$ref' => '#/$defs/spacingConfig',
+        'title' => 'Margins',
+        'description' => 'Page margins in millimetres.',
+    ]);
+    expect($pageConfig['properties']['pageNumbers'])->toMatchArray([
+        '$ref' => '#/$defs/pageNumbersConfig',
+        'title' => 'Pagination',
+        'description' => 'Page number display settings.',
+    ]);
+});
+
+it('emits titles and descriptions for shared config properties', function () {
+    $schema = $this->compiler->compile($this->registry);
+
+    expect($schema['$defs']['spacingConfig']['properties']['top'])->toMatchArray([
+        'title' => 'Top',
+        'description' => 'Top spacing in millimetres.',
+        'minimum' => 0,
+    ]);
+    expect($schema['$defs']['blockConfig']['properties']['align'])->toMatchArray([
+        'title' => 'Alignment',
+        'description' => 'Horizontal placement of this block within its row cell.',
+    ]);
+});
+
+it('emits pagination enabled and enum position settings', function () {
+    $schema = $this->compiler->compile($this->registry);
+
+    expect($schema['$defs']['pageNumbersConfig']['properties']['enabled'])->toMatchArray([
+        'type' => 'boolean',
+        'title' => 'Enabled',
+        'description' => 'Show page numbers in the page footer.',
+        'default' => false,
+    ]);
+    expect($schema['$defs']['pageNumbersConfig']['properties']['position'])->toMatchArray([
+        'type' => 'string',
+        'enum' => ['left', 'center', 'right'],
+        'title' => 'Position',
+        'description' => 'Footer position used for page numbers.',
+        'default' => 'center',
+    ]);
 });
 
 it('composes a per-block config schema from its parent via allOf and only emits own properties', function () {

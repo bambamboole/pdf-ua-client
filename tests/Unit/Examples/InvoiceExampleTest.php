@@ -14,7 +14,7 @@ it('models a complete realistic invoice document structure', function () {
         'format' => 'A4',
         'locale' => 'de_DE',
         'margins' => ['top' => 20, 'right' => 20, 'bottom' => 20, 'left' => 25],
-        'pageNumbers' => ['position' => 'center'],
+        'pageNumbers' => ['enabled' => true, 'position' => 'center'],
     ]);
     expect($document['config']['typography'])->toBe(['family' => 'Inter', 'size' => 10]);
     expect($blocks->keys()->all())->toContain(

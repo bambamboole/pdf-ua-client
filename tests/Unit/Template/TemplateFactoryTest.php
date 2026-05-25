@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Bambamboole\PdfUaClient\Block\BlockRegistry;
 use Bambamboole\PdfUaClient\Block\PropsReflector;
 use Bambamboole\PdfUaClient\Enums\PageFormat;
+use Bambamboole\PdfUaClient\Enums\PageNumberPosition;
 use Bambamboole\PdfUaClient\Exceptions\TemplateValidationException;
 use Bambamboole\PdfUaClient\Template\ExampleRegistry;
 use Bambamboole\PdfUaClient\Template\Template;
@@ -51,7 +52,19 @@ it('applies defaults for omitted page fields', function () {
     expect($template->config->page->locale)->toBe('de_DE');
     expect($template->config->page->margins->top)->toBe(20);
     expect($template->config->page->margins->left)->toBe(25);
-    expect($template->config->page->pageNumbers)->toBeNull();
+    expect($template->config->page->pageNumbers->enabled)->toBeFalse();
+    expect($template->config->page->pageNumbers->position)->toBe(PageNumberPosition::Center);
+});
+
+it('builds page number settings with a backed enum position', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['pageNumbers' => ['enabled' => true, 'position' => 'right']]],
+        'rows' => [],
+    ]);
+
+    expect($template->config->page->pageNumbers->enabled)->toBeTrue();
+    expect($template->config->page->pageNumbers->position)->toBe(PageNumberPosition::Right);
 });
 
 it('parses nested per-block config', function () {

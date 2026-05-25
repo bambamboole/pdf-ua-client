@@ -244,8 +244,8 @@ CSS;
         $margin = $this->marginShorthand($page->margins);
         $css = "@page { size: {$page->format->value}; margin: {$margin}; }";
 
-        if ($page->pageNumbers !== null) {
-            $position = $page->pageNumbers->position;
+        if ($page->pageNumbers->enabled) {
+            $position = $page->pageNumbers->position->value;
             $css .= " @page { @bottom-{$position} { content: counter(page) \" / \" counter(pages); font-size: 8pt; color: #9ca3af; } }";
         }
 

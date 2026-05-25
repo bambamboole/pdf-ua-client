@@ -48,14 +48,26 @@ export function BaseInputTemplate(props: BaseInputTemplateProps) {
 }
 
 export function FieldTemplate(props: FieldTemplateProps) {
-  const { id, classNames, style, label, help, required, description, errors, children, hidden } =
-    props;
+  const {
+    id,
+    classNames,
+    style,
+    label,
+    help,
+    required,
+    description,
+    errors,
+    children,
+    hidden,
+    schema,
+  } = props;
+  const rendersOwnLegend = schema.type === "object";
   if (hidden) {
     return <div className="hidden">{children}</div>;
   }
   return (
     <div className={`mb-3 ${classNames ?? ""}`} style={style}>
-      {label && (
+      {label && !rendersOwnLegend && (
         <label htmlFor={id} className="mb-1 block text-xs font-medium text-gray-600">
           {label}
           {required ? <span className="text-red-500"> *</span> : null}

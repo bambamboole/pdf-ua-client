@@ -17,6 +17,7 @@ use Bambamboole\PdfUaClient\Blocks\TextBlock;
 use Bambamboole\PdfUaClient\Console\ExportDataSchemaCommand;
 use Bambamboole\PdfUaClient\Console\ExportSchemaCommand;
 use Bambamboole\PdfUaClient\Examples\InvoiceExample;
+use Bambamboole\PdfUaClient\Fonts\FontRegistry;
 use Bambamboole\PdfUaClient\Http\PdfApiClient;
 use Bambamboole\PdfUaClient\Rendering\TemplateRenderer;
 use Bambamboole\PdfUaClient\Template\DataSchemaCompiler;
@@ -45,7 +46,15 @@ final class PdfUaClientServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
-        $this->app->singleton(PropsReflector::class);
+        $this->app->singleton(FontRegistry::class, function (Container $app): FontRegistry {
+            $config = $app->make('config');
+
+            return FontRegistry::fromConfig((array) $config->get('pdf-ua-client.fonts', []));
+        });
+
+        $this->app->singleton(PropsReflector::class, fn (Container $app): PropsReflector => new PropsReflector(
+            $app->make(FontRegistry::class),
+        ));
 
         $this->app->singleton(BlockRegistry::class, function (): BlockRegistry {
             $registry = new BlockRegistry;
@@ -90,6 +99,7 @@ final class PdfUaClientServiceProvider extends PackageServiceProvider
         $this->app->singleton(TemplateRenderer::class, fn (Container $app): TemplateRenderer => new TemplateRenderer(
             $app->make(BlockHydrator::class),
             $app->make(DataSchemaCompiler::class),
+            $app->make(FontRegistry::class),
         ));
 
         $this->app->singleton(PdfApiClient::class, function (Container $app): PdfApiClient {

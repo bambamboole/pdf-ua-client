@@ -80,6 +80,8 @@ final readonly class TemplateFactory
             format: $format,
             locale: (string) ($data['locale'] ?? 'de_DE'),
             margins: $margins,
+            foldMarks: (bool) ($data['foldMarks'] ?? false),
+            punchMarks: (bool) ($data['punchMarks'] ?? false),
             pageNumbers: $pageNumbers,
             footer: $footer,
         );

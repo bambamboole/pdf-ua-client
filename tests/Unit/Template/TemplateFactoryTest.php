@@ -56,6 +56,8 @@ it('applies defaults for omitted page fields', function () {
     expect($template->config->page->margins->left)->toBe(25);
     expect($template->config->page->pageNumbers->enabled)->toBeFalse();
     expect($template->config->page->pageNumbers->position)->toBe(PageNumberPosition::Center);
+    expect($template->config->page->foldMarks)->toBeFalse();
+    expect($template->config->page->punchMarks)->toBeFalse();
 });
 
 it('builds page number settings with a backed enum position', function () {
@@ -67,6 +69,17 @@ it('builds page number settings with a backed enum position', function () {
 
     expect($template->config->page->pageNumbers->enabled)->toBeTrue();
     expect($template->config->page->pageNumbers->position)->toBe(PageNumberPosition::Right);
+});
+
+it('builds page mark settings', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['foldMarks' => true, 'punchMarks' => true]],
+        'rows' => [],
+    ]);
+
+    expect($template->config->page->foldMarks)->toBeTrue();
+    expect($template->config->page->punchMarks)->toBeTrue();
 });
 
 it('builds footer rows and footer page numbers', function () {

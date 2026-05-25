@@ -72,7 +72,7 @@ it('exposes templateConfig via a $defs entry with shared $refs', function () {
     expect($schema['$defs'])->toHaveKeys(['pageConfig', 'pageFooterConfig', 'typographyConfig', 'spacingConfig', 'pageNumbersConfig']);
 
     $pageConfig = $schema['$defs']['pageConfig'];
-    expect($pageConfig['properties'])->toHaveKeys(['format', 'locale', 'margins', 'pageNumbers', 'footer']);
+    expect($pageConfig['properties'])->toHaveKeys(['format', 'locale', 'margins', 'pageNumbers', 'footer', 'foldMarks', 'punchMarks']);
     expect($pageConfig['properties']['margins'])->toMatchArray([
         '$ref' => '#/$defs/spacingConfig',
         'title' => 'Margins',
@@ -87,6 +87,18 @@ it('exposes templateConfig via a $defs entry with shared $refs', function () {
         '$ref' => '#/$defs/pageFooterConfig',
         'title' => 'Footer',
         'description' => 'Repeated page footer rows.',
+    ]);
+    expect($pageConfig['properties']['foldMarks'])->toMatchArray([
+        'type' => 'boolean',
+        'title' => 'Fold Marks',
+        'description' => 'Show DIN-style fold marks in the page margin.',
+        'default' => false,
+    ]);
+    expect($pageConfig['properties']['punchMarks'])->toMatchArray([
+        'type' => 'boolean',
+        'title' => 'Punch Marks',
+        'description' => 'Show a center punch mark in the page margin.',
+        'default' => false,
     ]);
     expect($schema['$defs']['pageFooterConfig']['properties']['repeat'])->toMatchArray([
         'type' => 'boolean',

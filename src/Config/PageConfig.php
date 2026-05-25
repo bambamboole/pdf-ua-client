@@ -19,6 +19,12 @@ final readonly class PageConfig
         #[Title('Margins')]
         #[Description('Page margins in millimetres.')]
         public SpacingConfig $margins = new SpacingConfig(20, 20, 20, 25),
+        #[Title('Fold Marks')]
+        #[Description('Show DIN-style fold marks in the page margin.')]
+        public bool $foldMarks = false,
+        #[Title('Punch Marks')]
+        #[Description('Show a center punch mark in the page margin.')]
+        public bool $punchMarks = false,
         #[Title('Pagination')]
         #[Description('Page number display settings.')]
         public PageNumbersConfig $pageNumbers = new PageNumbersConfig,

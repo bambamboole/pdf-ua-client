@@ -23,7 +23,7 @@ final class InvoiceExample
             'rows' => [
                 [
                     'blocks' => [
-                        ['type' => 'heading', 'id' => 'title', 'config' => ['level' => 1, 'width' => '58%']],
+                        ['type' => 'image', 'id' => 'logo', 'config' => ['width' => '58%', 'maxHeight' => 28]],
                         ['type' => 'key-value', 'id' => 'invoice-meta', 'config' => ['width' => '42%', 'align' => 'right']],
                     ],
                 ],
@@ -69,7 +69,10 @@ final class InvoiceExample
     public static function data(): array
     {
         return [
-            'title' => ['text' => 'Invoice RE-2026-001234'],
+            'logo' => [
+                'src' => 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNjAiIGhlaWdodD0iNzIiIHZpZXdCb3g9IjAgMCAyNjAgNzIiPjx0ZXh0IHg9IjAiIHk9IjQyIiBmaWxsPSIjMTExODI3IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI3MDAiPlBERiBVQSBLaXQ8L3RleHQ+PC9zdmc+',
+                'alt' => 'PDF UA Kit GmbH logo',
+            ],
             'invoice-meta' => ['entries' => [
                 ['label' => 'Invoice number', 'value' => 'RE-2026-001234'],
                 ['label' => 'Issue date', 'value' => '2026-02-17'],

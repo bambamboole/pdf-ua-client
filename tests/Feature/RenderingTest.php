@@ -229,7 +229,7 @@ it('emits base document and table styling once per rendered document', function 
     expect(substr_count((string) $html, 'hr { border: none; border-top: 1px solid #d1d5db; margin: 2.5mm 0; }'))->toBe(1);
     expect($html)->toContain('.key-value { display: inline-table; border-collapse: collapse; text-align: left; }');
     expect($html)->toContain('.key-value td { padding: 0.65mm 0 0.65mm 3mm; vertical-align: top; }');
-    expect($html)->toContain('.data-table { width: 100%; border-collapse: collapse; text-align: left; }');
+    expect($html)->toContain('.data-table { width: 100%; border-collapse: collapse; text-align: left; -fs-table-paginate: paginate; }');
 });
 
 it('emits divider style on the hr only', function () {
@@ -361,6 +361,26 @@ it('emits @page page-number rule only when page numbers are enabled', function (
     expect($this->renderer->render($with, ['x' => ['text' => 'x']]))->toContain('@bottom-right');
 });
 
+it('renders fold and punch marks in print mode', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['format' => 'A4', 'foldMarks' => true, 'punchMarks' => true]],
+        'rows' => [['blocks' => [['type' => 'text', 'id' => 'x']]]],
+    ]);
+
+    $printHtml = $this->renderer->render($template, ['x' => ['text' => 'Body']], options: new RenderOptions(mode: 'print'));
+    $previewHtml = $this->renderer->render($template, ['x' => ['text' => 'Body']], options: new RenderOptions(mode: 'preview'));
+
+    expect($printHtml)->toContain('<div class="page-marks" aria-hidden="true"><span class="page-mark page-mark-fold-top"></span><span class="page-mark page-mark-fold-bottom"></span><span class="page-mark page-mark-punch"></span></div>');
+    expect($printHtml)->toContain('@page { @left-top { content: element(pageMarkFoldTop); width: 25mm; } @left-bottom { content: element(pageMarkFoldBottom); width: 25mm; } }');
+    expect($printHtml)->toContain('@page { @left-middle { content: element(pageMarkPunch); width: 25mm; } }');
+    expect($printHtml)->toContain('.page-mark { display: block; width: 5mm; border-top: 0.2mm solid #9ca3af; }');
+    expect($printHtml)->toContain('.page-mark-fold-top { position: running(pageMarkFoldTop); margin-top: 67mm; }');
+    expect($printHtml)->toContain('.page-mark-fold-bottom { position: running(pageMarkFoldBottom); margin-bottom: 85mm; }');
+    expect($printHtml)->toContain('.page-mark-punch { position: running(pageMarkPunch); }');
+    expect($previewHtml)->not->toContain('page-marks');
+});
+
 it('renders repeated footer rows and page numbers in print mode', function () {
     $template = $this->factory->fromArray([
         'version' => 1,
@@ -391,10 +411,13 @@ it('renders repeated footer rows and page numbers in print mode', function () {
 
     expect($html)->toContain('@page { size: A4; margin: 25mm 20mm 28mm 25mm; }');
     expect($html)->toContain('@page { @bottom-center { content: element(pageFooter); } }');
-    expect($html)->toContain('@page { @bottom-right { content: counter(page) " / " counter(pages); font-size: 8pt; color: #9ca3af; vertical-align: bottom; padding-bottom: 4mm; } }');
+    expect($html)->not->toContain('@bottom-right');
+    expect($html)->toContain('.page-footer-repeated::after { content: counter(page) " / " counter(pages); display: block; margin-top: 2mm; padding-right: 2.2mm; text-align: right; font-size: 8pt; color: #9ca3af; }');
     expect($html)->toContain('<footer class="page-footer page-footer-repeated" role="contentinfo">');
     expect($html)->toContain('<p>Confidential</p>');
     expect($html)->toContain('position: running(pageFooter); width: 100%;');
+    expect($html)->toContain('.page-footer-repeated .row > tbody > tr > td:first-child, .page-footer-repeated .row > tr > td:first-child { padding-left: 2.2mm; }');
+    expect($html)->toContain('.page-footer-repeated .row > tbody > tr > td:last-child, .page-footer-repeated .row > tr > td:last-child { padding-right: 2.2mm; }');
 });
 
 it('renders footer rows inline in preview mode', function () {

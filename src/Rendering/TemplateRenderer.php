@@ -232,10 +232,16 @@ final class TemplateRenderer
         $bodyTypographyBlock = $bodyTypographyProps !== '' ? "body { {$bodyTypographyProps} }" : '';
         $fontFaces = $this->fontFaceCss();
         $baseCss = $this->baseCss();
+        $pageMarksCss = $options->mode === 'print'
+            ? $this->pageMarksCss($page)
+            : '';
+        $pageMarksHtml = $options->mode === 'print'
+            ? $this->renderPageMarks($page)
+            : '';
         $hasRepeatedFooter = $options->mode === 'print' && $page->footer->repeat && $page->footer->rows !== [];
         $bodyContent = $hasRepeatedFooter
-            ? $footerHtml."\n".$bodyHtml
-            : $bodyHtml."\n".$footerHtml;
+            ? $pageMarksHtml.$footerHtml."\n".$bodyHtml
+            : $pageMarksHtml.$bodyHtml."\n".$footerHtml;
 
         return <<<HTML
 <!DOCTYPE html>
@@ -249,6 +255,7 @@ final class TemplateRenderer
 {$fontFaces}
 {$bodyTypographyBlock}
 {$baseCss}
+{$pageMarksCss}
 {$css}
 </style>
 </head>
@@ -257,6 +264,41 @@ final class TemplateRenderer
 </body>
 </html>
 HTML;
+    }
+
+    private function renderPageMarks(PageConfig $page): string
+    {
+        $marks = [];
+
+        if ($page->foldMarks) {
+            $marks[] = '<span class="page-mark page-mark-fold-top"></span>';
+            $marks[] = '<span class="page-mark page-mark-fold-bottom"></span>';
+        }
+
+        if ($page->punchMarks) {
+            $marks[] = '<span class="page-mark page-mark-punch"></span>';
+        }
+
+        if ($marks === []) {
+            return '';
+        }
+
+        return '<div class="page-marks" aria-hidden="true">'.implode('', $marks)."</div>\n";
+    }
+
+    private function pageMarksCss(PageConfig $page): string
+    {
+        if (! $page->foldMarks && ! $page->punchMarks) {
+            return '';
+        }
+
+        return <<<'CSS'
+.page-marks { position: absolute; width: 0; height: 0; overflow: visible; }
+.page-mark { display: block; width: 5mm; border-top: 0.2mm solid #9ca3af; }
+.page-mark-fold-top { position: running(pageMarkFoldTop); margin-top: 67mm; }
+.page-mark-fold-bottom { position: running(pageMarkFoldBottom); margin-bottom: 85mm; }
+.page-mark-punch { position: running(pageMarkPunch); }
+CSS;
     }
 
     private function baseCss(): string
@@ -272,13 +314,15 @@ hr { border: none; border-top: 1px solid #d1d5db; margin: 2.5mm 0; }
 .key-value td { padding: 0.65mm 0 0.65mm 3mm; vertical-align: top; }
 .key-value td:first-child { padding-left: 0; color: #6b7280; font-weight: 600; }
 .key-value td:last-child { color: #111827; font-weight: 500; }
-.data-table { width: 100%; border-collapse: collapse; text-align: left; }
+.data-table { width: 100%; border-collapse: collapse; text-align: left; -fs-table-paginate: paginate; }
 .data-table th { padding: 1.6mm 2.2mm; background: #f3f4f6; color: #374151; font-weight: 700; border-bottom: 1px solid #d1d5db; }
 .data-table td { padding: 1.6mm 2.2mm; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
 .data-table tbody tr:last-child td { border-bottom: 1px solid #d1d5db; }
 .page-footer { color: #6b7280; font-size: 8pt; line-height: 1.25; }
 .page-footer .row { margin: 0; }
 .page-footer-repeated { position: running(pageFooter); width: 100%; }
+.page-footer-repeated .row > tbody > tr > td:first-child, .page-footer-repeated .row > tr > td:first-child { padding-left: 2.2mm; }
+.page-footer-repeated .row > tbody > tr > td:last-child, .page-footer-repeated .row > tr > td:last-child { padding-right: 2.2mm; }
 .page-footer-preview { margin-top: 6mm; padding-top: 2mm; border-top: 1px solid #d1d5db; }
 CSS;
     }
@@ -294,7 +338,23 @@ CSS;
             $css .= ' @page { @bottom-center { content: element(pageFooter); } }';
         }
 
-        if ($pageNumbers->enabled) {
+        if ($page->foldMarks) {
+            $css .= ' @page { @left-top { content: element(pageMarkFoldTop); width: 25mm; } @left-bottom { content: element(pageMarkFoldBottom); width: 25mm; } }';
+        }
+
+        if ($page->punchMarks) {
+            $css .= ' @page { @left-middle { content: element(pageMarkPunch); width: 25mm; } }';
+        }
+
+        if ($page->footer->repeat && $page->footer->rows !== [] && $page->footer->pageNumbers->enabled) {
+            $position = $page->footer->pageNumbers->position->value;
+            $inset = match ($position) {
+                'left' => ' padding-left: 2.2mm;',
+                'right' => ' padding-right: 2.2mm;',
+                default => '',
+            };
+            $css .= " .page-footer-repeated::after { content: counter(page) \" / \" counter(pages); display: block; margin-top: 2mm;{$inset} text-align: {$position}; font-size: 8pt; color: #9ca3af; }";
+        } elseif ($pageNumbers->enabled) {
             $position = $pageNumbers->position->value;
             $css .= " @page { @bottom-{$position} { content: counter(page) \" / \" counter(pages); font-size: 8pt; color: #9ca3af; vertical-align: bottom; padding-bottom: 4mm; } }";
         }

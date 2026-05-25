@@ -37,6 +37,22 @@ jobs:
   php:
     name: PHP (pint, phpstan, pest)
     runs-on: ubuntu-latest
+
+    services:
+      pdf-ua-api:
+        image: bambamboole/pdf-ua-api:latest
+        ports:
+          - 8080:8080
+        options: >-
+          --health-cmd "curl -fsS http://localhost:8080/health || exit 1"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 24
+          --health-start-period 10s
+
+    env:
+      PDF_UA_API_URL: http://localhost:8080
+
     steps:
       - uses: actions/checkout@v4
 
@@ -63,6 +79,18 @@ jobs:
 
       - name: PHPStan
         run: composer analyse
+
+      - name: Wait for pdf-ua-api
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS "$PDF_UA_API_URL/health" >/dev/null 2>&1; then
+              echo "pdf-ua-api healthy after ${i}s"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "pdf-ua-api did not become healthy in time"
+          exit 1
 
       - name: Pest
         run: composer test

@@ -65,4 +65,10 @@ jobs:
         run: composer analyse
 
       - name: Pest
-        run: composer test
+        run: |
+          # Workaround for pestphp/pest#XXXX: the Cache plugin calls
+          # realpath() on vendor/pestphp/pest/.temp which isn't shipped
+          # in the published package, so on a fresh install --cache-directory
+          # gets pushed with an empty value and PHPUnit aborts.
+          mkdir -p vendor/pestphp/pest/.temp
+          composer test

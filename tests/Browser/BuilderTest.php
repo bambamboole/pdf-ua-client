@@ -23,8 +23,15 @@ it('opens block settings inline on the selected block', function (): void {
         ->assertSee('Content')
         ->assertSee('Config')
         ->assertScript('document.querySelector("aside.border-l") === null')
-        ->assertScript('document.querySelector("main [data-inline-block-details][open] [data-inline-block-editor]") !== null')
-        ->assertScript('document.querySelector("[data-inline-block-editor]")?.getBoundingClientRect().width <= 260');
+        ->assertScript('document.querySelector("main [data-inline-block-details][open] [data-inline-block-editor]") !== null');
+});
+
+it('sizes the build canvas to the selected page format', function (): void {
+    visit('/')
+        ->click('Invoice')
+        ->assertScript('document.querySelector("[data-edit-canvas]")?.getBoundingClientRect().width <= 810')
+        ->assertScript('document.querySelector("[data-edit-canvas]")?.style.maxWidth === "210mm"')
+        ->assertNoJavaScriptErrors();
 });
 
 it('renders the invoice example preview and matches the browser screenshot', function (): void {

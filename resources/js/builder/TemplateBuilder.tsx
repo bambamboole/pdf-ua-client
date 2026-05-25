@@ -216,6 +216,7 @@ export default function TemplateBuilder({
               <EditCanvas
                 model={model}
                 schema={schema}
+                format={format}
                 selectedBlockUid={selectedBlockUid}
                 onSelectBlock={selectBlock}
                 onRemoveBlock={(uid) => setModel((m) => removeBlock(m, uid))}

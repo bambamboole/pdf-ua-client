@@ -9,6 +9,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { humanizeType } from "./lib/schema";
 import { gridTemplateForWidths } from "./lib/columns";
+import { pageSizeForFormat } from "./lib/pageSizes";
 import BlockDataSummary from "./BlockDataSummary";
 import ColumnResizer from "./ColumnResizer";
 import InlineBlockEditor from "./InlineBlockEditor";
@@ -31,6 +32,7 @@ interface CanvasRow {
 interface Props {
   model: { rows: CanvasRow[] };
   schema: JsonSchema;
+  format: string;
   selectedBlockUid: string | null;
   onSelectBlock: (uid: string) => void;
   onRemoveBlock: (uid: string) => void;
@@ -245,6 +247,7 @@ function NewRowZone() {
 export default function EditCanvas({
   model,
   schema,
+  format,
   selectedBlockUid,
   onSelectBlock,
   onRemoveBlock,
@@ -253,8 +256,10 @@ export default function EditCanvas({
   onUpdateBlockId,
   onUpdateBlockConfig,
 }: Props) {
+  const [width] = pageSizeForFormat(format);
+
   return (
-    <div className="space-y-3">
+    <div data-edit-canvas className="mx-auto w-full space-y-3" style={{ maxWidth: `${width}mm` }}>
       <SortableContext
         items={model.rows.map((r) => `row-${r.uid}`)}
         strategy={verticalListSortingStrategy}

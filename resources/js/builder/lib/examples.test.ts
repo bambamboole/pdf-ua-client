@@ -14,7 +14,9 @@ const entry = {
 
 describe("listExamples", () => {
   it("lists titled entries with an index fallback", () => {
-    expect(listExamples([entry, { template: { version: 1, config: {}, rows: [] }, data: {} }])).toEqual([
+    expect(
+      listExamples([entry, { template: { version: 1, config: {}, rows: [] }, data: {} }]),
+    ).toEqual([
       { title: "Invoice", template: entry.template, data: entry.data },
       { title: "Example 2", template: { version: 1, config: {}, rows: [] }, data: {} },
     ]);

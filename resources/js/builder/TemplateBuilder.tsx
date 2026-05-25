@@ -6,8 +6,10 @@ import EditCanvas from "./EditCanvas";
 import Inspector from "./Inspector";
 import PageCanvas from "./PageCanvas";
 import DataView from "./DataView";
+import SchemaView from "./SchemaView";
 import { getPageFormat, getBlockTitle, getBlockSubschemas } from "./lib/schema";
 import { listExamples, loadExample } from "./lib/examples";
+import { dataSchemaForTemplate } from "./lib/dataSchema";
 import {
   fromTemplate,
   toTemplate,
@@ -51,22 +53,25 @@ export default function TemplateBuilder({
   const [model, setModel] = useState(() => fromTemplate(initialTemplate, initialData));
   const [selectedBlockUid, setSelectedBlockUid] = useState<string | null>(null);
   const [pageSelected, setPageSelected] = useState(false);
-  const [tab, setTab] = useState<"edit" | "data" | "preview">("edit");
+  const [tab, setTab] = useState<"build" | "schema" | "example-data" | "render">("build");
   const [activeLabel, setActiveLabel] = useState<string | null>(null);
   const [html, setHtml] = useState("");
   const [error, setError] = useState<string | null>(null);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const template = useMemo(() => toTemplate(model), [model]);
+  const data = useMemo(() => toDataMap(model), [model]);
+  const dataSchema = useMemo(() => dataSchemaForTemplate(schema, template), [schema, template]);
 
   useEffect(() => {
     if (onChange) {
-      onChange(toTemplate(model));
+      onChange(template);
     }
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
     debounceRef.current = setTimeout(() => {
-      renderTemplate(toTemplate(model), toDataMap(model))
+      renderTemplate(template, data)
         .then((result) => {
           setHtml(result);
           setError(null);
@@ -74,7 +79,7 @@ export default function TemplateBuilder({
         .catch((cause: unknown) => setError(String((cause as Error)?.message ?? cause)));
     }, 300);
     return () => clearTimeout(debounceRef.current!);
-  }, [model, renderTemplate, onChange]);
+  }, [template, data, renderTemplate, onChange]);
 
   const selectBlock = useCallback((uid: string) => {
     setSelectedBlockUid(uid);
@@ -145,7 +150,7 @@ export default function TemplateBuilder({
   );
 
   const handleExport = useCallback(() => {
-    const json = JSON.stringify(toTemplate(model), null, 2);
+    const json = JSON.stringify(template, null, 2);
     navigator.clipboard?.writeText(json).catch(() => {});
     const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -154,7 +159,7 @@ export default function TemplateBuilder({
     link.download = "template.json";
     link.click();
     URL.revokeObjectURL(url);
-  }, [model]);
+  }, [template]);
 
   const selection = useMemo(() => {
     if (pageSelected) {
@@ -182,7 +187,6 @@ export default function TemplateBuilder({
             schema={schema}
             examples={listExamples(examples)}
             onSelectPage={selectPage}
-            onExport={handleExport}
             onLoadExample={(entry) => {
               setModel(() => loadExample(entry));
               setSelectedBlockUid(null);
@@ -194,28 +198,35 @@ export default function TemplateBuilder({
           <div className="flex gap-1 border-b border-gray-200 bg-white px-4 py-2">
             <button
               type="button"
-              onClick={() => setTab("edit")}
-              className={`rounded px-3 py-1 text-sm ${tab === "edit" ? "bg-gray-800 text-white" : "text-gray-600"}`}
+              onClick={() => setTab("build")}
+              className={`rounded px-3 py-1 text-sm ${tab === "build" ? "bg-gray-800 text-white" : "text-gray-600"}`}
             >
-              Edit
+              Build
             </button>
             <button
               type="button"
-              onClick={() => setTab("data")}
-              className={`rounded px-3 py-1 text-sm ${tab === "data" ? "bg-gray-800 text-white" : "text-gray-600"}`}
+              onClick={() => setTab("schema")}
+              className={`rounded px-3 py-1 text-sm ${tab === "schema" ? "bg-gray-800 text-white" : "text-gray-600"}`}
             >
-              Data
+              Schema
             </button>
             <button
               type="button"
-              onClick={() => setTab("preview")}
-              className={`rounded px-3 py-1 text-sm ${tab === "preview" ? "bg-gray-800 text-white" : "text-gray-600"}`}
+              onClick={() => setTab("example-data")}
+              className={`rounded px-3 py-1 text-sm ${tab === "example-data" ? "bg-gray-800 text-white" : "text-gray-600"}`}
             >
-              Preview
+              Example Data
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("render")}
+              className={`rounded px-3 py-1 text-sm ${tab === "render" ? "bg-gray-800 text-white" : "text-gray-600"}`}
+            >
+              Render
             </button>
           </div>
           <div className="flex-1 overflow-auto bg-gray-100 p-6">
-            {tab === "edit" ? (
+            {tab === "build" ? (
               <EditCanvas
                 model={model}
                 selectedBlockUid={selectedBlockUid}
@@ -226,8 +237,14 @@ export default function TemplateBuilder({
                   setModel((m) => setRowWidths(m, rowUid, widths))
                 }
               />
-            ) : tab === "data" ? (
-              <DataView data={toDataMap(model)} />
+            ) : tab === "schema" ? (
+              <SchemaView
+                template={template}
+                dataSchema={dataSchema}
+                onExportTemplate={handleExport}
+              />
+            ) : tab === "example-data" ? (
+              <DataView data={data} />
             ) : error ? (
               <div className="rounded border border-red-200 bg-red-50 p-4 text-red-700">
                 {error}

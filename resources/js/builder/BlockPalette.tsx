@@ -31,17 +31,10 @@ interface Props {
   schema: JsonSchema;
   examples: ExampleEntry[];
   onSelectPage: () => void;
-  onExport: () => void;
   onLoadExample: (entry: ExampleEntry) => void;
 }
 
-export default function BlockPalette({
-  schema,
-  examples,
-  onSelectPage,
-  onExport,
-  onLoadExample,
-}: Props) {
+export default function BlockPalette({ schema, examples, onSelectPage, onLoadExample }: Props) {
   return (
     <div className="flex flex-col gap-3">
       <div>
@@ -76,13 +69,6 @@ export default function BlockPalette({
           className="w-full rounded border border-gray-200 px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
         >
           ⚙ Page settings
-        </button>
-        <button
-          type="button"
-          onClick={onExport}
-          className="w-full rounded bg-gray-800 px-3 py-2 text-sm font-medium text-white hover:bg-gray-700"
-        >
-          Export JSON
         </button>
       </div>
     </div>

@@ -73,7 +73,10 @@ export function getBlockSubschemas(
     return { props: emptySchema(), config: emptySchema() };
   }
 
-  const props = ((schema as any)?.$defs?.[propsDefName(type)] ?? null) as Record<string, any> | null;
+  const props = ((schema as any)?.$defs?.[propsDefName(type)] ?? null) as Record<
+    string,
+    any
+  > | null;
   const config = resolveRef(schema, blockDef.properties?.config?.$ref);
 
   return {

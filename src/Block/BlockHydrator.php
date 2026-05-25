@@ -101,6 +101,9 @@ final readonly class BlockHydrator
             foreach ($param->getAttributes(ArrayOf::class) as $attr) {
                 /** @var class-string $itemClass */
                 $itemClass = $attr->newInstance()->itemClass;
+                if (! class_exists($itemClass)) {
+                    return $value;
+                }
 
                 return array_map(fn ($item) => $this->instantiateValueObject($itemClass, $item), $value);
             }

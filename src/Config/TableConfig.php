@@ -3,6 +3,7 @@
 declare(strict_types=1);
 namespace Bambamboole\PdfUaClient\Config;
 
+use Bambamboole\PdfUaClient\Attributes\ArrayOf;
 use Bambamboole\PdfUaClient\Contracts\EmitsCss;
 use Bambamboole\PdfUaClient\Enums\Align;
 
@@ -17,7 +18,9 @@ final readonly class TableConfig extends BlockConfig implements EmitsCss
         ?SpacingConfig $spacing = null,
         ?string $width = null,
         ?Align $align = null,
+        #[ArrayOf('string')]
         public ?array $columnAlignments = null,
+        #[ArrayOf('int', 'string')]
         public ?array $columnWidths = null,
         public string $style = 'striped',
     ) {

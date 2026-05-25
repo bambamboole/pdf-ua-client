@@ -354,10 +354,7 @@ final class PropsReflector
     private function reflectArray(ReflectionParameter $param, ?SchemaRegistry $registry = null): array
     {
         foreach ($param->getAttributes(ArrayOf::class) as $attr) {
-            $itemClass = $attr->newInstance()->itemClass;
-            $itemSchema = $registry !== null
-                ? $this->reflectClass($itemClass, $registry)
-                : $this->reflectClass($itemClass);
+            $itemSchema = $this->arrayItemSchema($attr->newInstance()->itemTypes, $registry);
 
             return [
                 'type' => 'array',
@@ -366,6 +363,43 @@ final class PropsReflector
         }
 
         return ['type' => 'array'];
+    }
+
+    /**
+     * @param  non-empty-list<class-string|string>  $itemTypes
+     * @return array<string, mixed>
+     */
+    private function arrayItemSchema(array $itemTypes, ?SchemaRegistry $registry): array
+    {
+        $schemas = array_map(
+            fn (string $itemType): array => $this->schemaForArrayItemType($itemType, $registry),
+            $itemTypes,
+        );
+
+        if (count($schemas) === 1) {
+            return $schemas[0];
+        }
+
+        $types = array_column($schemas, 'type');
+        if (count($types) === count($schemas) && array_all($types, fn (mixed $type): bool => is_string($type))) {
+            return ['type' => array_values(array_unique($types))];
+        }
+
+        return ['anyOf' => $schemas];
+    }
+
+    /** @return array<string, mixed> */
+    private function schemaForArrayItemType(string $itemType, ?SchemaRegistry $registry): array
+    {
+        return match ($itemType) {
+            'string' => ['type' => 'string'],
+            'int' => ['type' => 'integer'],
+            'float' => ['type' => 'number'],
+            'bool' => ['type' => 'boolean'],
+            default => $registry !== null
+                ? $this->reflectClass($itemType, $registry)
+                : $this->reflectClass($itemType),
+        };
     }
 
     /** @return array<string, mixed> */

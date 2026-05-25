@@ -540,13 +540,22 @@
                     "type": [
                         "array",
                         "null"
-                    ]
+                    ],
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "columnWidths": {
                     "type": [
                         "array",
                         "null"
-                    ]
+                    ],
+                    "items": {
+                        "type": [
+                            "integer",
+                            "string"
+                        ]
+                    }
                 },
                 "style": {
                     "type": "string",

@@ -20,7 +20,7 @@ return new TestFixture(
             'page' => [
                 'format' => 'A4',
                 'locale' => 'de_DE',
-                'margins' => ['top' => 18, 'right' => 18, 'bottom' => 28, 'left' => 22],
+                'margins' => ['top' => 20, 'right' => 20, 'bottom' => 20, 'left' => 25],
                 'footer' => [
                     'repeat' => true,
                     'pageNumbers' => ['enabled' => true, 'position' => 'right'],

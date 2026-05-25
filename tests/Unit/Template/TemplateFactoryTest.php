@@ -51,6 +51,8 @@ it('applies defaults for omitted page fields', function () {
     expect($template->config->page->format)->toBe(PageFormat::A5);
     expect($template->config->page->locale)->toBe('de_DE');
     expect($template->config->page->margins->top)->toBe(20);
+    expect($template->config->page->margins->right)->toBe(20);
+    expect($template->config->page->margins->bottom)->toBe(20);
     expect($template->config->page->margins->left)->toBe(25);
     expect($template->config->page->pageNumbers->enabled)->toBeFalse();
     expect($template->config->page->pageNumbers->position)->toBe(PageNumberPosition::Center);

@@ -1,5 +1,6 @@
 import { useDraggable } from "@dnd-kit/core";
-import type { JsonSchema } from "./types";
+import PageSettingsPanel from "./PageSettingsPanel";
+import type { Json, JsonSchema } from "./types";
 import { listBlockTypes, getBlockTitle } from "./lib/schema";
 import type { ExampleEntry } from "./lib/examples";
 
@@ -30,11 +31,18 @@ function PaletteItem({ schema, type }: PaletteItemProps) {
 interface Props {
   schema: JsonSchema;
   examples: ExampleEntry[];
-  onSelectPage: () => void;
+  pageConfig: Json;
   onLoadExample: (entry: ExampleEntry) => void;
+  onUpdateTemplateConfig: (config: Json) => void;
 }
 
-export default function BlockPalette({ schema, examples, onSelectPage, onLoadExample }: Props) {
+export default function BlockPalette({
+  schema,
+  examples,
+  pageConfig,
+  onLoadExample,
+  onUpdateTemplateConfig,
+}: Props) {
   return (
     <div className="flex flex-col gap-3">
       <div>
@@ -62,15 +70,11 @@ export default function BlockPalette({ schema, examples, onSelectPage, onLoadExa
           ))}
         </div>
       )}
-      <div className="space-y-2 border-t border-gray-200 pt-3">
-        <button
-          type="button"
-          onClick={onSelectPage}
-          className="w-full rounded border border-gray-200 px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
-        >
-          ⚙ Page settings
-        </button>
-      </div>
+      <PageSettingsPanel
+        schema={schema}
+        config={pageConfig}
+        onUpdateTemplateConfig={onUpdateTemplateConfig}
+      />
     </div>
   );
 }

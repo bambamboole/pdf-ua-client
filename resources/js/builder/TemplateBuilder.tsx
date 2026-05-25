@@ -1,12 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
 import BlockPalette from "./BlockPalette";
 import EditCanvas from "./EditCanvas";
-import Inspector from "./Inspector";
-import PageCanvas from "./PageCanvas";
-import DataView from "./DataView";
-import SchemaView from "./SchemaView";
 import { getPageFormat, getBlockTitle, getBlockSubschemas } from "./lib/schema";
 import { listExamples, loadExample } from "./lib/examples";
 import { dataSchemaForTemplate } from "./lib/dataSchema";
@@ -27,6 +23,10 @@ import {
 } from "./state/templateModel";
 import { exampleFromSchema } from "./lib/exampleFromSchema";
 import type { DataMap, Json, JsonSchema, Template } from "./types";
+
+const PageCanvas = lazy(() => import("./PageCanvas"));
+const DataView = lazy(() => import("./DataView"));
+const SchemaView = lazy(() => import("./SchemaView"));
 
 interface Props {
   schema: JsonSchema;
@@ -52,7 +52,6 @@ export default function TemplateBuilder({
 }: Props) {
   const [model, setModel] = useState(() => fromTemplate(initialTemplate, initialData));
   const [selectedBlockUid, setSelectedBlockUid] = useState<string | null>(null);
-  const [pageSelected, setPageSelected] = useState(false);
   const [tab, setTab] = useState<"build" | "schema" | "example-data" | "render">("build");
   const [activeLabel, setActiveLabel] = useState<string | null>(null);
   const [html, setHtml] = useState("");
@@ -81,14 +80,7 @@ export default function TemplateBuilder({
     return () => clearTimeout(debounceRef.current!);
   }, [template, data, renderTemplate, onChange]);
 
-  const selectBlock = useCallback((uid: string) => {
-    setSelectedBlockUid(uid);
-    setPageSelected(false);
-  }, []);
-  const selectPage = useCallback(() => {
-    setPageSelected(true);
-    setSelectedBlockUid(null);
-  }, []);
+  const selectBlock = useCallback((uid: string) => setSelectedBlockUid(uid), []);
 
   const blockData = useCallback(
     (type: string): Json =>
@@ -161,14 +153,6 @@ export default function TemplateBuilder({
     URL.revokeObjectURL(url);
   }, [template]);
 
-  const selection = useMemo(() => {
-    if (pageSelected) {
-      return { kind: "page" as const, config: model.config };
-    }
-    const found = selectedBlockUid ? findBlock(model, selectedBlockUid) : null;
-    return found ? { kind: "block" as const, block: found.block } : null;
-  }, [pageSelected, selectedBlockUid, model]);
-
   const format =
     (model.config as { page?: { format?: string } })?.page?.format ?? getPageFormat(schema);
 
@@ -186,12 +170,14 @@ export default function TemplateBuilder({
           <BlockPalette
             schema={schema}
             examples={listExamples(examples)}
-            onSelectPage={selectPage}
+            pageConfig={model.config}
             onLoadExample={(entry) => {
               setModel(() => loadExample(entry));
               setSelectedBlockUid(null);
-              setPageSelected(false);
             }}
+            onUpdateTemplateConfig={(config) =>
+              setModel((m) => updateTemplateConfig(m, config as Json))
+            }
           />
         </aside>
         <main className="flex flex-1 flex-col overflow-hidden">
@@ -229,6 +215,7 @@ export default function TemplateBuilder({
             {tab === "build" ? (
               <EditCanvas
                 model={model}
+                schema={schema}
                 selectedBlockUid={selectedBlockUid}
                 onSelectBlock={selectBlock}
                 onRemoveBlock={(uid) => setModel((m) => removeBlock(m, uid))}
@@ -236,37 +223,34 @@ export default function TemplateBuilder({
                 onSetRowWidths={(rowUid, widths) =>
                   setModel((m) => setRowWidths(m, rowUid, widths))
                 }
+                onUpdateBlockId={(uid, id) => setModel((m) => updateBlockId(m, uid, id))}
+                onUpdateBlockConfig={(uid, config) =>
+                  setModel((m) => updateBlockConfig(m, uid, config as Json))
+                }
               />
             ) : tab === "schema" ? (
-              <SchemaView
-                template={template}
-                dataSchema={dataSchema}
-                onExportTemplate={handleExport}
-              />
+              <Suspense fallback={<div className="h-24 animate-pulse rounded bg-white" />}>
+                <SchemaView
+                  template={template}
+                  dataSchema={dataSchema}
+                  onExportTemplate={handleExport}
+                />
+              </Suspense>
             ) : tab === "example-data" ? (
-              <DataView data={data} />
+              <Suspense fallback={<div className="h-24 animate-pulse rounded bg-white" />}>
+                <DataView data={data} />
+              </Suspense>
             ) : error ? (
               <div className="rounded border border-red-200 bg-red-50 p-4 text-red-700">
                 {error}
               </div>
             ) : (
-              <PageCanvas format={format} html={html} />
+              <Suspense fallback={<div className="h-96 animate-pulse rounded bg-white" />}>
+                <PageCanvas format={format} html={html} />
+              </Suspense>
             )}
           </div>
         </main>
-        <aside className="w-80 shrink-0 overflow-y-auto border-l border-gray-200 bg-white p-4">
-          <Inspector
-            schema={schema}
-            selection={selection}
-            onUpdateBlockId={(uid, id) => setModel((m) => updateBlockId(m, uid, id))}
-            onUpdateBlockConfig={(uid, config) =>
-              setModel((m) => updateBlockConfig(m, uid, config as Json))
-            }
-            onUpdateTemplateConfig={(config) =>
-              setModel((m) => updateTemplateConfig(m, config as Json))
-            }
-          />
-        </aside>
       </div>
       <DragOverlay>
         {activeLabel ? (

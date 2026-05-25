@@ -48,6 +48,16 @@ function findBlockDef(schema: JsonSchema, type: string): Record<string, any> | n
   return null;
 }
 
+function propsDefName(type: string): string {
+  const [head = "", ...tail] = type.split(/[-_]/);
+  const camel =
+    head.charAt(0).toLowerCase() +
+    head.slice(1) +
+    tail.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join("");
+
+  return `${camel}Props`;
+}
+
 export function getBlockSubschemas(
   schema: JsonSchema,
   type: string,
@@ -63,7 +73,10 @@ export function getBlockSubschemas(
     return { props: emptySchema(), config: emptySchema() };
   }
 
-  const props = resolveRef(schema, blockDef.properties?.props?.$ref);
+  const props = ((schema as any)?.$defs?.[propsDefName(type)] ?? null) as Record<
+    string,
+    any
+  > | null;
   const config = resolveRef(schema, blockDef.properties?.config?.$ref);
 
   return {

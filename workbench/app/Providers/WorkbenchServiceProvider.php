@@ -64,6 +64,9 @@ class WorkbenchServiceProvider extends ServiceProvider
         $skeleton = ltrim(str_replace(package_path(), '', base_path()), '/');
         $upToPackageRoot = str_repeat('../', substr_count($skeleton, '/') + 1);
 
-        config(['boost.agents.claude_code.skills_path' => $upToPackageRoot.'.claude/skills']);
+        config([
+            'boost.agents.claude_code.skills_path' => $upToPackageRoot.'.claude/skills',
+            'boost.agents.codex.skills_path' => $upToPackageRoot.'.agents/skills',
+        ]);
     }
 }

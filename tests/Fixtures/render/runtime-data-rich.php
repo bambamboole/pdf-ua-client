@@ -12,7 +12,6 @@ return new TestFixture(
                 [
                     'type' => 'heading',
                     'id' => 'invoice-title',
-                    'props' => ['text' => 'Invoice (placeholder)'],
                     'config' => ['level' => 1],
                 ],
             ]],
@@ -20,19 +19,12 @@ return new TestFixture(
                 [
                     'type' => 'key-value',
                     'id' => 'customer-meta',
-                    'props' => ['entries' => [
-                        ['label' => 'Customer', 'value' => 'placeholder'],
-                    ]],
                 ],
             ]],
             ['blocks' => [
                 [
                     'type' => 'table',
                     'id' => 'line-items',
-                    'props' => [
-                        'headers' => ['Description', 'Amount'],
-                        'rows' => [['placeholder', '0,00 €']],
-                    ],
                     'config' => ['style' => 'striped'],
                 ],
             ]],
@@ -45,11 +37,14 @@ return new TestFixture(
             ['label' => 'Invoice number', 'value' => 'RE-2026-000042'],
             ['label' => 'Due date', 'value' => '2026-06-21'],
         ]],
-        'line-items' => ['rows' => [
-            ['Consulting (May)', '2.400,00 €'],
-            ['Implementation (May)', '5.600,00 €'],
-            ['Travel reimbursement', '312,40 €'],
-        ]],
+        'line-items' => [
+            'headers' => ['Description', 'Amount'],
+            'rows' => [
+                ['Consulting (May)', '2.400,00 €'],
+                ['Implementation (May)', '5.600,00 €'],
+                ['Travel reimbursement', '312,40 €'],
+            ],
+        ],
     ],
     html: '<table class="row" role="presentation"><tr><td><div class="block-1"><h1>Invoice 2026-042</h1></div></td></tr></table><table class="row" role="presentation"><tr><td><div class="block-2"><table><tbody><tr><td>Customer</td><td>Globex AG</td></tr><tr><td>Invoice number</td><td>RE-2026-000042</td></tr><tr><td>Due date</td><td>2026-06-21</td></tr></tbody></table></div></td></tr></table><table class="row" role="presentation"><tr><td><div class="block-3"><table><thead><tr><th>Description</th><th>Amount</th></tr></thead><tbody><tr><td>Consulting (May)</td><td>2.400,00 €</td></tr><tr><td>Implementation (May)</td><td>5.600,00 €</td></tr><tr><td>Travel reimbursement</td><td>312,40 €</td></tr></tbody></table></div></td></tr></table>',
 );

@@ -8,5 +8,9 @@
 /tests/.pdf-diff
 
 # Laravel Boost: generated outputs (sources are committed: .ai/guidelines, boost.json, .mcp.json)
+/AGENTS.md
 /CLAUDE.md
+/.agents
 /.claude
+/.codex
+/docs/superpowers

@@ -26,7 +26,7 @@ it('builds a Template from valid JSON', function () {
         'version' => 1,
         'config' => ['page' => ['format' => 'A4']],
         'rows' => [
-            ['blocks' => [['type' => 'test-fixture', 'props' => ['text' => 'hi'], 'config' => ['level' => 2]]]],
+            ['blocks' => [['type' => 'test-fixture', 'config' => ['level' => 2]]]],
         ],
     ]);
 
@@ -43,7 +43,7 @@ it('applies defaults for omitted page fields', function () {
         'version' => 1,
         'config' => ['page' => ['format' => 'A5']],
         'rows' => [
-            ['blocks' => [['type' => 'test-fixture', 'props' => ['text' => 'hi']]]],
+            ['blocks' => [['type' => 'test-fixture']]],
         ],
     ]);
 
@@ -61,7 +61,6 @@ it('parses nested per-block config', function () {
         'rows' => [
             ['blocks' => [[
                 'type' => 'test-fixture',
-                'props' => ['text' => 'x'],
                 'config' => [
                     'typography' => ['size' => 18, 'weight' => 700],
                     'spacing' => ['bottom' => 4],
@@ -120,10 +119,17 @@ it('accepts deeply nested empty configs', function () {
         'config' => ['page' => []],
         'rows' => [
             ['blocks' => [
-                ['type' => 'test-fixture', 'props' => ['text' => 'X'], 'config' => []],
+                ['type' => 'test-fixture', 'config' => []],
             ]],
         ],
     ]);
 
     expect($template->version)->toBe(1);
+});
+
+it('rejects a block that carries inline props', function () {
+    expect(fn () => $this->factory->fromArray([
+        'version' => 1, 'config' => [],
+        'rows' => [['blocks' => [['type' => 'test-fixture', 'props' => ['text' => 'x']]]]],
+    ]))->toThrow(TemplateValidationException::class);
 });

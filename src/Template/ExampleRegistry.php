@@ -5,13 +5,16 @@ namespace Bambamboole\PdfUaClient\Template;
 
 final class ExampleRegistry
 {
-    /** @var list<array<string, mixed>> */
+    /** @var list<array{title: string, template: array<string, mixed>, data: array<string, mixed>}> */
     private array $examples = [];
 
-    /** @param array<string, mixed> $document */
-    public function register(array $document): self
+    /**
+     * @param  array<string, mixed>  $template
+     * @param  array<string, mixed>  $data
+     */
+    public function register(string $title, array $template, array $data = []): self
     {
-        $this->examples[] = $document;
+        $this->examples[] = ['title' => $title, 'template' => $template, 'data' => $data];
 
         return $this;
     }
@@ -23,7 +26,7 @@ final class ExampleRegistry
         return $this;
     }
 
-    /** @return list<array<string, mixed>> */
+    /** @return list<array{title: string, template: array<string, mixed>, data: array<string, mixed>}> */
     public function all(): array
     {
         return $this->examples;

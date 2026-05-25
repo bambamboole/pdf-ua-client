@@ -17,7 +17,6 @@ const schema = {
       allOf: [{ $ref: "#/$defs/blockBase" }],
       properties: {
         type: { const: "key-value", type: "string" },
-        props: { $ref: "#/$defs/keyValueProps" },
         config: { $ref: "#/$defs/keyValueConfig" },
       },
       unevaluatedProperties: false,
@@ -62,13 +61,15 @@ describe("getBlockTitle", () => {
       $defs: {
         block: { oneOf: [{ $ref: "#/$defs/keyValueBlock" }, { $ref: "#/$defs/tableBlock" }] },
         keyValueBlock: {
-          properties: { type: { const: "key-value" }, props: { $ref: "#/$defs/keyValueProps" } },
+          properties: { type: { const: "key-value" }, config: { $ref: "#/$defs/keyValueConfig" } },
         },
         keyValueProps: { type: "object", title: "Key / Value", properties: {} },
+        keyValueConfig: { type: "object", properties: {} },
         tableBlock: {
-          properties: { type: { const: "table" }, props: { $ref: "#/$defs/tableProps" } },
+          properties: { type: { const: "table" }, config: { $ref: "#/$defs/tableConfig" } },
         },
         tableProps: { type: "object", properties: {} },
+        tableConfig: { type: "object", properties: {} },
       },
     } as JsonSchema;
     expect(getBlockTitle(titleSchema, "key-value")).toBe("Key / Value");

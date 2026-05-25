@@ -8,7 +8,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { humanizeType } from "./lib/schema";
-import { parseWidths } from "./lib/columns";
+import { gridTemplateForWidths } from "./lib/columns";
 import BlockDataSummary from "./BlockDataSummary";
 import ColumnResizer from "./ColumnResizer";
 import type { EditorBlock } from "./types";
@@ -116,7 +116,7 @@ function Row({
 
   const rawWidths = row.blocks.map((b) => b.config.width as string | number | undefined);
   const widths = rawWidths.every((w) => w != null) ? (rawWidths as (string | number)[]) : null;
-  const percents = parseWidths(widths, row.blocks.length);
+  const gridTemplateColumns = gridTemplateForWidths(widths, row.blocks.length);
 
   return (
     <div ref={setNodeRef} style={style} className="rounded border border-gray-200 bg-gray-50 p-2">
@@ -135,7 +135,8 @@ function Row({
           setDropRef(node);
           containerRef.current = node;
         }}
-        className="flex gap-2"
+        className={gridTemplateColumns ? "grid gap-2" : "flex gap-2"}
+        style={gridTemplateColumns ? { gridTemplateColumns } : undefined}
       >
         <SortableContext
           items={row.blocks.map((b) => b.uid)}
@@ -147,9 +148,7 @@ function Row({
                 block={block}
                 rowUid={row.uid}
                 selected={block.uid === selectedBlockUid}
-                style={
-                  widths ? { flexBasis: `${percents[i]}%`, flexGrow: 0, flexShrink: 0 } : undefined
-                }
+                style={widths ? { minWidth: 0 } : undefined}
                 onSelect={onSelectBlock}
                 onRemove={onRemoveBlock}
               />

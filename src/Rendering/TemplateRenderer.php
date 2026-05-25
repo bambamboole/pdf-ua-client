@@ -10,10 +10,14 @@ use Bambamboole\PdfUaClient\Config\PageConfig;
 use Bambamboole\PdfUaClient\Config\SpacingConfig;
 use Bambamboole\PdfUaClient\Contracts\EmitsCss;
 use Bambamboole\PdfUaClient\Enums\Align;
+use Bambamboole\PdfUaClient\Exceptions\DataValidationException;
 use Bambamboole\PdfUaClient\Support\CssRuleEmitter;
+use Bambamboole\PdfUaClient\Support\SchemaAwareNormalizer;
 use Bambamboole\PdfUaClient\Template\BlockInstance;
+use Bambamboole\PdfUaClient\Template\DataSchemaCompiler;
 use Bambamboole\PdfUaClient\Template\Row;
 use Bambamboole\PdfUaClient\Template\Template;
+use Opis\JsonSchema\Validator;
 
 final class TemplateRenderer
 {
@@ -21,6 +25,7 @@ final class TemplateRenderer
 
     public function __construct(
         private readonly BlockHydrator $hydrator,
+        private readonly DataSchemaCompiler $dataSchemaCompiler,
     ) {}
 
     /**
@@ -32,6 +37,8 @@ final class TemplateRenderer
         RenderOptions $options = new RenderOptions,
     ): string {
         $this->blockCounter = 0;
+
+        $this->validateData($template, $runtimeData);
 
         $ctx = new RenderContext;
 
@@ -73,10 +80,9 @@ final class TemplateRenderer
      */
     private function renderBlock(BlockInstance $instance, array $runtimeData, RenderContext $ctx, bool $widthOnCell = false): string
     {
-        $mergedProps = $this->mergeProps($instance->props, $runtimeData[$instance->id] ?? []);
         $resolvedInstance = new BlockInstance(
             type: $instance->type,
-            props: $mergedProps,
+            props: $runtimeData[$instance->id] ?? [],
             id: $instance->id,
             config: $instance->config,
         );
@@ -124,14 +130,44 @@ final class TemplateRenderer
         }
     }
 
-    /**
-     * @param  array<string, mixed>  $inline
-     * @param  array<string, mixed>  $runtime
-     * @return array<string, mixed>
-     */
-    private function mergeProps(array $inline, array $runtime): array
+    /** @param array<string, array<string, mixed>> $runtimeData */
+    private function validateData(Template $template, array $runtimeData): void
     {
-        return array_merge($inline, $runtime);
+        $schema = $this->dataSchemaCompiler->compile($template);
+        $runtimeData = $this->withoutEmptyDataForBlocksWithoutDataSchema($template, $runtimeData, $schema);
+        $normalized = SchemaAwareNormalizer::normalize($runtimeData, $schema);
+        $validator = new Validator;
+        $result = $validator->validate($normalized, json_decode((string) json_encode($schema)));
+
+        if (! $result->isValid()) {
+            throw new DataValidationException('Data failed schema validation', $result->error());
+        }
+    }
+
+    /**
+     * @param  array<string, array<string, mixed>>  $runtimeData
+     * @param  array<string, mixed>  $schema
+     * @return array<string, array<string, mixed>>
+     */
+    private function withoutEmptyDataForBlocksWithoutDataSchema(Template $template, array $runtimeData, array $schema): array
+    {
+        $schemaProperties = $schema['properties'];
+        $dataBlockIds = is_array($schemaProperties) ? array_keys($schemaProperties) : [];
+        $dataBlockIdLookup = array_fill_keys($dataBlockIds, true);
+
+        foreach ($template->rows as $row) {
+            foreach ($row->blocks as $block) {
+                $id = (string) $block->id;
+
+                if (isset($dataBlockIdLookup[$id]) || ($runtimeData[$id] ?? null) !== []) {
+                    continue;
+                }
+
+                unset($runtimeData[$id]);
+            }
+        }
+
+        return $runtimeData;
     }
 
     private function wrapDocument(string $bodyHtml, Template $template, RenderContext $ctx, RenderOptions $options): string

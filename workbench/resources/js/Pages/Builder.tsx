@@ -30,10 +30,11 @@ async function renderTemplate(template: unknown, data: unknown): Promise<string>
 
 const emptyTemplate: Template = { version: 1, config: {}, rows: [] };
 
-export default function Builder({ schema }: { schema: JsonSchema }) {
+export default function Builder({ schema, examples }: { schema: JsonSchema; examples?: unknown }) {
     return (
         <TemplateBuilder
             schema={schema}
+            examples={examples}
             initialTemplate={emptyTemplate}
             initialData={{}}
             renderTemplate={renderTemplate}

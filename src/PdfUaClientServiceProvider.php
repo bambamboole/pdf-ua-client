@@ -14,10 +14,12 @@ use Bambamboole\PdfUaClient\Blocks\KeyValueBlock;
 use Bambamboole\PdfUaClient\Blocks\SpacerBlock;
 use Bambamboole\PdfUaClient\Blocks\TableBlock;
 use Bambamboole\PdfUaClient\Blocks\TextBlock;
+use Bambamboole\PdfUaClient\Console\ExportDataSchemaCommand;
 use Bambamboole\PdfUaClient\Console\ExportSchemaCommand;
 use Bambamboole\PdfUaClient\Examples\InvoiceExample;
 use Bambamboole\PdfUaClient\Http\PdfApiClient;
 use Bambamboole\PdfUaClient\Rendering\TemplateRenderer;
+use Bambamboole\PdfUaClient\Template\DataSchemaCompiler;
 use Bambamboole\PdfUaClient\Template\ExampleRegistry;
 use Bambamboole\PdfUaClient\Template\TemplateFactory;
 use Bambamboole\PdfUaClient\Template\TemplateSchemaCompiler;
@@ -37,7 +39,8 @@ final class PdfUaClientServiceProvider extends PackageServiceProvider
             ->hasConfigFile()
             ->hasViews('pdf-ua-client')
             ->hasTranslations()
-            ->hasCommand(ExportSchemaCommand::class);
+            ->hasCommand(ExportSchemaCommand::class)
+            ->hasCommand(ExportDataSchemaCommand::class);
     }
 
     public function packageRegistered(): void
@@ -64,11 +67,10 @@ final class PdfUaClientServiceProvider extends PackageServiceProvider
 
         $this->app->singleton(BlockHydrator::class, fn (Container $app): BlockHydrator => new BlockHydrator(
             $app->make(BlockRegistry::class),
-            $app->make(PropsReflector::class),
         ));
 
         $this->app->singleton(ExampleRegistry::class, function (): ExampleRegistry {
-            return (new ExampleRegistry)->register(InvoiceExample::document());
+            return (new ExampleRegistry)->register('Invoice', InvoiceExample::document(), InvoiceExample::data());
         });
 
         $this->app->singleton(TemplateSchemaCompiler::class, fn (Container $app): TemplateSchemaCompiler => new TemplateSchemaCompiler(
@@ -81,8 +83,15 @@ final class PdfUaClientServiceProvider extends PackageServiceProvider
             $app->make(TemplateSchemaCompiler::class),
         ));
 
+        $this->app->singleton(DataSchemaCompiler::class, fn (Container $app): DataSchemaCompiler => new DataSchemaCompiler(
+            $app->make(PropsReflector::class),
+            $app->make(BlockRegistry::class),
+            $app->make(TemplateFactory::class),
+        ));
+
         $this->app->singleton(TemplateRenderer::class, fn (Container $app): TemplateRenderer => new TemplateRenderer(
             $app->make(BlockHydrator::class),
+            $app->make(DataSchemaCompiler::class),
         ));
 
         $this->app->singleton(PdfApiClient::class, function (Container $app): PdfApiClient {

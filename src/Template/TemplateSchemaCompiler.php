@@ -41,7 +41,6 @@ final class TemplateSchemaCompiler
             $configClass = $registry->configClass($type);
 
             $propsSchema = $this->reflector->reflectBlock($blockClass)['data'];
-            $propsSchema = $this->stripRequired($propsSchema);
 
             $configRef = $this->registerConfigRef($configClass, $defs);
 
@@ -51,7 +50,6 @@ final class TemplateSchemaCompiler
                 'allOf' => [['$ref' => '#/$defs/blockBase']],
                 'properties' => [
                     'type' => ['const' => $type, 'type' => 'string'],
-                    'props' => ['$ref' => "#/\$defs/{$propsDefName}"],
                     'config' => $configRef,
                 ],
                 'unevaluatedProperties' => false,
@@ -98,7 +96,7 @@ final class TemplateSchemaCompiler
             '$defs' => $allDefs === [] ? new stdClass : $allDefs,
         ];
 
-        $examples = $this->examples->all();
+        $examples = array_map(static fn (array $entry): array => $entry['template'], $this->examples->all());
         if ($examples !== []) {
             $schema['examples'] = $examples;
         }

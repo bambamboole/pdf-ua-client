@@ -14,6 +14,20 @@ export function formatWidths(percents: number[]): string[] {
   return percents.map((p) => `${p}%`);
 }
 
+export function gridTemplateForWidths(
+  widths: (string | number)[] | null,
+  count: number,
+): string | null {
+  if (!widths) {
+    return null;
+  }
+
+  return parseWidths(widths, count)
+    .map((percent) => `minmax(0, ${percent}fr)`)
+    .flatMap((column, index) => (index < count - 1 ? [column, "0.375rem"] : [column]))
+    .join(" ");
+}
+
 export function setBoundary(percents: number[], leftIndex: number, leftPercent: number): number[] {
   const next = [...percents];
   const pair = next[leftIndex] + next[leftIndex + 1];

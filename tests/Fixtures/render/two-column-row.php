@@ -11,12 +11,15 @@ return new TestFixture(
             [
                 'columnWidths' => ['60%', '40%'],
                 'blocks' => [
-                    ['type' => 'text', 'props' => ['text' => 'Left column']],
-                    ['type' => 'text', 'props' => ['text' => 'Right column']],
+                    ['type' => 'text', 'id' => 'l'],
+                    ['type' => 'text', 'id' => 'r'],
                 ],
             ],
         ],
     ],
-    data: [],
+    data: [
+        'l' => ['text' => 'Left column'],
+        'r' => ['text' => 'Right column'],
+    ],
     html: '<table class="row" role="presentation"><tr><td style="width: 60%;"><div class="block-1"><p>Left column</p></div></td><td style="width: 40%;"><div class="block-2"><p>Right column</p></div></td></tr></table>',
 );

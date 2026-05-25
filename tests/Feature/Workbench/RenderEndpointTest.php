@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Bambamboole\PdfUaClient\Examples\InvoiceExample;
+
 use function Pest\Laravel\postJson;
 
 it('renders a posted template to html', function (): void {
@@ -11,10 +13,11 @@ it('renders a posted template to html', function (): void {
             'config' => ['page' => ['format' => 'A4']],
             'rows' => [
                 ['blocks' => [
-                    ['type' => 'heading', 'props' => ['text' => 'Invoice 2026-001'], 'config' => ['level' => 1]],
+                    ['type' => 'heading', 'id' => 'title', 'config' => ['level' => 1]],
                 ]],
             ],
         ],
+        'data' => ['title' => ['text' => 'Invoice 2026-001']],
     ]);
 
     $response->assertOk();
@@ -47,4 +50,34 @@ it('injects posted data as runtime data by block id', function (): void {
 
     $response->assertOk();
     expect($response->json('html'))->toContain('<h1>Injected Heading</h1>');
+});
+
+it('returns 422 when posted data violates the template data contract', function (): void {
+    $response = postJson('/render', [
+        'template' => [
+            'version' => 1,
+            'config' => ['page' => ['format' => 'A4']],
+            'rows' => [
+                ['blocks' => [
+                    ['type' => 'heading', 'id' => 'h', 'config' => ['level' => 1]],
+                ]],
+            ],
+        ],
+        'data' => [],
+    ]);
+
+    $response->assertStatus(422);
+});
+
+it('renders the registered invoice example payload', function (): void {
+    $data = InvoiceExample::data();
+    $data['rule'] = [];
+
+    $response = postJson('/render', [
+        'template' => InvoiceExample::document(),
+        'data' => $data,
+    ]);
+
+    $response->assertSuccessful();
+    expect($response->json('html'))->toContain('ACME GmbH');
 });

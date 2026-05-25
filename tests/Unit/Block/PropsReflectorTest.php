@@ -108,6 +108,16 @@ final readonly class Pair
     public function __construct(public string $label, public string $value) {}
 }
 
+final readonly class ScalarListConfig
+{
+    public function __construct(
+        #[ArrayOf('string')]
+        public ?array $names = null,
+        #[ArrayOf('int', 'string')]
+        public ?array $widths = null,
+    ) {}
+}
+
 #[Block('nested-block')]
 final readonly class NestedBlock implements BlockInterface
 {
@@ -131,6 +141,19 @@ it('reflects #[ArrayOf] to a typed item schema', function () {
     expect($schema['properties']['entries']['items']['type'])->toBe('object');
     expect($schema['properties']['entries']['items']['required'])->toBe(['label', 'value']);
     expect($schema['properties']['entries']['items']['properties']['label'])->toBe(['type' => 'string']);
+});
+
+it('reflects scalar #[ArrayOf] items for nullable arrays', function () {
+    $schema = (new PropsReflector)->reflect(ScalarListConfig::class);
+
+    expect($schema['properties']['names'])->toMatchArray([
+        'type' => ['array', 'null'],
+        'items' => ['type' => 'string'],
+    ]);
+    expect($schema['properties']['widths'])->toMatchArray([
+        'type' => ['array', 'null'],
+        'items' => ['type' => ['integer', 'string']],
+    ]);
 });
 
 it('reflects nested object properties recursively', function () {

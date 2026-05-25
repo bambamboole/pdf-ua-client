@@ -6,7 +6,7 @@ namespace Bambamboole\PdfUaClient\Attributes;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY | Attribute::TARGET_CLASS)]
-final class Title
+final readonly class Title
 {
-    public function __construct(public readonly string $text) {}
+    public function __construct(public string $text) {}
 }

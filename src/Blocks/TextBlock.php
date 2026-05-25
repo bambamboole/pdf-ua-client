@@ -13,11 +13,11 @@ use Bambamboole\PdfUaClient\Contracts\BlockInterface;
 #[Block('text')]
 #[Title('Text')]
 #[Description('A paragraph of text.')]
-final class TextBlock implements BlockInterface
+final readonly class TextBlock implements BlockInterface
 {
     public function __construct(
         #[Example('Thank you for your business.')]
-        public readonly string $text,
+        public string $text,
     ) {}
 
     public function render(BlockConfig $config): string

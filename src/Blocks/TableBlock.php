@@ -11,7 +11,7 @@ use Bambamboole\PdfUaClient\Contracts\BlockInterface;
 
 #[Block('table', config: TableConfig::class)]
 #[Title('Table')]
-final class TableBlock implements BlockInterface
+final readonly class TableBlock implements BlockInterface
 {
     /**
      * @param  list<string>  $headers
@@ -19,9 +19,9 @@ final class TableBlock implements BlockInterface
      */
     public function __construct(
         #[Example(['Column A', 'Column B'])]
-        public readonly array $headers,
+        public array $headers,
         #[Example([['A1', 'B1'], ['A2', 'B2']])]
-        public readonly array $rows,
+        public array $rows,
     ) {}
 
     public function render(TableConfig $config): string

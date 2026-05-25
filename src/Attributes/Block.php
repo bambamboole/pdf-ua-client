@@ -7,13 +7,13 @@ use Attribute;
 use Bambamboole\PdfUaClient\Config\BlockConfig;
 
 #[Attribute(Attribute::TARGET_CLASS)]
-final class Block
+final readonly class Block
 {
     /**
      * @param  class-string<BlockConfig>  $config
      */
     public function __construct(
-        public readonly string $type,
-        public readonly string $config = BlockConfig::class,
+        public string $type,
+        public string $config = BlockConfig::class,
     ) {}
 }

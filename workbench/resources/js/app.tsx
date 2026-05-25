@@ -1,15 +1,21 @@
 import '../css/app.css';
 import { createInertiaApp } from '@inertiajs/react';
+import type { ComponentType } from 'react';
 import { createRoot } from 'react-dom/client';
 
+type PageModule = { default: ComponentType<Record<string, unknown>> };
+
 createInertiaApp({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolve: (name: string): any => {
-        const pages = import.meta.glob('./Pages/**/*.tsx', { eager: true });
+    strictMode: true,
+    resolve: (name: string): PageModule => {
+        const pages = import.meta.glob<PageModule>('./Pages/**/*.tsx', { eager: true });
         return pages[`./Pages/${name}.tsx`];
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setup({ el, App, props }: any) {
+    setup({ el, App, props }) {
+        if (!el) {
+            return;
+        }
+
         createRoot(el).render(<App {...props} />);
     },
 });

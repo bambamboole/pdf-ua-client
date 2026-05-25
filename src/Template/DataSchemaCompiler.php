@@ -7,12 +7,12 @@ use Bambamboole\PdfUaClient\Block\BlockRegistry;
 use Bambamboole\PdfUaClient\Block\PropsReflector;
 use stdClass;
 
-final class DataSchemaCompiler
+final readonly class DataSchemaCompiler
 {
     public function __construct(
-        private readonly PropsReflector $reflector,
-        private readonly BlockRegistry $registry,
-        private readonly TemplateFactory $factory,
+        private PropsReflector $reflector,
+        private BlockRegistry $registry,
+        private TemplateFactory $factory,
     ) {}
 
     /**

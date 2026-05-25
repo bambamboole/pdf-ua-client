@@ -6,6 +6,7 @@ use Bambamboole\PdfUaClient\Http\Attachment;
 use Bambamboole\PdfUaClient\Http\Exceptions\PdfApiClientException;
 use Bambamboole\PdfUaClient\Http\Exceptions\PdfApiServerException;
 use Bambamboole\PdfUaClient\Http\PdfApiClient;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Support\Facades\Http;
 
@@ -13,6 +14,7 @@ beforeEach(function () {
     /** @var Factory $factory */
     $factory = Http::getFacadeRoot();
     $this->factory = $factory;
+    Http::preventStrayRequests();
 });
 
 it('posts html to /convert and returns the PDF body', function () {
@@ -26,12 +28,10 @@ it('posts html to /convert and returns the PDF body', function () {
 
     expect($result)->toBe('PDF-BYTES');
 
-    Http::assertSent(function ($request) {
-        return $request->url() === 'http://api.test/convert'
-            && $request->method() === 'POST'
-            && $request['html'] === '<html>hi</html>'
-            && ! isset($request['attachments']);
-    });
+    Http::assertSent(fn ($request) => $request->url() === 'http://api.test/convert'
+        && $request->method() === 'POST'
+        && $request['html'] === '<html>hi</html>'
+        && ! isset($request['attachments']));
 });
 
 it('sends attachments when provided', function () {
@@ -77,6 +77,28 @@ it('maps 5xx responses to PdfApiServerException', function () {
         ->toThrow(PdfApiServerException::class, 'PDF API convert failed (5xx)');
 });
 
+it('retries transient server errors before returning a successful PDF response', function () {
+    Http::fakeSequence('http://api.test/convert')
+        ->push('upstream broke', 502)
+        ->push('PDF-BYTES', 200);
+
+    $client = new PdfApiClient(http: $this->factory, baseUrl: 'http://api.test', retryAttempts: 2, retrySleepMs: 1);
+
+    $result = $client->convert('<html/>');
+
+    expect($result)->toBe('PDF-BYTES');
+    Http::assertSentCount(2);
+});
+
+it('maps connection failures to server exceptions', function () {
+    Http::fake(fn () => throw new ConnectionException('connection refused'));
+
+    $client = new PdfApiClient(http: $this->factory, baseUrl: 'http://api.test', retryAttempts: 1);
+
+    expect(fn () => $client->convert('<html/>'))
+        ->toThrow(PdfApiServerException::class, 'PDF API connection failed');
+});
+
 it('sends bearer token when configured', function () {
     Http::fake([
         'http://api.test/convert' => Http::response('PDF', 200),
@@ -96,14 +118,12 @@ it('posts raw PDF body to /validate and returns parsed JSON', function () {
 
     $client = new PdfApiClient(http: $this->factory, baseUrl: 'http://api.test');
 
-    $result = $client->validate('PDF-BYTES', 'doc.pdf');
+    $result = $client->validate('PDF-BYTES');
 
     expect($result)->toBe(['compliant' => true, 'issues' => []]);
 
-    Http::assertSent(function ($request) {
-        return $request->url() === 'http://api.test/validate'
-            && $request->method() === 'POST'
-            && $request->hasHeader('Content-Type', 'application/pdf')
-            && $request->body() === 'PDF-BYTES';
-    });
+    Http::assertSent(fn ($request) => $request->url() === 'http://api.test/validate'
+        && $request->method() === 'POST'
+        && $request->hasHeader('Content-Type', 'application/pdf')
+        && $request->body() === 'PDF-BYTES');
 });

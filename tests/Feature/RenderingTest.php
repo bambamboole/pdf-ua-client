@@ -199,7 +199,7 @@ it('emits a hr { border: none; } base rule once per rendered document', function
 
     $html = $this->renderer->render($template, ['x' => ['text' => 'x']]);
 
-    expect(substr_count($html, 'hr { border: none; }'))->toBe(1);
+    expect(substr_count((string) $html, 'hr { border: none; }'))->toBe(1);
 });
 
 it('emits template typography once on the body and lets CSS inheritance handle the rest', function () {
@@ -217,7 +217,7 @@ it('emits template typography once on the body and lets CSS inheritance handle t
     $html = $this->renderer->render($template, ['h' => ['text' => 'Title']]);
 
     expect($html)->toContain("body { font-family: 'Inter'; font-size: 10pt; }");
-    expect(substr_count($html, "font-family: 'Inter'"))->toBe(1);
+    expect(substr_count((string) $html, "font-family: 'Inter'"))->toBe(1);
 });
 
 it('combines per-block typography and spacing into a single wrapper-class-scoped rule', function () {

@@ -35,5 +35,5 @@ it('builds + renders + sends a Template through PdfApiClient end-to-end', functi
 
     expect($pdf)->toBe('FAKE-PDF-BYTES');
 
-    Http::assertSent(fn ($req) => $req->url() === 'http://pdf-ua-api:8888/convert' && str_contains($req['html'], 'Test Document'));
+    Http::assertSent(fn ($req) => $req->url() === 'http://pdf-ua-api:8888/convert' && str_contains((string) $req['html'], 'Test Document'));
 });

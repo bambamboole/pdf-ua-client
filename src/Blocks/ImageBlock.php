@@ -11,13 +11,13 @@ use Bambamboole\PdfUaClient\Contracts\BlockInterface;
 
 #[Block('image', config: ImageConfig::class)]
 #[Title('Image')]
-final class ImageBlock implements BlockInterface
+final readonly class ImageBlock implements BlockInterface
 {
     public function __construct(
         #[Example('https://placehold.co/200x80')]
-        public readonly string $src,
+        public string $src,
         #[Example('Logo')]
-        public readonly string $alt = '',
+        public string $alt = '',
     ) {}
 
     public function render(ImageConfig $config): string

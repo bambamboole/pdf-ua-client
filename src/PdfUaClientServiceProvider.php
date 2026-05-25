@@ -69,9 +69,7 @@ final class PdfUaClientServiceProvider extends PackageServiceProvider
             $app->make(BlockRegistry::class),
         ));
 
-        $this->app->singleton(ExampleRegistry::class, function (): ExampleRegistry {
-            return (new ExampleRegistry)->register('Invoice', InvoiceExample::document(), InvoiceExample::data());
-        });
+        $this->app->singleton(ExampleRegistry::class, fn (): ExampleRegistry => (new ExampleRegistry)->register('Invoice', InvoiceExample::document(), InvoiceExample::data()));
 
         $this->app->singleton(TemplateSchemaCompiler::class, fn (Container $app): TemplateSchemaCompiler => new TemplateSchemaCompiler(
             $app->make(PropsReflector::class),

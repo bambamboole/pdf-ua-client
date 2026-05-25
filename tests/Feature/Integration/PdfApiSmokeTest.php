@@ -47,7 +47,7 @@ it('renders the invoice fixture and converts it to a real PDF via pdf-ua-api', f
     $pdf = $this->client->convert($html);
 
     // PDFs start with the "%PDF-" magic and end with "%%EOF".
-    expect(substr($pdf, 0, 5))->toBe('%PDF-');
-    expect(strlen($pdf))->toBeGreaterThan(1024);
-    expect(str_contains($pdf, '%%EOF'))->toBeTrue();
+    expect(substr((string) $pdf, 0, 5))->toBe('%PDF-');
+    expect(strlen((string) $pdf))->toBeGreaterThan(1024);
+    expect(str_contains((string) $pdf, '%%EOF'))->toBeTrue();
 });

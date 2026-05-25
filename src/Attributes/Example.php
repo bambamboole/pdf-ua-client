@@ -6,7 +6,7 @@ namespace Bambamboole\PdfUaClient\Attributes;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
-final class Example
+final readonly class Example
 {
-    public function __construct(public readonly mixed $value) {}
+    public function __construct(public mixed $value) {}
 }

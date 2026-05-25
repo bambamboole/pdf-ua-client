@@ -32,9 +32,9 @@ final readonly class HydrationBlockConfig extends BlockConfig
 }
 
 #[Block('hydration-block', config: HydrationBlockConfig::class)]
-final class HydrationBlock implements BlockInterface
+final readonly class HydrationBlock implements BlockInterface
 {
-    public function __construct(public readonly string $text) {}
+    public function __construct(public string $text) {}
 
     public function render(HydrationBlockConfig $config): string
     {

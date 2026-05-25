@@ -114,8 +114,8 @@ export function SelectWidget(props: WidgetProps) {
       onFocus={(e) => onFocus(id, e.target.value)}
     >
       {!multiple && <option value="">{placeholder ?? "—"}</option>}
-      {enumOptions.map((opt, i) => (
-        <option key={i} value={String(opt.value)}>
+      {enumOptions.map((opt) => (
+        <option key={String(opt.value)} value={String(opt.value)}>
           {opt.label}
         </option>
       ))}

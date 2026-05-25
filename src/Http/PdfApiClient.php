@@ -36,9 +36,8 @@ class PdfApiClient
     }
 
     /** @return array<string, mixed> */
-    public function validate(string $pdfBinary, string $filename): array
+    public function validate(string $pdfBinary): array
     {
-        unset($filename);
         $response = $this->send('validate', fn () => $this->request()
             ->withBody($pdfBinary, 'application/pdf')
             ->post($this->url('/validate'))

@@ -68,7 +68,7 @@ it('has no orphan $defs entries', function () {
     $referenced = array_unique($referenced);
 
     foreach (array_keys($schemaArr['$defs'] ?? []) as $defName) {
-        if (str_ends_with($defName, 'Props')) {
+        if (str_ends_with((string) $defName, 'Props')) {
             continue;
         }
         expect(in_array($defName, $referenced, true))->toBeTrue("Orphan \$def: {$defName}");

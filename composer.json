@@ -50,6 +50,11 @@
         "lint": "./vendor/bin/pint",
         "refactor": "./vendor/bin/rector",
         "analyse": "./vendor/bin/phpstan analyse",
+        "fix": [
+            "@lint",
+            "npm run lint:fix",
+            "npm run fmt"
+        ],
         "schema": "@php bin/export-schema.php",
         "post-autoload-dump": [
             "@clear",

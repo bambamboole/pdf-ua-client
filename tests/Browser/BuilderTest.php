@@ -43,7 +43,7 @@ it('sizes the build canvas to the selected page format', function (): void {
 it('renders the invoice example preview and matches the browser screenshot', function (): void {
     visit('/')
         ->click('Invoice')
-        ->click('Render')
+        ->click('HTML')
         ->wait(1)
         ->assertNoJavaScriptErrors()
         ->assertNoConsoleLogs()

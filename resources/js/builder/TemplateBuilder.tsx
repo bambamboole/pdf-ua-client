@@ -25,15 +25,17 @@ import { exampleFromSchema } from "./lib/exampleFromSchema";
 import type { DataMap, Json, JsonSchema, Template } from "./types";
 
 const PageCanvas = lazy(() => import("./PageCanvas"));
+const PdfCanvas = lazy(() => import("./PdfCanvas"));
 const DataView = lazy(() => import("./DataView"));
 const SchemaView = lazy(() => import("./SchemaView"));
 
-type BuilderTab = "build" | "schema" | "render";
+type BuilderTab = "build" | "schema" | "html" | "pdf";
 
 const tabs: Array<{ key: BuilderTab; label: string }> = [
   { key: "build", label: "Build" },
   { key: "schema", label: "Schema" },
-  { key: "render", label: "Render" },
+  { key: "html", label: "HTML" },
+  { key: "pdf", label: "PDF" },
 ];
 
 interface Props {
@@ -42,6 +44,7 @@ interface Props {
   initialTemplate: Template;
   initialData?: DataMap;
   renderTemplate: (t: unknown, d: unknown) => Promise<string>;
+  renderPdf: (t: unknown, d: unknown) => Promise<Blob>;
   onChange?: (t: unknown) => void;
 }
 
@@ -56,6 +59,7 @@ export default function TemplateBuilder({
   initialTemplate,
   initialData,
   renderTemplate,
+  renderPdf,
   onChange,
 }: Props) {
   const [model, setModel] = useState(() => fromTemplate(initialTemplate, initialData));
@@ -64,11 +68,26 @@ export default function TemplateBuilder({
   const [activeLabel, setActiveLabel] = useState<string | null>(null);
   const [html, setHtml] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pdfDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pdfUrlRef = useRef<string | null>(null);
   const template = useMemo(() => toTemplate(model), [model]);
   const data = useMemo(() => toDataMap(model), [model]);
   const dataSchema = useMemo(() => dataSchemaForTemplate(schema, template), [schema, template]);
+
+  const replacePdfUrl = useCallback((blob: Blob) => {
+    if (pdfUrlRef.current) {
+      URL.revokeObjectURL(pdfUrlRef.current);
+    }
+
+    const url = URL.createObjectURL(blob);
+    pdfUrlRef.current = url;
+    setPdfUrl(url);
+  }, []);
 
   useEffect(() => {
     if (onChange) {
@@ -87,6 +106,58 @@ export default function TemplateBuilder({
     }, 300);
     return () => clearTimeout(debounceRef.current!);
   }, [template, data, renderTemplate, onChange]);
+
+  useEffect(
+    () => () => {
+      if (pdfUrlRef.current) {
+        URL.revokeObjectURL(pdfUrlRef.current);
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (tab !== "pdf") {
+      return;
+    }
+
+    let cancelled = false;
+    setPdfLoading(true);
+    setPdfError(null);
+
+    if (pdfDebounceRef.current) {
+      clearTimeout(pdfDebounceRef.current);
+    }
+
+    pdfDebounceRef.current = setTimeout(() => {
+      renderPdf(template, data)
+        .then((blob) => {
+          if (cancelled) {
+            return;
+          }
+
+          replacePdfUrl(blob);
+          setPdfError(null);
+        })
+        .catch((cause: unknown) => {
+          if (!cancelled) {
+            setPdfError(String((cause as Error)?.message ?? cause));
+          }
+        })
+        .finally(() => {
+          if (!cancelled) {
+            setPdfLoading(false);
+          }
+        });
+    }, 300);
+
+    return () => {
+      cancelled = true;
+      if (pdfDebounceRef.current) {
+        clearTimeout(pdfDebounceRef.current);
+      }
+    };
+  }, [tab, template, data, renderPdf, replacePdfUrl]);
 
   const selectBlock = useCallback((uid: string) => setSelectedBlockUid(uid), []);
 
@@ -193,7 +264,7 @@ export default function TemplateBuilder({
             <div>
               <h1 className="text-sm font-semibold text-[var(--builder-ink)]">Template builder</h1>
               <p className="text-xs text-[var(--builder-muted)]">
-                Compose blocks, inspect data, and render the PDF preview.
+                Compose blocks, inspect data, and preview HTML or PDF output.
               </p>
             </div>
             <div
@@ -263,11 +334,11 @@ export default function TemplateBuilder({
                   onExportTemplate={handleExport}
                 />
               </Suspense>
-            ) : error ? (
+            ) : tab === "html" && error ? (
               <div className="rounded-[var(--builder-radius)] border border-red-200 bg-red-50 p-4 text-red-700">
                 {error}
               </div>
-            ) : (
+            ) : tab === "html" ? (
               <Suspense
                 fallback={
                   <div className="h-96 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-panel)]" />
@@ -275,6 +346,24 @@ export default function TemplateBuilder({
               >
                 <PageCanvas format={format} html={html} />
               </Suspense>
+            ) : pdfError ? (
+              <div className="rounded-[var(--builder-radius)] border border-red-200 bg-red-50 p-4 text-red-700">
+                {pdfError}
+              </div>
+            ) : pdfLoading && pdfUrl === null ? (
+              <div className="h-96 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-panel)]" />
+            ) : pdfUrl ? (
+              <Suspense
+                fallback={
+                  <div className="h-96 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-panel)]" />
+                }
+              >
+                <PdfCanvas url={pdfUrl} />
+              </Suspense>
+            ) : (
+              <div className="rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-panel)] p-4 text-sm text-[var(--builder-muted)]">
+                PDF preview is waiting for generated output.
+              </div>
             )}
           </div>
         </main>

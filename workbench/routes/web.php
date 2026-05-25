@@ -7,3 +7,4 @@ use Workbench\App\Http\Controllers\TemplateBuilderController;
 
 Route::get('/', [TemplateBuilderController::class, 'index']);
 Route::post('/render', [TemplateBuilderController::class, 'render']);
+Route::post('/pdf', [TemplateBuilderController::class, 'pdf']);

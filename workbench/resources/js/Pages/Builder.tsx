@@ -28,6 +28,32 @@ async function renderTemplate(template: unknown, data: unknown): Promise<string>
     return payload.html;
 }
 
+async function renderPdf(template: unknown, data: unknown): Promise<Blob> {
+    const response = await fetch('/pdf', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/pdf, application/json',
+            'X-XSRF-TOKEN': xsrfToken(),
+        },
+        body: JSON.stringify({ template, data }),
+    });
+
+    if (!response.ok) {
+        let message = `PDF request failed (${response.status})`;
+
+        if (response.headers.get('Content-Type')?.includes('application/json')) {
+            const payload = await response.json() as { message?: string };
+            message = payload.message ?? message;
+        }
+
+        throw new Error(message);
+    }
+
+    return response.blob();
+}
+
 const emptyTemplate: Template = { version: 1, config: {}, rows: [] };
 
 export default function Builder({ schema, examples }: { schema: JsonSchema; examples?: unknown }) {
@@ -38,6 +64,7 @@ export default function Builder({ schema, examples }: { schema: JsonSchema; exam
             initialTemplate={emptyTemplate}
             initialData={{}}
             renderTemplate={renderTemplate}
+            renderPdf={renderPdf}
         />
     );
 }

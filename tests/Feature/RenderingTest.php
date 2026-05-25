@@ -367,6 +367,7 @@ it('renders repeated footer rows and page numbers in print mode', function () {
         'config' => [
             'page' => [
                 'format' => 'A4',
+                'margins' => ['top' => 25, 'right' => 20, 'bottom' => 20, 'left' => 25],
                 'footer' => [
                     'repeat' => true,
                     'pageNumbers' => ['enabled' => true, 'position' => 'right'],
@@ -388,6 +389,7 @@ it('renders repeated footer rows and page numbers in print mode', function () {
         'footer_meta' => ['text' => 'ACME GmbH'],
     ], options: new RenderOptions(mode: 'print'));
 
+    expect($html)->toContain('@page { size: A4; margin: 25mm 20mm 32mm 25mm; }');
     expect($html)->toContain('@page { @bottom-right { content: counter(page) " / " counter(pages); font-size: 8pt; color: #9ca3af; } }');
     expect($html)->toContain('<footer class="page-footer page-footer-repeated" role="contentinfo">');
     expect($html)->toContain('<p>Confidential</p>');

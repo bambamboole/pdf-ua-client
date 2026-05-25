@@ -23,6 +23,8 @@ use Opis\JsonSchema\Validator;
 
 final class TemplateRenderer
 {
+    private const int RepeatedFooterReserveMm = 12;
+
     private int $blockCounter = 0;
 
     /** @var array<string, true> */
@@ -280,7 +282,7 @@ CSS;
 
     private function printPageCss(PageConfig $page): string
     {
-        $margin = $this->marginShorthand($page->margins);
+        $margin = $this->printMarginShorthand($page);
         $css = "@page { size: {$page->format->value}; margin: {$margin}; }";
 
         $pageNumbers = $page->footer->pageNumbers->enabled ? $page->footer->pageNumbers : $page->pageNumbers;
@@ -383,5 +385,24 @@ CSS;
         $left = $margins->left ?? 0;
 
         return "{$top}mm {$right}mm {$bottom}mm {$left}mm";
+    }
+
+    private function printMarginShorthand(PageConfig $page): string
+    {
+        $top = $page->margins->top ?? 0;
+        $right = $page->margins->right ?? 0;
+        $bottom = ($page->margins->bottom ?? 0) + $this->repeatedFooterReserve($page);
+        $left = $page->margins->left ?? 0;
+
+        return "{$top}mm {$right}mm {$bottom}mm {$left}mm";
+    }
+
+    private function repeatedFooterReserve(PageConfig $page): int
+    {
+        if (! $page->footer->repeat || $page->footer->rows === []) {
+            return 0;
+        }
+
+        return self::RepeatedFooterReserveMm;
     }
 }

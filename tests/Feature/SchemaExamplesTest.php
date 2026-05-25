@@ -17,12 +17,8 @@ it('attaches the registered example documents to the compiled schema root', func
 
 it('the invoice example validates against the schema', function (): void {
     $doc = InvoiceExample::document();
-    $data = [];
-    $rows = array_map(function (array $row) use (&$data): array {
-        $row['blocks'] = array_map(function (array $b) use (&$data): array {
-            if (isset($b['props'], $b['id'])) {
-                $data[$b['id']] = $b['props'];
-            }
+    $rows = array_map(function (array $row): array {
+        $row['blocks'] = array_map(function (array $b): array {
             unset($b['props']);
 
             return $b;

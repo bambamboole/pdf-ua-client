@@ -18,6 +18,7 @@ use Bambamboole\PdfUaClient\Console\ExportSchemaCommand;
 use Bambamboole\PdfUaClient\Examples\InvoiceExample;
 use Bambamboole\PdfUaClient\Http\PdfApiClient;
 use Bambamboole\PdfUaClient\Rendering\TemplateRenderer;
+use Bambamboole\PdfUaClient\Template\DataSchemaCompiler;
 use Bambamboole\PdfUaClient\Template\ExampleRegistry;
 use Bambamboole\PdfUaClient\Template\TemplateFactory;
 use Bambamboole\PdfUaClient\Template\TemplateSchemaCompiler;
@@ -79,6 +80,12 @@ final class PdfUaClientServiceProvider extends PackageServiceProvider
         $this->app->singleton(TemplateFactory::class, fn (Container $app): TemplateFactory => new TemplateFactory(
             $app->make(BlockRegistry::class),
             $app->make(TemplateSchemaCompiler::class),
+        ));
+
+        $this->app->singleton(DataSchemaCompiler::class, fn (Container $app): DataSchemaCompiler => new DataSchemaCompiler(
+            $app->make(PropsReflector::class),
+            $app->make(BlockRegistry::class),
+            $app->make(TemplateFactory::class),
         ));
 
         $this->app->singleton(TemplateRenderer::class, fn (Container $app): TemplateRenderer => new TemplateRenderer(

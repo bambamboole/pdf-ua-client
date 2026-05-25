@@ -1,6 +1,7 @@
 import type { ChangeEvent, FocusEvent } from "react";
 import {
   type BaseInputTemplateProps,
+  type DescriptionFieldProps,
   type FieldTemplateProps,
   type ObjectFieldTemplateProps,
   type WidgetProps,
@@ -76,11 +77,23 @@ export function FieldTemplate(props: FieldTemplateProps) {
           {required ? <span className="text-[var(--builder-danger)]"> *</span> : null}
         </label>
       )}
-      {description}
       {children}
+      {!rendersOwnLegend && description}
       {errors}
       {help}
     </div>
+  );
+}
+
+export function DescriptionFieldTemplate({ id, description }: DescriptionFieldProps) {
+  if (!description) {
+    return null;
+  }
+
+  return (
+    <p id={id} className="mt-1 text-[10px] leading-snug text-[var(--builder-muted)]">
+      {description}
+    </p>
   );
 }
 
@@ -93,7 +106,7 @@ export function ObjectFieldTemplate(props: ObjectFieldTemplateProps) {
           {title}
         </legend>
       )}
-      {description && <p className="mb-2 text-xs text-[var(--builder-muted)]">{description}</p>}
+      {description && <div className="mb-2">{description}</div>}
       {properties.map((el) => (
         <div key={el.name}>{el.content}</div>
       ))}
@@ -138,5 +151,10 @@ export function SelectWidget(props: WidgetProps) {
   );
 }
 
-export const rjsfTemplates = { BaseInputTemplate, FieldTemplate, ObjectFieldTemplate };
+export const rjsfTemplates = {
+  BaseInputTemplate,
+  DescriptionFieldTemplate,
+  FieldTemplate,
+  ObjectFieldTemplate,
+};
 export const rjsfWidgets = { SelectWidget };

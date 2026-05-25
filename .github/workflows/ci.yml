@@ -34,6 +34,8 @@ jobs:
 
       - run: npm test
 
+      - run: npm run build-storybook
+
   php:
     name: PHP (pint, phpstan, pest)
     runs-on: ubuntu-latest
@@ -83,6 +85,11 @@ jobs:
           restore-keys: composer-${{ runner.os }}-
 
       - run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Verify committed Storybook data is up to date
+        run: |
+          composer build:storybook-data
+          git diff --exit-code stories/data
 
       - name: Pint (style check)
         run: composer test:lint

@@ -232,6 +232,10 @@ final class TemplateRenderer
         $bodyTypographyBlock = $bodyTypographyProps !== '' ? "body { {$bodyTypographyProps} }" : '';
         $fontFaces = $this->fontFaceCss();
         $baseCss = $this->baseCss();
+        $hasRepeatedFooter = $options->mode === 'print' && $page->footer->repeat && $page->footer->rows !== [];
+        $bodyContent = $hasRepeatedFooter
+            ? $footerHtml."\n".$bodyHtml
+            : $bodyHtml."\n".$footerHtml;
 
         return <<<HTML
 <!DOCTYPE html>
@@ -249,8 +253,7 @@ final class TemplateRenderer
 </style>
 </head>
 <body>
-{$bodyHtml}
-{$footerHtml}
+{$bodyContent}
 </body>
 </html>
 HTML;
@@ -275,7 +278,7 @@ hr { border: none; border-top: 1px solid #d1d5db; margin: 2.5mm 0; }
 .data-table tbody tr:last-child td { border-bottom: 1px solid #d1d5db; }
 .page-footer { color: #6b7280; font-size: 8pt; line-height: 1.25; }
 .page-footer .row { margin: 0; }
-.page-footer-repeated { position: fixed; left: 0; right: 0; bottom: 0; }
+.page-footer-repeated { position: running(pageFooter); width: 100%; }
 .page-footer-preview { margin-top: 6mm; padding-top: 2mm; border-top: 1px solid #d1d5db; }
 CSS;
     }
@@ -287,9 +290,13 @@ CSS;
 
         $pageNumbers = $page->footer->pageNumbers->enabled ? $page->footer->pageNumbers : $page->pageNumbers;
 
+        if ($page->footer->repeat && $page->footer->rows !== []) {
+            $css .= ' @page { @bottom-center { content: element(pageFooter); } }';
+        }
+
         if ($pageNumbers->enabled) {
             $position = $pageNumbers->position->value;
-            $css .= " @page { @bottom-{$position} { content: counter(page) \" / \" counter(pages); font-size: 8pt; color: #9ca3af; vertical-align: top; padding-top: 2mm; } }";
+            $css .= " @page { @bottom-{$position} { content: counter(page) \" / \" counter(pages); font-size: 8pt; color: #9ca3af; vertical-align: bottom; } }";
         }
 
         return $css;

@@ -296,7 +296,7 @@ CSS;
 
         if ($pageNumbers->enabled) {
             $position = $pageNumbers->position->value;
-            $css .= " @page { @bottom-{$position} { content: counter(page) \" / \" counter(pages); font-size: 8pt; color: #9ca3af; vertical-align: bottom; } }";
+            $css .= " @page { @bottom-{$position} { content: counter(page) \" / \" counter(pages); font-size: 8pt; color: #9ca3af; vertical-align: bottom; padding-bottom: 4mm; } }";
         }
 
         return $css;

@@ -391,7 +391,7 @@ it('renders repeated footer rows and page numbers in print mode', function () {
 
     expect($html)->toContain('@page { size: A4; margin: 25mm 20mm 28mm 25mm; }');
     expect($html)->toContain('@page { @bottom-center { content: element(pageFooter); } }');
-    expect($html)->toContain('@page { @bottom-right { content: counter(page) " / " counter(pages); font-size: 8pt; color: #9ca3af; vertical-align: bottom; } }');
+    expect($html)->toContain('@page { @bottom-right { content: counter(page) " / " counter(pages); font-size: 8pt; color: #9ca3af; vertical-align: bottom; padding-bottom: 4mm; } }');
     expect($html)->toContain('<footer class="page-footer page-footer-repeated" role="contentinfo">');
     expect($html)->toContain('<p>Confidential</p>');
     expect($html)->toContain('position: running(pageFooter); width: 100%;');

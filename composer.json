@@ -43,7 +43,7 @@
         }
     },
     "scripts": {
-        "test": "./vendor/bin/pest",
+        "test": "./vendor/bin/pest --cache-directory=.phpunit.cache",
         "test:lint": "./vendor/bin/pint --test",
         "test:refactor": "./vendor/bin/rector --dry-run",
         "lint": "./vendor/bin/pint",

@@ -17,17 +17,17 @@ export default function InlineBlockEditor({
   onUpdateBlockId,
   onUpdateBlockConfig,
 }: Props) {
-  const [tab, setTab] = useState<"content" | "config">("content");
+  const [tab, setTab] = useState<"settings" | "config">("settings");
 
   return (
     <div data-inline-block-editor className="mt-3 border-t border-gray-100 pt-3">
       <div className="mb-3 flex gap-1">
         <button
           type="button"
-          onClick={() => setTab("content")}
-          className={`rounded px-2 py-1 text-xs font-medium ${tab === "content" ? "bg-gray-800 text-white" : "text-gray-500 hover:bg-gray-100"}`}
+          onClick={() => setTab("settings")}
+          className={`rounded px-2 py-1 text-xs font-medium ${tab === "settings" ? "bg-gray-800 text-white" : "text-gray-500 hover:bg-gray-100"}`}
         >
-          Content
+          Settings
         </button>
         <button
           type="button"
@@ -37,18 +37,25 @@ export default function InlineBlockEditor({
           Config
         </button>
       </div>
-      {tab === "content" ? (
-        <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">Block id</label>
-          <input
-            key={block.uid}
-            className="block w-full rounded border border-gray-300 px-2 py-1 font-mono text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            defaultValue={block.id}
-            onBlur={(event) => onUpdateBlockId(block.uid, event.target.value)}
-          />
-          <p className="mt-1 text-xs text-gray-400">
-            {getBlockTitle(schema, block.type)} data key for injection
-          </p>
+      {tab === "settings" ? (
+        <div className="space-y-3">
+          <div>
+            <label className="mb-1 block text-xs font-medium text-gray-600">Type</label>
+            <input
+              className="block w-full rounded border border-gray-200 bg-gray-50 px-2 py-1 text-sm text-gray-500"
+              value={getBlockTitle(schema, block.type)}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-gray-600">Block id</label>
+            <input
+              key={block.uid}
+              className="block w-full rounded border border-gray-300 px-2 py-1 font-mono text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              defaultValue={block.id}
+              onBlur={(event) => onUpdateBlockId(block.uid, event.target.value)}
+            />
+          </div>
         </div>
       ) : (
         <Suspense fallback={<div className="h-24 animate-pulse rounded bg-gray-100" />}>

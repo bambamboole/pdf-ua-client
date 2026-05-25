@@ -7,7 +7,6 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { humanizeType } from "./lib/schema";
 import { gridTemplateForWidths } from "./lib/columns";
 import { pageSizeForFormat } from "./lib/pageSizes";
 import BlockDataSummary from "./BlockDataSummary";
@@ -85,8 +84,14 @@ function BlockBox({
       className={`${layoutStyle ? "" : "flex-1"} rounded border bg-white px-3 py-2 text-sm ${selected ? "border-blue-500 ring-1 ring-blue-300" : "border-gray-200"} ${isDragging ? "opacity-50" : ""}`}
     >
       <div className="flex items-center justify-between gap-2">
-        <span {...listeners} {...attributes} className="cursor-grab font-medium text-gray-800">
-          ⠿ {humanizeType(block.type)}
+        <span
+          {...listeners}
+          {...attributes}
+          aria-label="Move block"
+          title="Move block"
+          className="cursor-grab text-gray-400"
+        >
+          ⠿
         </span>
         <span className="flex items-center gap-2">
           <button
@@ -123,7 +128,7 @@ function BlockBox({
           onPointerDown={(event) => event.stopPropagation()}
           className="cursor-pointer text-xs font-medium text-gray-500 hover:text-gray-800"
         >
-          Settings
+          More
         </summary>
         <InlineBlockEditor
           block={block as unknown as EditorBlock}

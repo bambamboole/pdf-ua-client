@@ -3,7 +3,7 @@ import type { DataMap } from "./types";
 export default function DataView({ data }: { data: DataMap }) {
   const json = JSON.stringify(data, null, 2);
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="min-w-0">
       <div className="mb-2 flex justify-end">
         <button
           type="button"

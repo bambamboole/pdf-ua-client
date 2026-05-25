@@ -213,22 +213,30 @@ export default function TemplateBuilder({
           </div>
           <div className="flex-1 overflow-auto bg-gray-100 p-6">
             {tab === "build" ? (
-              <EditCanvas
-                model={model}
-                schema={schema}
-                format={format}
-                selectedBlockUid={selectedBlockUid}
-                onSelectBlock={selectBlock}
-                onRemoveBlock={(uid) => setModel((m) => removeBlock(m, uid))}
-                onRemoveRow={(uid) => setModel((m) => removeRow(m, uid))}
-                onSetRowWidths={(rowUid, widths) =>
-                  setModel((m) => setRowWidths(m, rowUid, widths))
-                }
-                onUpdateBlockId={(uid, id) => setModel((m) => updateBlockId(m, uid, id))}
-                onUpdateBlockConfig={(uid, config) =>
-                  setModel((m) => updateBlockConfig(m, uid, config as Json))
-                }
-              />
+              <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
+                <EditCanvas
+                  model={model}
+                  schema={schema}
+                  format={format}
+                  selectedBlockUid={selectedBlockUid}
+                  onSelectBlock={selectBlock}
+                  onRemoveBlock={(uid) => setModel((m) => removeBlock(m, uid))}
+                  onRemoveRow={(uid) => setModel((m) => removeRow(m, uid))}
+                  onSetRowWidths={(rowUid, widths) =>
+                    setModel((m) => setRowWidths(m, rowUid, widths))
+                  }
+                  onUpdateBlockId={(uid, id) => setModel((m) => updateBlockId(m, uid, id))}
+                  onUpdateBlockConfig={(uid, config) =>
+                    setModel((m) => updateBlockConfig(m, uid, config as Json))
+                  }
+                />
+                <section className="min-w-0 rounded border border-gray-200 bg-white p-3">
+                  <div className="mb-2 text-xs font-medium text-gray-500">Example data</div>
+                  <Suspense fallback={<div className="h-24 animate-pulse rounded bg-gray-100" />}>
+                    <DataView data={data} />
+                  </Suspense>
+                </section>
+              </div>
             ) : tab === "schema" ? (
               <Suspense fallback={<div className="h-24 animate-pulse rounded bg-white" />}>
                 <SchemaView

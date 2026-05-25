@@ -20,8 +20,12 @@ it('opens block settings inline on the selected block', function (): void {
         ->assertNoJavaScriptErrors();
 
     $page
-        ->assertSee('Content')
+        ->assertSee('Example data')
+        ->assertSee('Settings')
         ->assertSee('Config')
+        ->assertSee('More')
+        ->assertSee('Type')
+        ->assertDontSee('Content')
         ->assertScript('document.querySelector("aside.border-l") === null')
         ->assertScript('document.querySelector("main [data-inline-block-details][open] [data-inline-block-editor]") !== null');
 });

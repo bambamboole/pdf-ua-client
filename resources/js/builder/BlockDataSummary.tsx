@@ -1,7 +1,5 @@
 import type { EditorBlock } from "./types";
 
-const previewLimit = 3;
-
 function truncate(s: string, n = 40): string {
   return s.length > n ? `${s.slice(0, n)}…` : s;
 }
@@ -43,14 +41,11 @@ function keyPart(parts: string[]): string {
 }
 
 function KeyValuePreview({ entries }: { entries: Array<{ label: string; value: string }> }) {
-  const visible = entries.slice(0, previewLimit);
-  const hidden = entries.length - visible.length;
-
   return (
     <div className="mt-2 overflow-hidden rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] text-xs">
       <table className="w-full table-fixed border-collapse">
         <tbody>
-          {visible.map((entry) => (
+          {entries.map((entry) => (
             <tr
               key={keyPart([entry.label, entry.value])}
               className="border-b border-[var(--builder-stroke)] last:border-0"
@@ -63,19 +58,11 @@ function KeyValuePreview({ entries }: { entries: Array<{ label: string; value: s
           ))}
         </tbody>
       </table>
-      {hidden > 0 ? (
-        <div className="border-t border-[var(--builder-stroke)] bg-[var(--builder-surface)] px-2 py-1 text-[var(--builder-muted)]">
-          +{hidden} more
-        </div>
-      ) : null}
     </div>
   );
 }
 
 function TablePreview({ headers, rows }: { headers: string[]; rows: string[][] }) {
-  const visibleRows = rows.slice(0, previewLimit);
-  const hiddenRows = rows.length - visibleRows.length;
-
   return (
     <div className="mt-2 overflow-auto rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] text-xs">
       <table className="w-full min-w-max border-collapse">
@@ -94,7 +81,7 @@ function TablePreview({ headers, rows }: { headers: string[]; rows: string[][] }
           </thead>
         ) : null}
         <tbody>
-          {visibleRows.map((row) => (
+          {rows.map((row) => (
             <tr
               key={keyPart(row)}
               className="border-b border-[var(--builder-stroke)] last:border-0"
@@ -111,11 +98,6 @@ function TablePreview({ headers, rows }: { headers: string[]; rows: string[][] }
           ))}
         </tbody>
       </table>
-      {hiddenRows > 0 ? (
-        <div className="border-t border-[var(--builder-stroke)] bg-[var(--builder-surface)] px-2 py-1 text-[var(--builder-muted)]">
-          +{hiddenRows} more rows
-        </div>
-      ) : null}
     </div>
   );
 }

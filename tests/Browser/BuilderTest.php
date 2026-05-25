@@ -25,8 +25,8 @@ it('opens block settings inline on the selected block', function (): void {
         ->assertSee('Settings')
         ->assertSee('Config')
         ->assertSee('More')
-        ->assertSee('Type')
         ->assertDontSee('Content')
+        ->assertScript('document.querySelector("main [data-inline-block-editor] input[readonly]") === null')
         ->assertScript('document.querySelector("aside.border-l") === null')
         ->assertScript('[...document.querySelectorAll("[data-builder-tabs] button")].every((button) => button.textContent.trim() !== "Example Data")')
         ->assertScript('document.querySelector("main [data-inline-block-details][open] [data-inline-block-editor]") !== null');

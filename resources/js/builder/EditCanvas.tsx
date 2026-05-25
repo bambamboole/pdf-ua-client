@@ -9,6 +9,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { gridTemplateForWidths } from "./lib/columns";
 import { pageSizeForFormat } from "./lib/pageSizes";
+import { getBlockTitle } from "./lib/schema";
 import BlockDataSummary from "./BlockDataSummary";
 import ColumnResizer from "./ColumnResizer";
 import InlineBlockEditor from "./InlineBlockEditor";
@@ -84,15 +85,20 @@ function BlockBox({
       className={`${layoutStyle ? "" : "flex-1"} rounded-[var(--builder-radius)] border bg-[var(--builder-panel)] px-3 py-2 text-sm shadow-sm transition ${selected ? "border-[var(--builder-accent)] ring-2 ring-[var(--builder-accent-soft)]" : "border-[var(--builder-stroke)] hover:border-[var(--builder-stroke-strong)]"} ${isDragging ? "opacity-50" : ""}`}
     >
       <div className="flex items-center justify-between gap-2">
-        <span
-          {...listeners}
-          {...attributes}
-          aria-label="Move block"
-          title="Move block"
-          className="cursor-grab text-[var(--builder-muted)]"
-        >
-          ⠿
-        </span>
+        <div className="flex min-w-0 items-center gap-2">
+          <span
+            {...listeners}
+            {...attributes}
+            aria-label="Move block"
+            title="Move block"
+            className="shrink-0 cursor-grab text-[var(--builder-muted)]"
+          >
+            ⠿
+          </span>
+          <span className="truncate text-xs font-medium text-[var(--builder-muted)]">
+            {getBlockTitle(schema, block.type)}
+          </span>
+        </div>
         <span className="flex items-center gap-2">
           <button
             type="button"

@@ -46,7 +46,7 @@ describe("BlockDataSummary", () => {
     expect(html).toContain("Implementation");
   });
 
-  it("limits long previews", () => {
+  it("renders every example row", () => {
     const html = renderToStaticMarkup(
       <BlockDataSummary
         block={block("table", {
@@ -56,7 +56,8 @@ describe("BlockDataSummary", () => {
       />,
     );
 
-    expect(html).toContain("+1 more rows");
-    expect(html).not.toContain("Four");
+    expect(html).toContain("One");
+    expect(html).toContain("Four");
+    expect(html).not.toContain("more rows");
   });
 });

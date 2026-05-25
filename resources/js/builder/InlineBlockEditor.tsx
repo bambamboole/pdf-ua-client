@@ -1,6 +1,6 @@
 import { lazy, Suspense, useState } from "react";
 import type { EditorBlock, Json, JsonSchema } from "./types";
-import { getBlockConfigSchema, getBlockTitle } from "./lib/schema";
+import { getBlockConfigSchema } from "./lib/schema";
 
 const SettingsForm = lazy(() => import("./SettingsForm"));
 
@@ -38,28 +38,16 @@ export default function InlineBlockEditor({
         </button>
       </div>
       {tab === "settings" ? (
-        <div className="space-y-3">
-          <div>
-            <label className="mb-1 block text-xs font-medium text-[var(--builder-muted-strong)]">
-              Type
-            </label>
-            <input
-              className="block w-full rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-surface)] px-2 py-1 text-sm text-[var(--builder-muted-strong)]"
-              value={getBlockTitle(schema, block.type)}
-              readOnly
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-medium text-[var(--builder-muted-strong)]">
-              Block id
-            </label>
-            <input
-              key={block.uid}
-              className="block w-full rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-field)] px-2 py-1 font-mono text-sm text-[var(--builder-ink)] focus:border-[var(--builder-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--builder-accent-soft)]"
-              defaultValue={block.id}
-              onBlur={(event) => onUpdateBlockId(block.uid, event.target.value)}
-            />
-          </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-[var(--builder-muted-strong)]">
+            Block id
+          </label>
+          <input
+            key={block.uid}
+            className="block w-full rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-field)] px-2 py-1 font-mono text-sm text-[var(--builder-ink)] focus:border-[var(--builder-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--builder-accent-soft)]"
+            defaultValue={block.id}
+            onBlur={(event) => onUpdateBlockId(block.uid, event.target.value)}
+          />
         </div>
       ) : (
         <Suspense

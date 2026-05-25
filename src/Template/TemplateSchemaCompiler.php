@@ -13,6 +13,7 @@ final class TemplateSchemaCompiler
 {
     public function __construct(
         private readonly PropsReflector $reflector,
+        private readonly ExampleRegistry $examples,
     ) {}
 
     /** @return array<string, mixed> */
@@ -81,7 +82,7 @@ final class TemplateSchemaCompiler
 
         $allDefs = $this->stripRequiredFromConfigs($defs->all());
 
-        return [
+        $schema = [
             '$schema' => 'https://json-schema.org/draft/2020-12/schema',
             '$id' => 'https://pdfuakit.com/schemas/pdf-ua-client-template-v1.json',
             'type' => 'object',
@@ -96,6 +97,13 @@ final class TemplateSchemaCompiler
             ],
             '$defs' => $allDefs === [] ? new stdClass : $allDefs,
         ];
+
+        $examples = $this->examples->all();
+        if ($examples !== []) {
+            $schema['examples'] = $examples;
+        }
+
+        return $schema;
     }
 
     /**

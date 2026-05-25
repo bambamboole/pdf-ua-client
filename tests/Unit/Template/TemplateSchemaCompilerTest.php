@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 use Bambamboole\PdfUaClient\Block\BlockRegistry;
 use Bambamboole\PdfUaClient\Block\PropsReflector;
+use Bambamboole\PdfUaClient\Template\ExampleRegistry;
 use Bambamboole\PdfUaClient\Template\TemplateSchemaCompiler;
 use Bambamboole\PdfUaClient\Tests\Fixtures\TestFixtureBlock;
 
 beforeEach(function () {
     $this->registry = new BlockRegistry;
     $this->registry->register(TestFixtureBlock::class);
-    $this->compiler = new TemplateSchemaCompiler(new PropsReflector);
+    $this->compiler = new TemplateSchemaCompiler(new PropsReflector, new ExampleRegistry);
 });
 
 it('compiles a root schema referencing config, $defs/row, $defs/block', function () {

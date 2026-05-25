@@ -6,7 +6,7 @@ namespace Bambamboole\PdfUaClient\Attributes;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
-final class Pattern
+final readonly class Pattern
 {
-    public function __construct(public readonly string $regex) {}
+    public function __construct(public string $regex) {}
 }

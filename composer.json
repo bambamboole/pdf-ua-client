@@ -28,6 +28,7 @@
         "laravel/pint": "^1.16",
         "orchestra/testbench": "^9.0 || ^10.0 || ^11.0",
         "pestphp/pest": "^4.0",
+        "pestphp/pest-plugin-browser": "^4.3",
         "pestphp/pest-plugin-laravel": "^4.0",
         "rector/rector": "^2.0"
     },
@@ -46,6 +47,7 @@
     },
     "scripts": {
         "test": "./vendor/bin/pest",
+        "test:browser": "./vendor/bin/pest tests/Browser",
         "test:lint": "./vendor/bin/pint --test",
         "test:refactor": "./vendor/bin/rector --dry-run",
         "lint": "./vendor/bin/pint",

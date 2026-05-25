@@ -21,13 +21,13 @@ use Bambamboole\PdfUaClient\Contracts\BlockInterface;
 use Bambamboole\PdfUaClient\Enums\Align;
 
 #[Block('scalars-block')]
-final class ScalarsBlock implements BlockInterface
+final readonly class ScalarsBlock implements BlockInterface
 {
     public function __construct(
-        public readonly string $title,
-        public readonly int $count = 0,
-        public readonly float $ratio = 1.0,
-        public readonly bool $enabled = true,
+        public string $title,
+        public int $count = 0,
+        public float $ratio = 1.0,
+        public bool $enabled = true,
     ) {}
 
     public function render(BlockConfig $config): string
@@ -51,19 +51,19 @@ it('reflects scalar properties into a JSON Schema object', function () {
 });
 
 #[Block('attr-block')]
-final class AttrBlock implements BlockInterface
+final readonly class AttrBlock implements BlockInterface
 {
     public function __construct(
-        #[Min(1)] #[Max(6)] public readonly int $level = 2,
-        public readonly Align $align = Align::Left,
-        public readonly ?string $color = null,
-        #[Length(min: 1, max: 200)] public readonly string $caption = '',
-        #[Pattern('^#[0-9A-Fa-f]{6}$')] public readonly string $hex = '#000000',
-        #[Format('email')] public readonly string $email = '',
-        #[Description('Vertical spacing in mm')] public readonly int $gap = 0,
+        #[Min(1)] #[Max(6)] public int $level = 2,
+        public Align $align = Align::Left,
+        public ?string $color = null,
+        #[Length(min: 1, max: 200)] public string $caption = '',
+        #[Pattern('^#[0-9A-Fa-f]{6}$')] public string $hex = '#000000',
+        #[Format('email')] public string $email = '',
+        #[Description('Vertical spacing in mm')] public int $gap = 0,
         #[Title('Heading level')]
         #[Description('Pick 1 (largest) through 6 (smallest).')]
-        public readonly int $headingLevel = 2,
+        public int $headingLevel = 2,
     ) {}
 
     public function render(BlockConfig $config): string
@@ -109,13 +109,13 @@ final readonly class Pair
 }
 
 #[Block('nested-block')]
-final class NestedBlock implements BlockInterface
+final readonly class NestedBlock implements BlockInterface
 {
     /** @param list<Pair> $entries */
     public function __construct(
         #[ArrayOf(Pair::class)]
-        public readonly array $entries = [],
-        public readonly ?Pair $primary = null,
+        public array $entries = [],
+        public ?Pair $primary = null,
     ) {}
 
     public function render(BlockConfig $config): string
@@ -155,9 +155,9 @@ final readonly class SplitBlockConfig extends BlockConfig
 }
 
 #[Block('split-block', config: SplitBlockConfig::class)]
-final class SplitBlock implements BlockInterface
+final readonly class SplitBlock implements BlockInterface
 {
-    public function __construct(public readonly string $text = '') {}
+    public function __construct(public string $text = '') {}
 
     public function render(BlockConfig $config): string
     {
@@ -188,11 +188,11 @@ it('emits the backing value as the default for a backed enum constructor paramet
 });
 
 it('emits examples from the Example attribute', function (): void {
-    $class = new class('x')
+    $class = new readonly class('x')
     {
         public function __construct(
             #[Example('Sample heading')]
-            public readonly string $text,
+            public string $text,
         ) {}
     };
 

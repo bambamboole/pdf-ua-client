@@ -6,7 +6,7 @@ namespace Bambamboole\PdfUaClient\Attributes;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
-final class Max
+final readonly class Max
 {
-    public function __construct(public readonly int|float $value) {}
+    public function __construct(public int|float $value) {}
 }

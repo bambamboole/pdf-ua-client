@@ -16,10 +16,10 @@ use ReflectionNamedType;
 use ReflectionParameter;
 use Throwable;
 
-final class BlockHydrator
+final readonly class BlockHydrator
 {
     public function __construct(
-        private readonly BlockRegistry $registry,
+        private BlockRegistry $registry,
     ) {}
 
     public function hydrate(BlockInstance $instance): HydratedBlock

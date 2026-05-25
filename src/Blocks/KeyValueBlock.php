@@ -12,13 +12,13 @@ use Bambamboole\PdfUaClient\Contracts\BlockInterface;
 
 #[Block('key-value', config: KeyValueConfig::class)]
 #[Title('Key / Value')]
-final class KeyValueBlock implements BlockInterface
+final readonly class KeyValueBlock implements BlockInterface
 {
     /** @param  list<KeyValuePair>  $entries */
     public function __construct(
         #[ArrayOf(KeyValuePair::class)]
         #[Example([['label' => 'Label', 'value' => 'Value']])]
-        public readonly array $entries = [],
+        public array $entries = [],
     ) {}
 
     public function render(KeyValueConfig $config): string

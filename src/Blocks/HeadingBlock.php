@@ -13,11 +13,11 @@ use Bambamboole\PdfUaClient\Contracts\BlockInterface;
 #[Block('heading', config: HeadingConfig::class)]
 #[Title('Heading')]
 #[Description('A section heading (h1–h6).')]
-final class HeadingBlock implements BlockInterface
+final readonly class HeadingBlock implements BlockInterface
 {
     public function __construct(
         #[Example('Invoice 2026-001')]
-        public readonly string $text,
+        public string $text,
     ) {}
 
     public function render(HeadingConfig $config): string

@@ -15,11 +15,11 @@ use Bambamboole\PdfUaClient\Exceptions\TemplateValidationException;
 use Bambamboole\PdfUaClient\Support\SchemaAwareNormalizer;
 use Opis\JsonSchema\Validator;
 
-final class TemplateFactory
+final readonly class TemplateFactory
 {
     public function __construct(
-        private readonly BlockRegistry $registry,
-        private readonly TemplateSchemaCompiler $compiler,
+        private BlockRegistry $registry,
+        private TemplateSchemaCompiler $compiler,
     ) {}
 
     /** @param array<string, mixed> $data */

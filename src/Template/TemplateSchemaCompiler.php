@@ -9,11 +9,11 @@ use Bambamboole\PdfUaClient\Config\TemplateConfig;
 use ReflectionClass;
 use stdClass;
 
-final class TemplateSchemaCompiler
+final readonly class TemplateSchemaCompiler
 {
     public function __construct(
-        private readonly PropsReflector $reflector,
-        private readonly ExampleRegistry $examples,
+        private PropsReflector $reflector,
+        private ExampleRegistry $examples,
     ) {}
 
     /** @return array<string, mixed> */

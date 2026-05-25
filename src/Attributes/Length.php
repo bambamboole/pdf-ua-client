@@ -6,10 +6,10 @@ namespace Bambamboole\PdfUaClient\Attributes;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
-final class Length
+final readonly class Length
 {
     public function __construct(
-        public readonly ?int $min = null,
-        public readonly ?int $max = null,
+        public ?int $min = null,
+        public ?int $max = null,
     ) {}
 }

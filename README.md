@@ -48,11 +48,14 @@ $template = app(TemplateFactory::class)->fromArray([
     'version' => 1,
     'config'  => ['page' => ['format' => 'A4']],
     'rows'    => [
-        ['blocks' => [['type' => 'heading', 'props' => ['text' => 'Hello', 'level' => 1]]]],
+        ['blocks' => [['type' => 'heading', 'id' => 'title', 'config' => ['level' => 1]]]],
     ],
 ]);
 
-$html = app(TemplateRenderer::class)->render($template);
+$html = app(TemplateRenderer::class)->render($template, [
+    'title' => ['text' => 'Hello'],
+]);
+
 $pdf  = app(PdfApiClient::class)->convert($html);
 ```
 
@@ -60,24 +63,21 @@ Register a custom block:
 
 ```php
 use Bambamboole\PdfUaClient\Attributes\Block as BlockAttr;
-use Bambamboole\PdfUaClient\Attributes\Config;
 use Bambamboole\PdfUaClient\Block\BlockRegistry;
-use Bambamboole\PdfUaClient\Block\RenderContext;
-use Bambamboole\PdfUaClient\Contracts\Block;
-use Illuminate\Support\HtmlString;
-use Stringable;
+use Bambamboole\PdfUaClient\Config\BlockConfig;
+use Bambamboole\PdfUaClient\Contracts\BlockInterface;
 
 #[BlockAttr('badge')]
-final class BadgeBlock implements Block
+final readonly class BadgeBlock implements BlockInterface
 {
     public function __construct(
-        public readonly string $label,
-        #[Config] public readonly string $color = '#2563eb',
+        public string $label,
+        public string $color = '#2563eb',
     ) {}
 
-    public function render(RenderContext $ctx): Stringable
+    public function render(BlockConfig $config): string
     {
-        return new HtmlString('<span style="color: '.e($this->color).'">'.e($this->label).'</span>');
+        return '<span style="color: '.e($this->color).'">'.e($this->label).'</span>';
     }
 }
 

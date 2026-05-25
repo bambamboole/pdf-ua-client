@@ -17,6 +17,7 @@ export default function PageCanvas({ format, html }: Props) {
     <div className="mx-auto bg-white shadow-lg" style={{ width: `${width}mm` }}>
       <iframe
         title="Page preview"
+        sandbox=""
         srcDoc={html}
         className="block border-0"
         style={{ width: `${width}mm`, height: `${height}mm` }}

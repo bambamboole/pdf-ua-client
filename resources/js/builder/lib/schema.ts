@@ -1,11 +1,23 @@
 import type { JsonSchema } from "../types";
 
+type JsonRecord = Record<string, unknown>;
+
+function record(value: unknown): JsonRecord | null {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as JsonRecord)
+    : null;
+}
+
+function defs(schema: JsonSchema): Record<string, JsonRecord> {
+  return (record(schema.$defs) ?? {}) as Record<string, JsonRecord>;
+}
+
 export function listBlockTypes(schema: JsonSchema): string[] {
-  const defs = (schema as any)?.$defs ?? {};
-  const variants: any[] = defs?.block?.oneOf ?? [];
+  const blockDef = record(defs(schema).block);
+  const variants = Array.isArray(blockDef?.oneOf) ? blockDef.oneOf : [];
 
   return variants
-    .map((variant) => resolveRef(schema, variant?.$ref))
+    .map((variant) => resolveRef(schema, record(variant)?.$ref))
     .map((def) => extractDiscriminator(def))
     .filter((type): type is string => typeof type === "string");
 }
@@ -18,28 +30,35 @@ export function humanizeType(type: string): string {
 }
 
 export function getPageFormat(schema: JsonSchema): string {
-  return (schema as any)?.$defs?.pageConfig?.properties?.format?.default ?? "A4";
+  const pageConfig = record(defs(schema).pageConfig);
+  const properties = record(pageConfig?.properties);
+  const format = record(properties?.format);
+
+  return typeof format?.default === "string" ? format.default : "A4";
 }
 
-function resolveRef(schema: JsonSchema, ref: unknown): Record<string, any> | null {
+function resolveRef(schema: JsonSchema, ref: unknown): JsonRecord | null {
   if (typeof ref !== "string" || !ref.startsWith("#/$defs/")) {
     return null;
   }
 
-  return (schema as any)?.$defs?.[ref.slice("#/$defs/".length)] ?? null;
+  return defs(schema)[ref.slice("#/$defs/".length)] ?? null;
 }
 
-function extractDiscriminator(def: Record<string, any> | null): string | null {
-  const value = def?.properties?.type?.const;
+function extractDiscriminator(def: JsonRecord | null): string | null {
+  const properties = record(def?.properties);
+  const type = record(properties?.type);
+  const value = type?.const;
 
   return typeof value === "string" ? value : null;
 }
 
-function findBlockDef(schema: JsonSchema, type: string): Record<string, any> | null {
-  const variants: any[] = (schema as any)?.$defs?.block?.oneOf ?? [];
+function findBlockDef(schema: JsonSchema, type: string): JsonRecord | null {
+  const blockDef = record(defs(schema).block);
+  const variants = Array.isArray(blockDef?.oneOf) ? blockDef.oneOf : [];
 
   for (const variant of variants) {
-    const def = resolveRef(schema, variant?.$ref);
+    const def = resolveRef(schema, record(variant)?.$ref);
     if (def && extractDiscriminator(def) === type) {
       return def;
     }
@@ -65,7 +84,7 @@ export function getBlockSubschemas(
   const emptySchema = (): JsonSchema => ({
     type: "object",
     properties: {},
-    $defs: (schema as any)?.$defs,
+    $defs: schema.$defs,
   });
   const blockDef = findBlockDef(schema, type);
 
@@ -73,15 +92,14 @@ export function getBlockSubschemas(
     return { props: emptySchema(), config: emptySchema() };
   }
 
-  const props = ((schema as any)?.$defs?.[propsDefName(type)] ?? null) as Record<
-    string,
-    any
-  > | null;
-  const config = resolveRef(schema, blockDef.properties?.config?.$ref);
+  const props = defs(schema)[propsDefName(type)] ?? null;
+  const properties = record(blockDef.properties);
+  const configProperty = record(properties?.config);
+  const config = resolveRef(schema, configProperty?.$ref);
 
   return {
-    props: props ? { ...props, $defs: (schema as any).$defs } : emptySchema(),
-    config: config ? { ...config, $defs: (schema as any).$defs } : emptySchema(),
+    props: props ? { ...props, $defs: schema.$defs } : emptySchema(),
+    config: config ? { ...config, $defs: schema.$defs } : emptySchema(),
   };
 }
 
@@ -95,9 +113,9 @@ export function getBlockConfigSchema(schema: JsonSchema, type: string): JsonSche
 }
 
 export function getTemplateConfigSchema(schema: JsonSchema): JsonSchema {
-  const templateConfig = (schema as any)?.$defs?.templateConfig ?? {
+  const templateConfig = defs(schema).templateConfig ?? {
     type: "object",
     properties: {},
   };
-  return { ...templateConfig, $defs: (schema as any)?.$defs };
+  return { ...templateConfig, $defs: schema.$defs };
 }

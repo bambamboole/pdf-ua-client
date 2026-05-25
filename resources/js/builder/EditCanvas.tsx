@@ -154,7 +154,7 @@ function Row({
               />
               {i < row.blocks.length - 1 ? (
                 <ColumnResizer
-                  key={`rz-${i}`}
+                  key={`rz-${block.uid}-${row.blocks[i + 1]?.uid ?? "end"}`}
                   widths={widths}
                   count={row.blocks.length}
                   leftIndex={i}

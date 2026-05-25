@@ -7,6 +7,7 @@ use BackedEnum;
 use Bambamboole\PdfUaClient\Attributes\CssRule;
 use ReflectionClass;
 use ReflectionObject;
+use ReflectionParameter;
 use ReflectionProperty;
 
 final class CssRuleEmitter
@@ -26,7 +27,6 @@ final class CssRuleEmitter
         $bySelector = [];
 
         foreach (self::orderedProperties($config) as $property) {
-            $property->setAccessible(true);
             if (! $property->isInitialized($config)) {
                 continue;
             }
@@ -86,7 +86,7 @@ final class CssRuleEmitter
 
     /**
      * @param  ReflectionClass<object>  $reflection
-     * @return list<\ReflectionParameter>
+     * @return list<ReflectionParameter>
      */
     private static function constructorParameterChain(ReflectionClass $reflection): array
     {

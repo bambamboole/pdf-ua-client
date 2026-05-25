@@ -6,8 +6,8 @@ namespace Bambamboole\PdfUaClient\Attributes;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
-final class ArrayOf
+final readonly class ArrayOf
 {
     /** @param class-string $itemClass */
-    public function __construct(public readonly string $itemClass) {}
+    public function __construct(public string $itemClass) {}
 }

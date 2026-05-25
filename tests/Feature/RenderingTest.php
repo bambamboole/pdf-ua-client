@@ -390,7 +390,7 @@ it('renders repeated footer rows and page numbers in print mode', function () {
     ], options: new RenderOptions(mode: 'print'));
 
     expect($html)->toContain('@page { size: A4; margin: 25mm 20mm 32mm 25mm; }');
-    expect($html)->toContain('@page { @bottom-right { content: counter(page) " / " counter(pages); font-size: 8pt; color: #9ca3af; } }');
+    expect($html)->toContain('@page { @bottom-right { content: counter(page) " / " counter(pages); font-size: 8pt; color: #9ca3af; vertical-align: top; padding-top: 2mm; } }');
     expect($html)->toContain('<footer class="page-footer page-footer-repeated" role="contentinfo">');
     expect($html)->toContain('<p>Confidential</p>');
     expect($html)->toContain('position: fixed; left: 0; right: 0; bottom: 0;');

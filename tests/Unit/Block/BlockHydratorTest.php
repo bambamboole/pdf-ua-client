@@ -7,14 +7,13 @@ use Bambamboole\PdfUaClient\Attributes\Max;
 use Bambamboole\PdfUaClient\Attributes\Min;
 use Bambamboole\PdfUaClient\Block\BlockHydrator;
 use Bambamboole\PdfUaClient\Block\BlockRegistry;
-use Bambamboole\PdfUaClient\Block\PropsReflector;
 use Bambamboole\PdfUaClient\Config\BlockConfig;
 use Bambamboole\PdfUaClient\Config\SpacingConfig;
 use Bambamboole\PdfUaClient\Config\TypographyConfig;
 use Bambamboole\PdfUaClient\Contracts\BlockInterface;
 use Bambamboole\PdfUaClient\Enums\Align;
 use Bambamboole\PdfUaClient\Enums\FontWeight;
-use Bambamboole\PdfUaClient\Exceptions\BlockDataValidationException;
+use Bambamboole\PdfUaClient\Exceptions\BlockHydrationException;
 use Bambamboole\PdfUaClient\Template\BlockInstance;
 
 final readonly class HydrationBlockConfig extends BlockConfig
@@ -46,7 +45,7 @@ final class HydrationBlock implements BlockInterface
 beforeEach(function () {
     $registry = new BlockRegistry;
     $registry->register(HydrationBlock::class);
-    $this->hydrator = new BlockHydrator($registry, new PropsReflector);
+    $this->hydrator = new BlockHydrator($registry);
 });
 
 it('constructs a typed Block from raw props and config arrays', function () {
@@ -77,19 +76,11 @@ it('uses constructor defaults when config is empty', function () {
     expect($config->textAlign)->toBe(Align::Left);
 });
 
-it('throws BlockDataValidationException when required props are missing', function () {
+it('throws when a required prop is missing at hydration', function () {
     expect(fn () => $this->hydrator->hydrate(new BlockInstance(
         type: 'hydration-block',
         props: [],
-    )))->toThrow(BlockDataValidationException::class);
-});
-
-it('throws BlockDataValidationException when config violates a constraint', function () {
-    expect(fn () => $this->hydrator->hydrate(new BlockInstance(
-        type: 'hydration-block',
-        props: ['text' => 'ok'],
-        config: ['level' => 999],
-    )))->toThrow(BlockDataValidationException::class);
+    )))->toThrow(BlockHydrationException::class);
 });
 
 it('coerces int values into int-backed enums', function () {

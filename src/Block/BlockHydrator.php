@@ -7,12 +7,9 @@ use BackedEnum;
 use Bambamboole\PdfUaClient\Attributes\ArrayOf;
 use Bambamboole\PdfUaClient\Config\BlockConfig;
 use Bambamboole\PdfUaClient\Contracts\BlockInterface;
-use Bambamboole\PdfUaClient\Exceptions\BlockDataValidationException;
 use Bambamboole\PdfUaClient\Exceptions\BlockHydrationException;
-use Bambamboole\PdfUaClient\Support\SchemaAwareNormalizer;
 use Bambamboole\PdfUaClient\Template\BlockInstance;
 use InvalidArgumentException;
-use Opis\JsonSchema\Validator;
 use ReflectionClass;
 use ReflectionEnum;
 use ReflectionNamedType;
@@ -23,15 +20,12 @@ final class BlockHydrator
 {
     public function __construct(
         private readonly BlockRegistry $registry,
-        private readonly PropsReflector $reflector,
     ) {}
 
     public function hydrate(BlockInstance $instance): HydratedBlock
     {
         $blockClass = $this->registry->resolve($instance->type);
         $configClass = $this->registry->configClass($instance->type);
-
-        $this->validate($blockClass, $instance);
 
         try {
             $block = $this->instantiateBlock($blockClass, $instance);
@@ -41,37 +35,6 @@ final class BlockHydrator
             return new HydratedBlock($block, $config);
         } catch (Throwable $e) {
             throw BlockHydrationException::forBlock($blockClass, $e->getMessage(), $e);
-        }
-    }
-
-    /** @param class-string<BlockInterface> $blockClass */
-    private function validate(string $blockClass, BlockInstance $instance): void
-    {
-        $schemas = $this->reflector->reflectBlock($blockClass);
-        $validator = new Validator;
-
-        $type = $instance->type;
-
-        $dataSchema = $schemas['data'];
-        $dataNormalized = SchemaAwareNormalizer::normalize($instance->props, $dataSchema);
-        $dataResult = $validator->validate($dataNormalized, json_decode((string) json_encode($dataSchema)));
-        if (! $dataResult->isValid()) {
-            throw new BlockDataValidationException(
-                "Block '{$type}' failed prop validation",
-                $type,
-                $dataResult->error(),
-            );
-        }
-
-        $configSchema = $schemas['config'];
-        $configNormalized = SchemaAwareNormalizer::normalize($instance->config, $configSchema);
-        $configResult = $validator->validate($configNormalized, json_decode((string) json_encode($configSchema)));
-        if (! $configResult->isValid()) {
-            throw new BlockDataValidationException(
-                "Block '{$type}' failed config validation",
-                $type,
-                $configResult->error(),
-            );
         }
     }
 

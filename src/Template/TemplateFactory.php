@@ -118,7 +118,6 @@ final class TemplateFactory
             foreach ($rowData['blocks'] as $blockIndex => $blockData) {
                 $blocks[] = new BlockInstance(
                     type: (string) $blockData['type'],
-                    props: (array) ($blockData['props'] ?? []),
                     id: $blockData['id'] ?? "r{$rowIndex}b{$blockIndex}",
                     config: (array) ($blockData['config'] ?? []),
                 );

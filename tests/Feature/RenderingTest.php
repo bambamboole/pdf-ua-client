@@ -13,8 +13,11 @@ use Bambamboole\PdfUaClient\Blocks\KeyValueBlock;
 use Bambamboole\PdfUaClient\Blocks\SpacerBlock;
 use Bambamboole\PdfUaClient\Blocks\TableBlock;
 use Bambamboole\PdfUaClient\Blocks\TextBlock;
+use Bambamboole\PdfUaClient\Exceptions\DataValidationException;
+use Bambamboole\PdfUaClient\Exceptions\TemplateValidationException;
 use Bambamboole\PdfUaClient\Rendering\RenderOptions;
 use Bambamboole\PdfUaClient\Rendering\TemplateRenderer;
+use Bambamboole\PdfUaClient\Template\DataSchemaCompiler;
 use Bambamboole\PdfUaClient\Template\ExampleRegistry;
 use Bambamboole\PdfUaClient\Template\TemplateFactory;
 use Bambamboole\PdfUaClient\Template\TemplateSchemaCompiler;
@@ -37,7 +40,8 @@ beforeEach(function () {
     $reflector = new PropsReflector;
     $this->factory = new TemplateFactory($registry, new TemplateSchemaCompiler($reflector, new ExampleRegistry));
     $this->renderer = new TemplateRenderer(
-        new BlockHydrator($registry, $reflector),
+        new BlockHydrator($registry),
+        new DataSchemaCompiler($reflector, $registry, $this->factory),
     );
 });
 
@@ -307,4 +311,21 @@ it('emits @page page-number rule only when pageNumbers is configured', function 
 
     expect($this->renderer->render($without, ['x' => ['text' => 'x']]))->not->toContain('@bottom-');
     expect($this->renderer->render($with, ['x' => ['text' => 'x']]))->toContain('@bottom-right');
+});
+
+it('rejects a data payload that violates the template data contract', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1, 'config' => ['page' => ['format' => 'A4']],
+        'rows' => [['blocks' => [['type' => 'heading', 'id' => 'h', 'config' => ['level' => 1]]]]],
+    ]);
+
+    expect(fn () => $this->renderer->render($template, []))
+        ->toThrow(DataValidationException::class);
+});
+
+it('rejects a block config that violates a schema constraint', function () {
+    expect(fn () => $this->factory->fromArray([
+        'version' => 1, 'config' => ['page' => ['format' => 'A4']],
+        'rows' => [['blocks' => [['type' => 'heading', 'id' => 'h', 'config' => ['level' => 7]]]]],
+    ]))->toThrow(TemplateValidationException::class);
 });

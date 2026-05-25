@@ -65,7 +65,6 @@ final class PdfUaClientServiceProvider extends PackageServiceProvider
 
         $this->app->singleton(BlockHydrator::class, fn (Container $app): BlockHydrator => new BlockHydrator(
             $app->make(BlockRegistry::class),
-            $app->make(PropsReflector::class),
         ));
 
         $this->app->singleton(ExampleRegistry::class, function (): ExampleRegistry {
@@ -90,6 +89,7 @@ final class PdfUaClientServiceProvider extends PackageServiceProvider
 
         $this->app->singleton(TemplateRenderer::class, fn (Container $app): TemplateRenderer => new TemplateRenderer(
             $app->make(BlockHydrator::class),
+            $app->make(DataSchemaCompiler::class),
         ));
 
         $this->app->singleton(PdfApiClient::class, function (Container $app): PdfApiClient {

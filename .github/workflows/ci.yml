@@ -60,7 +60,17 @@ jobs:
         with:
           php-version: "8.4"
           coverage: none
+          extensions: imagick
           tools: composer:v2
+
+      - name: Enable Imagick PDF rasterization
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ghostscript
+          policy="$(find /etc -name policy.xml -path '*ImageMagick*' 2>/dev/null | head -n1)"
+          if [ -n "$policy" ]; then
+            sudo sed -i 's/rights="none" pattern="PDF"/rights="read|write" pattern="PDF"/' "$policy"
+          fi
 
       - name: Resolve composer cache directory
         id: composer-cache

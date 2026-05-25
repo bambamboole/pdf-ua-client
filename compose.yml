@@ -1,0 +1,7 @@
+services:
+  pdf-ua-api:
+    image: bambamboole/pdf-ua-api:1.6
+    environment:
+      PORT: 8888
+    ports:
+      - "8888:8888"

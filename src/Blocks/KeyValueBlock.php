@@ -5,15 +5,19 @@ namespace Bambamboole\PdfUaClient\Blocks;
 
 use Bambamboole\PdfUaClient\Attributes\ArrayOf;
 use Bambamboole\PdfUaClient\Attributes\Block;
+use Bambamboole\PdfUaClient\Attributes\Example;
+use Bambamboole\PdfUaClient\Attributes\Title;
 use Bambamboole\PdfUaClient\Config\KeyValueConfig;
 use Bambamboole\PdfUaClient\Contracts\BlockInterface;
 
 #[Block('key-value', config: KeyValueConfig::class)]
+#[Title('Key / Value')]
 final class KeyValueBlock implements BlockInterface
 {
     /** @param  list<KeyValuePair>  $entries */
     public function __construct(
         #[ArrayOf(KeyValuePair::class)]
+        #[Example([['label' => 'Label', 'value' => 'Value']])]
         public readonly array $entries = [],
     ) {}
 

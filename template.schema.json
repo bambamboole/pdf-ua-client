@@ -180,7 +180,8 @@
                     "type": [
                         "string",
                         "null"
-                    ]
+                    ],
+                    "title": "Width"
                 },
                 "align": {
                     "type": [
@@ -191,7 +192,8 @@
                         "left",
                         "center",
                         "right"
-                    ]
+                    ],
+                    "title": "Alignment"
                 }
             }
         },
@@ -204,6 +206,7 @@
             "properties": {
                 "level": {
                     "type": "integer",
+                    "title": "Level",
                     "minimum": 1,
                     "maximum": 6,
                     "default": 2
@@ -215,10 +218,15 @@
             "type": "object",
             "properties": {
                 "text": {
-                    "type": "string"
+                    "type": "string",
+                    "examples": [
+                        "Invoice 2026-001"
+                    ]
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "title": "Heading",
+            "description": "A section heading (h1\u2013h6)."
         },
         "headingBlock": {
             "allOf": [
@@ -244,10 +252,15 @@
             "type": "object",
             "properties": {
                 "text": {
-                    "type": "string"
+                    "type": "string",
+                    "examples": [
+                        "Thank you for your business."
+                    ]
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "title": "Text",
+            "description": "A paragraph of text."
         },
         "textBlock": {
             "allOf": [
@@ -273,10 +286,15 @@
             "type": "object",
             "properties": {
                 "html": {
-                    "type": "string"
+                    "type": "string",
+                    "examples": [
+                        "<p>Custom HTML</p>"
+                    ]
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "title": "HTML",
+            "description": "Raw HTML escape hatch."
         },
         "htmlBlock": {
             "allOf": [
@@ -317,14 +335,21 @@
             "type": "object",
             "properties": {
                 "src": {
-                    "type": "string"
+                    "type": "string",
+                    "examples": [
+                        "https://placehold.co/200x80"
+                    ]
                 },
                 "alt": {
                     "type": "string",
+                    "examples": [
+                        "Logo"
+                    ],
                     "default": ""
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "title": "Image"
         },
         "imageBlock": {
             "allOf": [
@@ -364,7 +389,9 @@
         "spacerProps": {
             "type": "object",
             "properties": {},
-            "additionalProperties": false
+            "additionalProperties": false,
+            "title": "Spacer",
+            "description": "Vertical spacing."
         },
         "spacerBlock": {
             "allOf": [
@@ -412,7 +439,9 @@
         "dividerProps": {
             "type": "object",
             "properties": {},
-            "additionalProperties": false
+            "additionalProperties": false,
+            "title": "Divider",
+            "description": "A horizontal rule."
         },
         "dividerBlock": {
             "allOf": [
@@ -457,18 +486,33 @@
                         "type": "object",
                         "properties": {
                             "label": {
-                                "type": "string"
+                                "type": "string",
+                                "examples": [
+                                    "Label"
+                                ]
                             },
                             "value": {
-                                "type": "string"
+                                "type": "string",
+                                "examples": [
+                                    "Value"
+                                ]
                             }
                         },
                         "additionalProperties": false
                     },
+                    "examples": [
+                        [
+                            {
+                                "label": "Label",
+                                "value": "Value"
+                            }
+                        ]
+                    ],
                     "default": []
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "title": "Key / Value"
         },
         "keyValueBlock": {
             "allOf": [
@@ -520,13 +564,32 @@
             "type": "object",
             "properties": {
                 "headers": {
-                    "type": "array"
+                    "type": "array",
+                    "examples": [
+                        [
+                            "Column A",
+                            "Column B"
+                        ]
+                    ]
                 },
                 "rows": {
-                    "type": "array"
+                    "type": "array",
+                    "examples": [
+                        [
+                            [
+                                "A1",
+                                "B1"
+                            ],
+                            [
+                                "A2",
+                                "B2"
+                            ]
+                        ]
+                    ]
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "title": "Table"
         },
         "tableBlock": {
             "allOf": [

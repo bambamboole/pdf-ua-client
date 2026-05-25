@@ -231,24 +231,6 @@ export function updateTemplateConfig(model: EditorModel, config: Json): EditorMo
   return { ...model, config };
 }
 
-export function insertRows(model: EditorModel, rows: EditorRow[]): EditorModel {
-  const taken = new Set(model.rows.flatMap((r) => r.blocks.map((b) => b.id)));
-  const reided = rows.map((row) => ({
-    ...row,
-    uid: crypto.randomUUID(),
-    blocks: row.blocks.map((b) => {
-      const id = makeUnique(b.id, taken);
-      taken.add(id);
-      return { ...b, uid: crypto.randomUUID(), id };
-    }),
-  }));
-  return { ...model, rows: [...model.rows, ...reided] };
-}
-
-export function replaceModel(_model: EditorModel, template: Template, data: DataMap): EditorModel {
-  return fromTemplate(template, data);
-}
-
 export interface FoundBlock {
   row: EditorRow;
   block: EditorBlock;

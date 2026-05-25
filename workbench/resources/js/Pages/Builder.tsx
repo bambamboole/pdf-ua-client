@@ -1,6 +1,5 @@
 import TemplateBuilder from '@builder/TemplateBuilder';
-import type { JsonSchema } from '@builder/types';
-import { sampleTemplate, sampleData } from '../sampleTemplate';
+import type { JsonSchema, Template } from '@builder/types';
 
 function xsrfToken(): string {
     const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
@@ -29,12 +28,14 @@ async function renderTemplate(template: unknown, data: unknown): Promise<string>
     return payload.html;
 }
 
+const emptyTemplate: Template = { version: 1, config: {}, rows: [] };
+
 export default function Builder({ schema }: { schema: JsonSchema }) {
     return (
         <TemplateBuilder
             schema={schema}
-            initialTemplate={sampleTemplate}
-            initialData={sampleData}
+            initialTemplate={emptyTemplate}
+            initialData={{}}
             renderTemplate={renderTemplate}
         />
     );

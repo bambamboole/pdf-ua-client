@@ -6,7 +6,7 @@ import EditCanvas from "./EditCanvas";
 import Inspector from "./Inspector";
 import PageCanvas from "./PageCanvas";
 import DataView from "./DataView";
-import { getPageFormat, humanizeType } from "./lib/schema";
+import { getPageFormat, getBlockTitle, getBlockSubschemas } from "./lib/schema";
 import {
   fromTemplate,
   toTemplate,
@@ -21,9 +21,9 @@ import {
   updateBlockId,
   updateTemplateConfig,
   setRowWidths,
-  insertRows,
 } from "./state/templateModel";
-import { invoiceExample } from "./presets";
+import { exampleFromSchema } from "./lib/exampleFromSchema";
+import { loadExample } from "./lib/examples";
 import type { DataMap, Json, JsonSchema, Template } from "./types";
 
 interface Props {
@@ -83,46 +83,63 @@ export default function TemplateBuilder({
     setSelectedBlockUid(null);
   }, []);
 
-  const handleDragEnd = useCallback(({ active, over }: DragEndEvent) => {
-    setActiveLabel(null);
-    if (!over) {
-      return;
-    }
-    const a = (active.data.current ?? {}) as { source?: string; type?: string; rowUid?: string };
-    const o = (over.data.current ?? {}) as { source?: string; type?: string; rowUid?: string };
+  const blockData = useCallback(
+    (type: string): Json => exampleFromSchema(getBlockSubschemas(schema, type).props, schema) as Json,
+    [schema],
+  );
 
-    if (a.source === "palette") {
-      if (o.source === "newrow") {
-        setModel((m) => addBlock(m, a.type!, { rowUid: null }));
-      } else if (o.source === "block") {
-        setModel((m) => {
-          const found = findBlock(m, String(over.id));
-          return addBlock(m, a.type!, { rowUid: o.rowUid, index: found ? found.blockIndex : null });
-        });
-      } else if (o.source === "row") {
-        setModel((m) => addBlock(m, a.type!, { rowUid: o.rowUid }));
+  const handleDragEnd = useCallback(
+    ({ active, over }: DragEndEvent) => {
+      setActiveLabel(null);
+      if (!over) {
+        return;
       }
-      return;
-    }
+      const a = (active.data.current ?? {}) as { source?: string; type?: string; rowUid?: string };
+      const o = (over.data.current ?? {}) as { source?: string; type?: string; rowUid?: string };
 
-    if (a.source === "block") {
-      if (o.source === "newrow") {
-        setModel((m) => moveBlock(m, String(active.id), null, null));
-      } else if (o.source === "block") {
-        setModel((m) => {
-          const found = findBlock(m, String(over.id));
-          return moveBlock(m, String(active.id), o.rowUid ?? null, found ? found.blockIndex : null);
-        });
-      } else if (o.source === "row") {
-        setModel((m) => moveBlock(m, String(active.id), o.rowUid ?? null, null));
+      if (a.source === "palette") {
+        if (o.source === "newrow") {
+          setModel((m) => addBlock(m, a.type!, { rowUid: null, data: blockData(a.type!) }));
+        } else if (o.source === "block") {
+          setModel((m) => {
+            const found = findBlock(m, String(over.id));
+            return addBlock(m, a.type!, {
+              rowUid: o.rowUid,
+              index: found ? found.blockIndex : null,
+              data: blockData(a.type!),
+            });
+          });
+        } else if (o.source === "row") {
+          setModel((m) => addBlock(m, a.type!, { rowUid: o.rowUid, data: blockData(a.type!) }));
+        }
+        return;
       }
-      return;
-    }
 
-    if (a.source === "row" && o.source === "row" && active.id !== over.id) {
-      setModel((m) => moveRow(m, a.rowUid!, rowIndexById(m, String(over.id))));
-    }
-  }, []);
+      if (a.source === "block") {
+        if (o.source === "newrow") {
+          setModel((m) => moveBlock(m, String(active.id), null, null));
+        } else if (o.source === "block") {
+          setModel((m) => {
+            const found = findBlock(m, String(over.id));
+            return moveBlock(
+              m,
+              String(active.id),
+              o.rowUid ?? null,
+              found ? found.blockIndex : null,
+            );
+          });
+        } else if (o.source === "row") {
+          setModel((m) => moveBlock(m, String(active.id), o.rowUid ?? null, null));
+        }
+        return;
+      }
+
+      if (a.source === "row" && o.source === "row" && active.id !== over.id) {
+        setModel((m) => moveRow(m, a.rowUid!, rowIndexById(m, String(over.id))));
+      }
+    },
+    [blockData],
+  );
 
   const handleExport = useCallback(() => {
     const json = JSON.stringify(toTemplate(model), null, 2);
@@ -153,7 +170,7 @@ export default function TemplateBuilder({
       onDragEnd={handleDragEnd}
       onDragStart={(e: DragStartEvent) => {
         const d = (e.active.data.current ?? {}) as { type?: string };
-        setActiveLabel(d.type ? humanizeType(d.type) : "Block");
+        setActiveLabel(d.type ? getBlockTitle(schema, d.type) : "Block");
       }}
     >
       <div className="flex h-screen">
@@ -162,10 +179,8 @@ export default function TemplateBuilder({
             schema={schema}
             onSelectPage={selectPage}
             onExport={handleExport}
-            onInsertPreset={(rows) => setModel((m) => insertRows(m, rows))}
-            onLoadInvoice={() => {
-              const { template: t, data: d } = invoiceExample();
-              setModel(() => fromTemplate(t, d));
+            onLoadExample={(document) => {
+              setModel(() => loadExample(document));
               setSelectedBlockUid(null);
               setPageSelected(false);
             }}

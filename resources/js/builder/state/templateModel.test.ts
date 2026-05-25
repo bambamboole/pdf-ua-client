@@ -13,11 +13,8 @@ import {
   updateBlockConfig,
   updateTemplateConfig,
   updateBlockId,
-  insertRows,
-  replaceModel,
 } from "./templateModel";
 import type { Template, DataMap } from "../types";
-import { presets, invoiceExample } from "../presets";
 
 const template: Template = {
   version: 1,
@@ -148,32 +145,5 @@ describe("config / moves / remove", () => {
     const m = fromTemplate(template, data);
     expect(findBlock(m, m.rows[0].blocks[0].uid)?.block.id).toBe("title");
     expect(findBlock(m, "nope")).toBeNull();
-  });
-});
-
-describe("insertRows", () => {
-  it("appends rows and uniquifies colliding ids", () => {
-    const base = fromTemplate({
-      version: 1,
-      config: {},
-      rows: [{ blocks: [{ type: "heading", id: "invoice-title", config: {} }] }],
-    });
-    const result = insertRows(base, presets[0].build()); // preset[0] also uses id 'invoice-title'
-    const ids = result.rows.flatMap((r) => r.blocks.map((b) => b.id));
-    expect(new Set(ids).size).toBe(ids.length);
-    expect(result.rows).toHaveLength(2);
-  });
-});
-
-describe("replaceModel", () => {
-  it("swaps the whole model from a template + data", () => {
-    const base = fromTemplate({
-      version: 1,
-      config: {},
-      rows: [{ blocks: [{ type: "text", id: "t", config: {} }] }],
-    });
-    const { template: invoiceTemplate, data: invoiceData } = invoiceExample();
-    const result = replaceModel(base, invoiceTemplate, invoiceData);
-    expect(result.rows.length).toBeGreaterThan(1);
   });
 });

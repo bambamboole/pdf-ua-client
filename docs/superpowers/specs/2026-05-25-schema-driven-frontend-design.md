@@ -88,16 +88,23 @@ final class ExampleRegistry
 }
 ```
 
-- The package ships a **default invoice** example — a curated, schema-valid template
-  document (structure + config + inline `props`) authored as a PHP fixture/provider and
-  registered in the service provider's boot. Consumers swap it by resolving the registry
-  and calling `->flush()->register([...])` (or just `->register([...])` to add).
+- The package ships a **default invoice** example — a curated template document
+  (structure + config + inline `props`) authored as a PHP fixture/provider and registered
+  in the service provider's boot. Consumers swap it by resolving the registry and calling
+  `->flush()->register([...])` (or just `->register([...])` to add).
+- Each example document carries a **`title`** key (e.g. `'Invoice'`) for the menu label.
+  This is valid: the template schema's **root permits additional properties** (no root
+  `additionalProperties`/`unevaluatedProperties: false`), so a document with an extra
+  `title` still validates. (Conditional: keep the `title` only while the root stays
+  permissive — the schema-validity test guards this; if the root is ever tightened, drop
+  the `title` key and fall back to an index label.)
 - `TemplateSchemaCompiler::compile()` takes the `ExampleRegistry` (resolved via the
   container) and attaches `examples => $registry->all()` to the **root** schema (omit the
   key when empty). Standard JSON Schema root `examples` — an array of example instances.
 
 The example document carries inline `props` (content) so the example renders realistically;
-it remains a valid instance of the template schema (props are optional on blocks).
+it remains a valid instance of the template schema (props are optional on blocks; the root
+allows the extra `title`).
 
 ## Frontend — fully schema-driven
 
@@ -119,11 +126,10 @@ it remains a valid instance of the template schema (props are optional on blocks
     (this revives the previously-dead `props` subschema).
 - **Examples menu — `loadExample(doc)`** (pure): given an example template document with
   inline `props`, split each block's `props` into a dummy-data map keyed by `id`, strip
-  `props` to leave `{type,id,config}` structure, then `fromTemplate(structure, dataMap)`.
-  The palette's old "Presets" section is replaced by an **Examples** list built from
-  `schema.examples` (resolved via an Inertia prop, same as `schema`). One example → a
-  "Load example" button; multiple → a small list (label per example: the first `heading`
-  block's example text if present, else `Example {n}`).
+  `props` (and the menu-only `title`) to leave `{ version, config, rows:[{type,id,config}] }`
+  structure, then `fromTemplate(structure, dataMap)`. The palette's old "Presets" section is
+  replaced by an **Examples** list built from `schema.examples` (resolved via an Inertia
+  prop, same as `schema`); each item's label is `example.title` (fallback `Example {n}`).
 
 ### Removals / changes
 - Delete `resources/js/builder/lib/blockData.ts` and `resources/js/builder/presets.ts`.
@@ -152,10 +158,10 @@ it remains a valid instance of the template schema (props are optional on blocks
 
 ## Risks
 
-- **Naming examples in the menu** — JSON Schema `examples` is a bare array (no names).
-  The label heuristic (first heading's example text, else index) is a pragmatic
-  compromise; acceptable for the small example set. If named examples become important,
-  a separate named-examples Inertia prop (backed by the same registry) is the escape hatch.
+- **Naming examples in the menu** — resolved by an extra `title` key on each example
+  document (valid because the template root permits additional properties). The
+  schema-validity test guards this; if the root is ever tightened to forbid extra
+  properties, drop the `title` and fall back to an index label.
 - **`exampleFromSchema` recursion** on `$ref` cycles — the template `$defs` are acyclic
   (config refs don't recurse into blocks), but guard with a visited-set or depth cap to be safe.
 - **Octane safety** — `ExampleRegistry` is a mutable singleton like `BlockRegistry`;

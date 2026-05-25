@@ -20,7 +20,7 @@ export default function InlineBlockEditor({
   const [tab, setTab] = useState<"content" | "config">("content");
 
   return (
-    <div data-inline-block-editor className="mt-3 max-w-[13rem] border-t border-gray-100 pt-3">
+    <div data-inline-block-editor className="mt-3 border-t border-gray-100 pt-3">
       <div className="mb-3 flex gap-1">
         <button
           type="button"

@@ -11,13 +11,13 @@ it('sizes a multi-block row from each block config width and does not double-app
         'config' => ['page' => ['format' => 'A4']],
         'rows' => [[
             'blocks' => [
-                ['type' => 'text', 'props' => ['text' => 'L'], 'config' => ['width' => '70%']],
-                ['type' => 'text', 'props' => ['text' => 'R'], 'config' => ['width' => '30%']],
+                ['type' => 'text', 'id' => 'l', 'config' => ['width' => '70%']],
+                ['type' => 'text', 'id' => 'r', 'config' => ['width' => '30%']],
             ],
         ]],
     ]);
 
-    $html = app(TemplateRenderer::class)->render($template);
+    $html = app(TemplateRenderer::class)->render($template, ['l' => ['text' => 'L'], 'r' => ['text' => 'R']]);
 
     // cells sized from config.width
     expect($html)->toContain('<td style="width: 70%;">');
@@ -34,12 +34,12 @@ it('still honors row columnWidths and keeps the div width rule (legacy path)', f
         'rows' => [[
             'columnWidths' => ['60%', '40%'],
             'blocks' => [
-                ['type' => 'text', 'props' => ['text' => 'L'], 'config' => ['width' => '50%']],
-                ['type' => 'text', 'props' => ['text' => 'R']],
+                ['type' => 'text', 'id' => 'l', 'config' => ['width' => '50%']],
+                ['type' => 'text', 'id' => 'r'],
             ],
         ]],
     ]);
-    $html = app(TemplateRenderer::class)->render($template);
+    $html = app(TemplateRenderer::class)->render($template, ['l' => ['text' => 'L'], 'r' => ['text' => 'R']]);
     expect($html)->toContain('<td style="width: 60%;">');   // columnWidths wins
     expect($html)->toContain('.block-1 { width: 50%');        // div width still emitted
 });

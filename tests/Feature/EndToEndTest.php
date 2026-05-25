@@ -22,15 +22,15 @@ it('builds + renders + sends a Template through PdfApiClient end-to-end', functi
         'version' => 1,
         'config' => ['page' => ['format' => 'A4']],
         'rows' => [
-            ['blocks' => [['type' => 'heading', 'props' => ['text' => 'Test Document'], 'config' => ['level' => 1]]]],
+            ['blocks' => [['type' => 'heading', 'id' => 'h', 'config' => ['level' => 1]]]],
             ['blocks' => [
-                ['type' => 'text', 'props' => ['text' => 'First column']],
-                ['type' => 'text', 'props' => ['text' => 'Second column']],
+                ['type' => 'text', 'id' => 'l'],
+                ['type' => 'text', 'id' => 'r'],
             ]],
         ],
     ]);
 
-    $html = $renderer->render($template);
+    $html = $renderer->render($template, ['h' => ['text' => 'Test Document'], 'l' => ['text' => 'First column'], 'r' => ['text' => 'Second column']]);
     $pdf = $client->convert($html);
 
     expect($pdf)->toBe('FAKE-PDF-BYTES');

@@ -11,10 +11,11 @@ it('renders a posted template to html', function (): void {
             'config' => ['page' => ['format' => 'A4']],
             'rows' => [
                 ['blocks' => [
-                    ['type' => 'heading', 'props' => ['text' => 'Invoice 2026-001'], 'config' => ['level' => 1]],
+                    ['type' => 'heading', 'id' => 'title', 'config' => ['level' => 1]],
                 ]],
             ],
         ],
+        'data' => ['title' => ['text' => 'Invoice 2026-001']],
     ]);
 
     $response->assertOk();

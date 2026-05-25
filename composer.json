@@ -23,6 +23,7 @@
     "require-dev": {
         "inertiajs/inertia-laravel": "^3.1",
         "larastan/larastan": "^3.0",
+        "laravel/boost": "^2.4",
         "laravel/pint": "^1.16",
         "orchestra/testbench": "^9.0 || ^10.0 || ^11.0",
         "pestphp/pest": "^4.0",
@@ -49,6 +50,11 @@
         "lint": "./vendor/bin/pint",
         "refactor": "./vendor/bin/rector",
         "analyse": "./vendor/bin/phpstan analyse",
+        "fix": [
+            "@lint",
+            "npm run lint:fix",
+            "npm run fmt"
+        ],
         "schema": "@php bin/export-schema.php",
         "post-autoload-dump": [
             "@clear",

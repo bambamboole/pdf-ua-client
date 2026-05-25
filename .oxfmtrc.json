@@ -16,6 +16,8 @@
     "pint.json",
     "testbench.yaml",
     "rector.php",
+    "boost.json",
+    ".mcp.json",
     "*.md"
   ]
 }

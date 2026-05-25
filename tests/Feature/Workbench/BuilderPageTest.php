@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+use Inertia\Testing\AssertableInertia;
+
+use function Pest\Laravel\get;
+
+it('renders the builder page with the compiled schema prop', function (): void {
+    $this->withoutVite();
+
+    get('/')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Builder')
+            ->where('schema.$defs.block.properties.type.enum', [
+                'heading', 'text', 'html', 'image', 'spacer', 'divider', 'key-value', 'table',
+            ])
+        );
+});

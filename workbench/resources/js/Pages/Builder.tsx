@@ -1,0 +1,41 @@
+import TemplateBuilder from '@builder/TemplateBuilder';
+import type { JsonSchema } from '@builder/types';
+import { sampleTemplate, sampleData } from '../sampleTemplate';
+
+function xsrfToken(): string {
+    const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
+
+    return match ? decodeURIComponent(match[1]) : '';
+}
+
+async function renderTemplate(template: unknown, data: unknown): Promise<string> {
+    const response = await fetch('/render', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'X-XSRF-TOKEN': xsrfToken(),
+        },
+        body: JSON.stringify({ template, data }),
+    });
+
+    if (!response.ok) {
+        throw new Error(`Render request failed (${response.status})`);
+    }
+
+    const payload = await response.json() as { html: string };
+
+    return payload.html;
+}
+
+export default function Builder({ schema }: { schema: JsonSchema }) {
+    return (
+        <TemplateBuilder
+            schema={schema}
+            initialTemplate={sampleTemplate}
+            initialData={sampleData}
+            renderTemplate={renderTemplate}
+        />
+    );
+}

@@ -1,0 +1,128 @@
+<?php
+
+declare(strict_types=1);
+
+use Bambamboole\PdfUaClient\Block\BlockRegistry;
+use Bambamboole\PdfUaClient\Block\PropsReflector;
+use Bambamboole\PdfUaClient\Enums\PageFormat;
+use Bambamboole\PdfUaClient\Exceptions\TemplateValidationException;
+use Bambamboole\PdfUaClient\Template\Template;
+use Bambamboole\PdfUaClient\Template\TemplateFactory;
+use Bambamboole\PdfUaClient\Template\TemplateSchemaCompiler;
+use Bambamboole\PdfUaClient\Tests\Fixtures\TestFixtureBlock;
+
+beforeEach(function () {
+    $registry = new BlockRegistry;
+    $registry->register(TestFixtureBlock::class);
+    $this->factory = new TemplateFactory(
+        $registry,
+        new TemplateSchemaCompiler(new PropsReflector),
+    );
+});
+
+it('builds a Template from valid JSON', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['format' => 'A4']],
+        'rows' => [
+            ['blocks' => [['type' => 'test-fixture', 'props' => ['text' => 'hi'], 'config' => ['level' => 2]]]],
+        ],
+    ]);
+
+    expect($template)->toBeInstanceOf(Template::class);
+    expect($template->version)->toBe(1);
+    expect($template->config->page->format)->toBe(PageFormat::A4);
+    expect($template->rows)->toHaveCount(1);
+    expect($template->rows[0]->blocks[0]->type)->toBe('test-fixture');
+    expect($template->rows[0]->blocks[0]->id)->toBe('r0b0');
+});
+
+it('applies defaults for omitted page fields', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['format' => 'A5']],
+        'rows' => [
+            ['blocks' => [['type' => 'test-fixture', 'props' => ['text' => 'hi']]]],
+        ],
+    ]);
+
+    expect($template->config->page->format)->toBe(PageFormat::A5);
+    expect($template->config->page->locale)->toBe('de_DE');
+    expect($template->config->page->margins->top)->toBe(20);
+    expect($template->config->page->margins->left)->toBe(25);
+    expect($template->config->page->pageNumbers)->toBeNull();
+});
+
+it('parses nested per-block config', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['typography' => ['family' => 'Inter', 'size' => 10]],
+        'rows' => [
+            ['blocks' => [[
+                'type' => 'test-fixture',
+                'props' => ['text' => 'x'],
+                'config' => [
+                    'typography' => ['size' => 18, 'weight' => 700],
+                    'spacing' => ['bottom' => 4],
+                ],
+            ]]],
+        ],
+    ]);
+
+    $instance = $template->rows[0]->blocks[0];
+    expect($instance->config)->toMatchArray([
+        'typography' => ['size' => 18, 'weight' => 700],
+        'spacing' => ['bottom' => 4],
+    ]);
+});
+
+it('throws TemplateValidationException for missing required keys', function () {
+    expect(fn () => $this->factory->fromArray([
+        'config' => ['page' => ['format' => 'A4']],
+        'rows' => [],
+    ]))->toThrow(TemplateValidationException::class);
+});
+
+it('throws TemplateValidationException for unknown block types', function () {
+    expect(fn () => $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['format' => 'A4']],
+        'rows' => [
+            ['blocks' => [['type' => 'unknown-block-xyz']]],
+        ],
+    ]))->toThrow(TemplateValidationException::class);
+});
+
+it('accepts an empty config object', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => [],
+        'rows' => [],
+    ]);
+
+    expect($template->version)->toBe(1);
+});
+
+it('accepts a fully-default template via fromArray', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => [],
+        'rows' => [],
+    ]);
+
+    expect($template->version)->toBe(1);
+});
+
+it('accepts deeply nested empty configs', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => []],
+        'rows' => [
+            ['blocks' => [
+                ['type' => 'test-fixture', 'props' => ['text' => 'X'], 'config' => []],
+            ]],
+        ],
+    ]);
+
+    expect($template->version)->toBe(1);
+});

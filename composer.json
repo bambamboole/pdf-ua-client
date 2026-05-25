@@ -1,0 +1,82 @@
+{
+    "name": "bambamboole/pdf-ua-client",
+    "description": "HTTP client + row/block PDF template engine for the pdf-ua-api service.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "pdf",
+        "pdf-ua",
+        "accessibility",
+        "template",
+        "laravel"
+    ],
+    "require": {
+        "php": "^8.3",
+        "ext-json": "*",
+        "illuminate/http": "^11.0 || ^12.0 || ^13.0",
+        "illuminate/support": "^11.0 || ^12.0 || ^13.0",
+        "illuminate/view": "^11.0 || ^12.0 || ^13.0",
+        "spatie/laravel-package-tools": "^1.16 || ^2.0",
+        "opis/json-schema": "^2.3",
+        "phpstan/phpdoc-parser": "^1.29 || ^2.0"
+    },
+    "require-dev": {
+        "inertiajs/inertia-laravel": "^3.1",
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.16",
+        "orchestra/testbench": "^9.0 || ^10.0 || ^11.0",
+        "pestphp/pest": "^4.0",
+        "pestphp/pest-plugin-laravel": "^4.0",
+        "rector/rector": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Bambamboole\\PdfUaClient\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Bambamboole\\PdfUaClient\\Tests\\": "tests/",
+            "Workbench\\App\\": "workbench/app/",
+            "Workbench\\Database\\Factories\\": "workbench/database/factories/",
+            "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
+        }
+    },
+    "scripts": {
+        "test": "./vendor/bin/pest",
+        "test:lint": "./vendor/bin/pint --test",
+        "test:refactor": "./vendor/bin/rector --dry-run",
+        "lint": "./vendor/bin/pint",
+        "refactor": "./vendor/bin/rector",
+        "analyse": "./vendor/bin/phpstan analyse",
+        "schema": "@php bin/export-schema.php",
+        "post-autoload-dump": [
+            "@clear",
+            "@prepare"
+        ],
+        "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
+        "prepare": "@php vendor/bin/testbench package:discover --ansi",
+        "build": "@php vendor/bin/testbench workbench:build --ansi",
+        "serve": [
+            "Composer\\Config::disableProcessTimeout",
+            "@build",
+            "@php vendor/bin/testbench serve --ansi"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Bambamboole\\PdfUaClient\\PdfUaClientServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

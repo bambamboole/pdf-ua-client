@@ -1,0 +1,609 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://pdfuakit.com/schemas/pdf-ua-client-template-v1.json",
+    "type": "object",
+    "required": [
+        "version",
+        "config",
+        "rows"
+    ],
+    "properties": {
+        "version": {
+            "const": 1,
+            "type": "integer"
+        },
+        "config": {
+            "$ref": "#/$defs/templateConfig"
+        },
+        "rows": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/row"
+            }
+        }
+    },
+    "$defs": {
+        "spacingConfig": {
+            "type": "object",
+            "properties": {
+                "top": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 0
+                },
+                "right": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 0
+                },
+                "bottom": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 0
+                },
+                "left": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 0
+                }
+            },
+            "additionalProperties": false
+        },
+        "pageNumbersConfig": {
+            "type": "object",
+            "properties": {
+                "position": {
+                    "type": "string",
+                    "default": "center"
+                }
+            },
+            "additionalProperties": false
+        },
+        "pageConfig": {
+            "type": "object",
+            "properties": {
+                "format": {
+                    "type": "string",
+                    "enum": [
+                        "A4",
+                        "A5",
+                        "Letter",
+                        "Legal"
+                    ],
+                    "default": "A4"
+                },
+                "locale": {
+                    "type": "string",
+                    "default": "de_DE"
+                },
+                "margins": {
+                    "$ref": "#/$defs/spacingConfig"
+                },
+                "pageNumbers": {
+                    "$ref": "#/$defs/pageNumbersConfig"
+                }
+            },
+            "additionalProperties": false
+        },
+        "typographyConfig": {
+            "type": "object",
+            "properties": {
+                "family": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "size": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "weight": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "enum": [
+                        300,
+                        400,
+                        500,
+                        600,
+                        700
+                    ]
+                },
+                "align": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "enum": [
+                        "left",
+                        "center",
+                        "right"
+                    ]
+                },
+                "color": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+        "templateConfig": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "$ref": "#/$defs/pageConfig"
+                },
+                "typography": {
+                    "$ref": "#/$defs/typographyConfig"
+                }
+            },
+            "additionalProperties": false
+        },
+        "blockBase": {
+            "type": "object",
+            "required": [
+                "type"
+            ],
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "blockConfig": {
+            "type": "object",
+            "properties": {
+                "typography": {
+                    "$ref": "#/$defs/typographyConfig"
+                },
+                "spacing": {
+                    "$ref": "#/$defs/spacingConfig"
+                },
+                "width": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "align": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "enum": [
+                        "left",
+                        "center",
+                        "right"
+                    ]
+                }
+            }
+        },
+        "headingConfig": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockConfig"
+                }
+            ],
+            "properties": {
+                "level": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 6,
+                    "default": 2
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "headingProps": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "headingBlock": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockBase"
+                }
+            ],
+            "properties": {
+                "type": {
+                    "const": "heading",
+                    "type": "string"
+                },
+                "props": {
+                    "$ref": "#/$defs/headingProps"
+                },
+                "config": {
+                    "$ref": "#/$defs/headingConfig"
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "textProps": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "textBlock": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockBase"
+                }
+            ],
+            "properties": {
+                "type": {
+                    "const": "text",
+                    "type": "string"
+                },
+                "props": {
+                    "$ref": "#/$defs/textProps"
+                },
+                "config": {
+                    "$ref": "#/$defs/blockConfig"
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "htmlProps": {
+            "type": "object",
+            "properties": {
+                "html": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "htmlBlock": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockBase"
+                }
+            ],
+            "properties": {
+                "type": {
+                    "const": "html",
+                    "type": "string"
+                },
+                "props": {
+                    "$ref": "#/$defs/htmlProps"
+                },
+                "config": {
+                    "$ref": "#/$defs/blockConfig"
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "imageConfig": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockConfig"
+                }
+            ],
+            "properties": {
+                "maxHeight": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "default": 60
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "imageProps": {
+            "type": "object",
+            "properties": {
+                "src": {
+                    "type": "string"
+                },
+                "alt": {
+                    "type": "string",
+                    "default": ""
+                }
+            },
+            "additionalProperties": false
+        },
+        "imageBlock": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockBase"
+                }
+            ],
+            "properties": {
+                "type": {
+                    "const": "image",
+                    "type": "string"
+                },
+                "props": {
+                    "$ref": "#/$defs/imageProps"
+                },
+                "config": {
+                    "$ref": "#/$defs/imageConfig"
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "spacerConfig": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockConfig"
+                }
+            ],
+            "properties": {
+                "height": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 5
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "spacerProps": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+        },
+        "spacerBlock": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockBase"
+                }
+            ],
+            "properties": {
+                "type": {
+                    "const": "spacer",
+                    "type": "string"
+                },
+                "props": {
+                    "$ref": "#/$defs/spacerProps"
+                },
+                "config": {
+                    "$ref": "#/$defs/spacerConfig"
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "dividerConfig": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockConfig"
+                }
+            ],
+            "properties": {
+                "thickness": {
+                    "type": "integer",
+                    "default": 1
+                },
+                "lineColor": {
+                    "type": "string",
+                    "pattern": "^#[0-9A-Fa-f]{3,8}$",
+                    "default": "#d1d5db"
+                },
+                "style": {
+                    "type": "string",
+                    "default": "solid"
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "dividerProps": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+        },
+        "dividerBlock": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockBase"
+                }
+            ],
+            "properties": {
+                "type": {
+                    "const": "divider",
+                    "type": "string"
+                },
+                "props": {
+                    "$ref": "#/$defs/dividerProps"
+                },
+                "config": {
+                    "$ref": "#/$defs/dividerConfig"
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "keyValueConfig": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockConfig"
+                }
+            ],
+            "properties": {
+                "labelWidth": {
+                    "type": "string",
+                    "default": "30mm"
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "keyValueProps": {
+            "type": "object",
+            "properties": {
+                "entries": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "label": {
+                                "type": "string"
+                            },
+                            "value": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "default": []
+                }
+            },
+            "additionalProperties": false
+        },
+        "keyValueBlock": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockBase"
+                }
+            ],
+            "properties": {
+                "type": {
+                    "const": "key-value",
+                    "type": "string"
+                },
+                "props": {
+                    "$ref": "#/$defs/keyValueProps"
+                },
+                "config": {
+                    "$ref": "#/$defs/keyValueConfig"
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "tableConfig": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockConfig"
+                }
+            ],
+            "properties": {
+                "columnAlignments": {
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "columnWidths": {
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "style": {
+                    "type": "string",
+                    "default": "striped"
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "tableProps": {
+            "type": "object",
+            "properties": {
+                "headers": {
+                    "type": "array"
+                },
+                "rows": {
+                    "type": "array"
+                }
+            },
+            "additionalProperties": false
+        },
+        "tableBlock": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/blockBase"
+                }
+            ],
+            "properties": {
+                "type": {
+                    "const": "table",
+                    "type": "string"
+                },
+                "props": {
+                    "$ref": "#/$defs/tableProps"
+                },
+                "config": {
+                    "$ref": "#/$defs/tableConfig"
+                }
+            },
+            "unevaluatedProperties": false
+        },
+        "row": {
+            "type": "object",
+            "required": [
+                "blocks"
+            ],
+            "properties": {
+                "blocks": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/$defs/block"
+                    }
+                },
+                "gap": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "columnWidths": {
+                    "type": "array",
+                    "items": {
+                        "type": [
+                            "integer",
+                            "string"
+                        ]
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "block": {
+            "oneOf": [
+                {
+                    "$ref": "#/$defs/headingBlock"
+                },
+                {
+                    "$ref": "#/$defs/textBlock"
+                },
+                {
+                    "$ref": "#/$defs/htmlBlock"
+                },
+                {
+                    "$ref": "#/$defs/imageBlock"
+                },
+                {
+                    "$ref": "#/$defs/spacerBlock"
+                },
+                {
+                    "$ref": "#/$defs/dividerBlock"
+                },
+                {
+                    "$ref": "#/$defs/keyValueBlock"
+                },
+                {
+                    "$ref": "#/$defs/tableBlock"
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,13 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Call to an undefined method ReflectionEnumUnitCase\:\:getBackingValue\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Block/PropsReflector.php
+
+		-
+			message: '#^Call to static method PHPUnit\\Framework\\Assert\:\:assertTrue\(\) with true will always evaluate to true\.$#'
+			identifier: staticMethod.alreadyNarrowedType
+			count: 1
+			path: src/Testing/PdfUaTesting.php

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>pdf-ua-client — Template Schema</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; padding: 24px; background: #fafafa; color: #1a1a1a; }
+        header { max-width: 1100px; margin: 0 auto 24px; }
+        header h1 { font-size: 24px; margin: 0 0 4px; }
+        header p { margin: 0; color: #6b7280; font-size: 14px; }
+        #viewer { max-width: 1100px; margin: 0 auto; background: white; border: 1px solid #e5e7eb; border-radius: 6px; padding: 24px; }
+        #error { max-width: 1100px; margin: 0 auto; color: #b91c1c; padding: 16px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; }
+
+        .schema-tree { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; line-height: 1.6; }
+        .schema-tree details { margin-left: 12px; }
+        .schema-tree summary { cursor: pointer; padding: 2px 0; }
+        .schema-tree summary:hover { background: #f3f4f6; }
+        .schema-tree .key { color: #1f2937; font-weight: 600; }
+        .schema-tree .type { color: #2563eb; }
+        .schema-tree .ref { color: #7c3aed; }
+        .schema-tree .const { color: #059669; }
+        .schema-tree .meta { color: #6b7280; font-style: italic; }
+        .schema-tree .leaf { padding-left: 16px; }
+        .schema-tree .def-header { margin-top: 12px; padding-top: 8px; border-top: 1px solid #e5e7eb; }
+        .schema-tree .def-header:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+        .schema-tree h3 { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 14px; margin: 16px 0 4px; color: #374151; }
+        .schema-tree .root { padding-bottom: 12px; border-bottom: 2px solid #e5e7eb; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>pdf-ua-client — Template Schema</h1>
+        <p>Live view of <code>template.schema.json</code>. Components and their structure.</p>
+    </header>
+    <div id="viewer">Loading…</div>
+
+    <script type="module">
+        const viewer = document.getElementById('viewer');
+
+        function isPlainObject(v) {
+            return v !== null && typeof v === 'object' && !Array.isArray(v);
+        }
+
+        function renderNode(node, label, isDef) {
+            if (!isPlainObject(node)) {
+                const span = document.createElement('div');
+                span.className = 'leaf';
+                span.innerHTML = '<span class="key">' + escapeHtml(label) + '</span>: ' + escapeHtml(JSON.stringify(node));
+                return span;
+            }
+
+            if (node['$ref']) {
+                const target = String(node['$ref']).replace('#/$defs/', '');
+                const wrap = document.createElement('div');
+                wrap.className = 'leaf';
+                wrap.innerHTML = '<span class="key">' + escapeHtml(label) + '</span>: '
+                    + '<a class="ref" href="#def-' + escapeHtml(target) + '">' + escapeHtml(node['$ref']) + '</a>';
+                return wrap;
+            }
+
+            const details = document.createElement('details');
+            if (isDef) {
+                details.open = false;
+            } else {
+                details.open = true;
+            }
+
+            const summary = document.createElement('summary');
+            const labelHtml = '<span class="key">' + escapeHtml(label) + '</span>';
+            const meta = [];
+            if (node.type) {
+                meta.push('<span class="type">' + escapeHtml(Array.isArray(node.type) ? node.type.join('|') : String(node.type)) + '</span>');
+            }
+            if (node.const !== undefined) {
+                meta.push('<span class="const">const: ' + escapeHtml(JSON.stringify(node.const)) + '</span>');
+            }
+            if (node.enum) {
+                meta.push('<span class="const">enum: ' + escapeHtml(JSON.stringify(node.enum)) + '</span>');
+            }
+            if (node.description) {
+                meta.push('<span class="meta">' + escapeHtml(node.description) + '</span>');
+            }
+            summary.innerHTML = labelHtml + (meta.length ? ' ' + meta.join(' · ') : '');
+            details.appendChild(summary);
+
+            const props = node.properties;
+            if (props && isPlainObject(props)) {
+                Object.keys(props).forEach(propName => {
+                    details.appendChild(renderNode(props[propName], propName, false));
+                });
+            }
+
+            if (node.items) {
+                const itemsWrap = document.createElement('div');
+                itemsWrap.appendChild(renderNode(node.items, 'items[]', false));
+                details.appendChild(itemsWrap);
+            }
+
+            if (Array.isArray(node.oneOf)) {
+                const oneOfWrap = document.createElement('div');
+                oneOfWrap.className = 'leaf';
+                oneOfWrap.innerHTML = '<span class="meta">oneOf discriminator on ' + node.oneOf.length + ' variants</span>';
+                node.oneOf.forEach((entry, idx) => {
+                    if (entry && entry.then && entry.then['$ref']) {
+                        const target = String(entry.then['$ref']).replace('#/$defs/', '');
+                        const constVal = entry.if && entry.if.properties && entry.if.properties.type
+                            ? JSON.stringify(entry.if.properties.type.const)
+                            : '?';
+                        const row = document.createElement('div');
+                        row.className = 'leaf';
+                        row.innerHTML = '  type=' + escapeHtml(constVal) + ' → '
+                            + '<a class="ref" href="#def-' + escapeHtml(target) + '">' + escapeHtml(entry.then['$ref']) + '</a>';
+                        oneOfWrap.appendChild(row);
+                    }
+                });
+                details.appendChild(oneOfWrap);
+            }
+
+            return details;
+        }
+
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[c]));
+        }
+
+        function render(schema) {
+            const wrap = document.createElement('div');
+            wrap.className = 'schema-tree';
+
+            const root = document.createElement('div');
+            root.className = 'root';
+            const meta = document.createElement('div');
+            meta.innerHTML = '<strong>$id:</strong> ' + escapeHtml(schema['$id'] || '') + '<br>'
+                + '<strong>$schema:</strong> ' + escapeHtml(schema['$schema'] || '');
+            root.appendChild(meta);
+
+            if (schema.properties) {
+                const props = document.createElement('div');
+                Object.keys(schema.properties).forEach(name => {
+                    props.appendChild(renderNode(schema.properties[name], name, false));
+                });
+                root.appendChild(props);
+            }
+            wrap.appendChild(root);
+
+            const defs = schema['$defs'] || {};
+            const heading = document.createElement('h3');
+            heading.textContent = '$defs (' + Object.keys(defs).length + ')';
+            wrap.appendChild(heading);
+
+            Object.keys(defs).sort().forEach(defName => {
+                const block = document.createElement('div');
+                block.className = 'def-header';
+                block.id = 'def-' + defName;
+                block.appendChild(renderNode(defs[defName], defName, true));
+                wrap.appendChild(block);
+            });
+
+            viewer.innerHTML = '';
+            viewer.appendChild(wrap);
+        }
+
+        fetch('../template.schema.json')
+            .then(r => {
+                if (!r.ok) throw new Error('Failed to load schema (HTTP ' + r.status + ')');
+                return r.json();
+            })
+            .then(render)
+            .catch(err => {
+                viewer.outerHTML = '<div id="error">Failed to load schema: ' + err.message + '</div>';
+            });
+    </script>
+</body>
+</html>

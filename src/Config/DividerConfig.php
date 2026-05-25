@@ -18,16 +18,16 @@ final readonly class DividerConfig extends BlockConfig
         ?Align $align = null,
         #[Title('Thickness')]
         #[Description('Line thickness in points.')]
-        #[CssRule(key: 'border-top-width', value: '{value}pt')]
+        #[CssRule(key: 'border-top-width', value: '{value}pt', selector: 'hr')]
         public int $thickness = 1,
         #[Title('Line color')]
         #[Description('Hex color used for the divider line.')]
         #[Pattern('^#[0-9A-Fa-f]{3,8}$')]
-        #[CssRule(key: 'border-top-color', value: '{value}')]
+        #[CssRule(key: 'border-top-color', value: '{value}', selector: 'hr')]
         public string $lineColor = '#d1d5db',
         #[Title('Line style')]
         #[Description('CSS border style used for the divider line.')]
-        #[CssRule(key: 'border-top-style', value: '{value}')]
+        #[CssRule(key: 'border-top-style', value: '{value}', selector: 'hr')]
         public string $style = 'solid',
     ) {
         parent::__construct($typography, $spacing, $width, $align);

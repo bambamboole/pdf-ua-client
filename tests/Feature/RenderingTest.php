@@ -227,9 +227,28 @@ it('emits base document and table styling once per rendered document', function 
 
     $html = $this->renderer->render($template, ['x' => ['text' => 'x']]);
 
-    expect(substr_count((string) $html, 'hr { border: none; border-top: 1px solid #d1d5db; margin: 5mm 0; }'))->toBe(1);
+    expect(substr_count((string) $html, 'hr { border: none; border-top: 1px solid #d1d5db; margin: 2.5mm 0; }'))->toBe(1);
     expect($html)->toContain('.key-value { display: inline-table; border-collapse: collapse; text-align: left; }');
+    expect($html)->toContain('.key-value td { padding: 0.65mm 0 0.65mm 3mm; vertical-align: top; }');
     expect($html)->toContain('.data-table { width: 100%; border-collapse: collapse; text-align: left; }');
+});
+
+it('emits divider style on the hr only', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['format' => 'A4']],
+        'rows' => [[
+            'blocks' => [[
+                'type' => 'divider',
+                'config' => ['thickness' => 2, 'lineColor' => '#475569', 'style' => 'dashed'],
+            ]],
+        ]],
+    ]);
+
+    $html = $this->renderer->render($template);
+
+    expect($html)->toContain('.block-1 hr { border-top-width: 2pt; border-top-color: #475569; border-top-style: dashed; }');
+    expect($html)->not->toContain('.block-1 { border-top-width');
 });
 
 it('emits template typography once on the body and lets CSS inheritance handle the rest', function () {

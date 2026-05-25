@@ -5,6 +5,7 @@
 /node_modules
 /.idea
 /.worktrees
+/tests/.pdf-diff
 
 # Laravel Boost: generated outputs (sources are committed: .ai/guidelines, boost.json, .mcp.json)
 /CLAUDE.md

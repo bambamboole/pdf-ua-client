@@ -3,3 +3,8 @@
 .phpunit.result.cache
 .phpunit.cache/
 /node_modules
+/.idea
+
+# Laravel Boost: generated outputs (sources are committed: .ai/guidelines, boost.json, .mcp.json)
+/CLAUDE.md
+/.claude

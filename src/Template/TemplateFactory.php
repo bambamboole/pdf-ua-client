@@ -156,7 +156,6 @@ final readonly class TemplateFactory
             $rows[] = new Row(
                 blocks: $blocks,
                 gap: $rowData['gap'] ?? null,
-                columnWidths: $rowData['columnWidths'] ?? null,
             );
         }
 

@@ -19,7 +19,6 @@ export interface TemplateBlock {
 }
 export interface TemplateRow {
   blocks: TemplateBlock[];
-  columnWidths?: (string | number)[];
   gap?: number;
 }
 export interface Template {

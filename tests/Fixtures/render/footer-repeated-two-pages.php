@@ -25,10 +25,9 @@ return new TestFixture(
                     'repeat' => true,
                     'pageNumbers' => ['enabled' => true, 'position' => 'right'],
                     'rows' => [[
-                        'columnWidths' => ['70%', '30%'],
                         'blocks' => [
-                            ['type' => 'text', 'id' => 'footer_note'],
-                            ['type' => 'text', 'id' => 'footer_meta', 'config' => ['typography' => ['align' => 'right']]],
+                            ['type' => 'text', 'id' => 'footer_note', 'config' => ['width' => '70%']],
+                            ['type' => 'text', 'id' => 'footer_meta', 'config' => ['width' => '30%', 'typography' => ['align' => 'right']]],
                         ],
                     ]],
                 ],

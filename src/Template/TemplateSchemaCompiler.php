@@ -66,10 +66,6 @@ final readonly class TemplateSchemaCompiler
                     'items' => ['$ref' => '#/$defs/block'],
                 ],
                 'gap' => ['type' => 'integer', 'minimum' => 0],
-                'columnWidths' => [
-                    'type' => 'array',
-                    'items' => ['type' => ['integer', 'string']],
-                ],
             ],
             'additionalProperties' => false,
         ]);

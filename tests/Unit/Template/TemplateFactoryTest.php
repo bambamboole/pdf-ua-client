@@ -76,10 +76,9 @@ it('builds footer rows and footer page numbers', function () {
                     'repeat' => true,
                     'pageNumbers' => ['enabled' => true, 'position' => 'right'],
                     'rows' => [[
-                        'columnWidths' => ['70%', '30%'],
                         'blocks' => [
-                            ['type' => 'test-fixture', 'id' => 'footer_note'],
-                            ['type' => 'test-fixture', 'id' => 'footer_meta'],
+                            ['type' => 'test-fixture', 'id' => 'footer_note', 'config' => ['width' => '70%']],
+                            ['type' => 'test-fixture', 'id' => 'footer_meta', 'config' => ['width' => '30%']],
                         ],
                     ]],
                 ],
@@ -92,8 +91,8 @@ it('builds footer rows and footer page numbers', function () {
     expect($template->config->page->footer->pageNumbers->enabled)->toBeTrue();
     expect($template->config->page->footer->pageNumbers->position)->toBe(PageNumberPosition::Right);
     expect($template->config->page->footer->rows)->toHaveCount(1);
-    expect($template->config->page->footer->rows[0]->columnWidths)->toBe(['70%', '30%']);
     expect($template->config->page->footer->rows[0]->blocks[0]->id)->toBe('footer_note');
+    expect($template->config->page->footer->rows[0]->blocks[0]->config['width'])->toBe('70%');
 });
 
 it('parses nested per-block config', function () {

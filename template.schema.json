@@ -635,15 +635,6 @@
                 "gap": {
                     "type": "integer",
                     "minimum": 0
-                },
-                "columnWidths": {
-                    "type": "array",
-                    "items": {
-                        "type": [
-                            "integer",
-                            "string"
-                        ]
-                    }
                 }
             },
             "additionalProperties": false
@@ -807,40 +798,40 @@
             },
             "rows": [
                 {
-                    "columnWidths": [
-                        "58%",
-                        "42%"
-                    ],
                     "blocks": [
                         {
                             "type": "heading",
                             "id": "title",
                             "config": {
-                                "level": 1
+                                "level": 1,
+                                "width": "58%"
                             }
                         },
                         {
                             "type": "key-value",
                             "id": "invoice-meta",
                             "config": {
+                                "width": "42%",
                                 "align": "right"
                             }
                         }
                     ]
                 },
                 {
-                    "columnWidths": [
-                        "50%",
-                        "50%"
-                    ],
                     "blocks": [
                         {
                             "type": "key-value",
-                            "id": "seller"
+                            "id": "seller",
+                            "config": {
+                                "width": "50%"
+                            }
                         },
                         {
                             "type": "key-value",
-                            "id": "buyer"
+                            "id": "buyer",
+                            "config": {
+                                "width": "50%"
+                            }
                         }
                     ]
                 },
@@ -880,16 +871,13 @@
                     ]
                 },
                 {
-                    "columnWidths": [
-                        "54%",
-                        "46%"
-                    ],
                     "blocks": [
                         {
                             "type": "table",
                             "id": "vat-breakdown",
                             "config": {
                                 "style": "minimal",
+                                "width": "54%",
                                 "columnAlignments": [
                                     "left",
                                     "right",
@@ -902,21 +890,19 @@
                             "type": "key-value",
                             "id": "totals",
                             "config": {
+                                "width": "46%",
                                 "align": "right"
                             }
                         }
                     ]
                 },
                 {
-                    "columnWidths": [
-                        "54%",
-                        "46%"
-                    ],
                     "blocks": [
                         {
                             "type": "text",
                             "id": "notice",
                             "config": {
+                                "width": "54%",
                                 "spacing": {
                                     "top": 4
                                 }
@@ -926,6 +912,7 @@
                             "type": "key-value",
                             "id": "payment",
                             "config": {
+                                "width": "46%",
                                 "align": "right"
                             }
                         }

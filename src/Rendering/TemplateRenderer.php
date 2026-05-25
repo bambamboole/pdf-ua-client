@@ -66,10 +66,10 @@ final class TemplateRenderer
     {
         $cells = '';
         foreach ($row->blocks as $i => $instance) {
-            $cellWidth = $row->columnWidths[$i] ?? null;
+            $cellWidth = null;
             $widthOnCell = false;
 
-            if ($cellWidth === null && count($row->blocks) > 1) {
+            if (count($row->blocks) > 1) {
                 $configWidth = $instance->config['width'] ?? null;
                 if ($configWidth !== null) {
                     $cellWidth = $configWidth;

@@ -70,10 +70,9 @@ it('renders a multi-block row as a presentation table with one td per block', fu
         'version' => 1,
         'config' => ['page' => ['format' => 'A4']],
         'rows' => [[
-            'columnWidths' => ['60%', '40%'],
             'blocks' => [
-                ['type' => 'text', 'id' => 'l'],
-                ['type' => 'text', 'id' => 'r'],
+                ['type' => 'text', 'id' => 'l', 'config' => ['width' => '60%']],
+                ['type' => 'text', 'id' => 'r', 'config' => ['width' => '40%']],
             ],
         ]],
     ]);
@@ -372,10 +371,9 @@ it('renders repeated footer rows and page numbers in print mode', function () {
                     'repeat' => true,
                     'pageNumbers' => ['enabled' => true, 'position' => 'right'],
                     'rows' => [[
-                        'columnWidths' => ['70%', '30%'],
                         'blocks' => [
-                            ['type' => 'text', 'id' => 'footer_note'],
-                            ['type' => 'text', 'id' => 'footer_meta'],
+                            ['type' => 'text', 'id' => 'footer_note', 'config' => ['width' => '70%']],
+                            ['type' => 'text', 'id' => 'footer_meta', 'config' => ['width' => '30%']],
                         ],
                     ]],
                 ],

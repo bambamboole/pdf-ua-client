@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Bambamboole\PdfUaClient\Exceptions\TemplateValidationException;
 use Bambamboole\PdfUaClient\Rendering\TemplateRenderer;
 use Bambamboole\PdfUaClient\Template\TemplateFactory;
 
@@ -27,8 +28,8 @@ it('sizes a multi-block row from each block config width and does not double-app
     expect($html)->not->toContain('.block-2 { width: 30%');
 });
 
-it('still honors row columnWidths and keeps the div width rule (legacy path)', function (): void {
-    $template = app(TemplateFactory::class)->fromArray([
+it('rejects row columnWidths because block width owns column sizing', function (): void {
+    expect(fn () => app(TemplateFactory::class)->fromArray([
         'version' => 1,
         'config' => ['page' => ['format' => 'A4']],
         'rows' => [[
@@ -38,8 +39,5 @@ it('still honors row columnWidths and keeps the div width rule (legacy path)', f
                 ['type' => 'text', 'id' => 'r'],
             ],
         ]],
-    ]);
-    $html = app(TemplateRenderer::class)->render($template, ['l' => ['text' => 'L'], 'r' => ['text' => 'R']]);
-    expect($html)->toContain('<td style="width: 60%;">');   // columnWidths wins
-    expect($html)->toContain('.block-1 { width: 50%');        // div width still emitted
+    ]))->toThrow(TemplateValidationException::class);
 });

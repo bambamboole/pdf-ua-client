@@ -67,6 +67,35 @@ it('builds page number settings with a backed enum position', function () {
     expect($template->config->page->pageNumbers->position)->toBe(PageNumberPosition::Right);
 });
 
+it('builds footer rows and footer page numbers', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => [
+            'page' => [
+                'footer' => [
+                    'repeat' => true,
+                    'pageNumbers' => ['enabled' => true, 'position' => 'right'],
+                    'rows' => [[
+                        'columnWidths' => ['70%', '30%'],
+                        'blocks' => [
+                            ['type' => 'test-fixture', 'id' => 'footer_note'],
+                            ['type' => 'test-fixture', 'id' => 'footer_meta'],
+                        ],
+                    ]],
+                ],
+            ],
+        ],
+        'rows' => [],
+    ]);
+
+    expect($template->config->page->footer->repeat)->toBeTrue();
+    expect($template->config->page->footer->pageNumbers->enabled)->toBeTrue();
+    expect($template->config->page->footer->pageNumbers->position)->toBe(PageNumberPosition::Right);
+    expect($template->config->page->footer->rows)->toHaveCount(1);
+    expect($template->config->page->footer->rows[0]->columnWidths)->toBe(['70%', '30%']);
+    expect($template->config->page->footer->rows[0]->blocks[0]->id)->toBe('footer_note');
+});
+
 it('parses nested per-block config', function () {
     $template = $this->factory->fromArray([
         'version' => 1,

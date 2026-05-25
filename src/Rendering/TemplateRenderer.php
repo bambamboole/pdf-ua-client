@@ -54,7 +54,9 @@ final class TemplateRenderer
             $rowsHtml .= $this->renderRow($row, $runtimeData, $ctx);
         }
 
-        return $this->wrapDocument($rowsHtml, $template, $ctx, $options);
+        $footerHtml = $this->renderFooter($template, $runtimeData, $ctx, $options);
+
+        return $this->wrapDocument($rowsHtml, $footerHtml, $template, $ctx, $options);
     }
 
     /**
@@ -118,6 +120,29 @@ final class TemplateRenderer
         return "<div class=\"{$id}\">{$body}</div>";
     }
 
+    /**
+     * @param  array<string, array<string, mixed>>  $runtimeData
+     */
+    private function renderFooter(Template $template, array $runtimeData, RenderContext $ctx, RenderOptions $options): string
+    {
+        $footer = $template->config->page->footer;
+
+        if ($footer->rows === []) {
+            return '';
+        }
+
+        $rowsHtml = '';
+        foreach ($footer->rows as $row) {
+            $rowsHtml .= $this->renderRow($row, $runtimeData, $ctx);
+        }
+
+        $class = $options->mode === 'print' && $footer->repeat
+            ? 'page-footer page-footer-repeated'
+            : 'page-footer page-footer-preview';
+
+        return "<footer class=\"{$class}\" role=\"contentinfo\">{$rowsHtml}</footer>";
+    }
+
     private function emitPositioningCss(RenderContext $ctx, string $id, BlockConfig $config, bool $widthOnCell = false): void
     {
         $positioning = [];
@@ -162,7 +187,7 @@ final class TemplateRenderer
         $dataBlockIds = is_array($schemaProperties) ? array_keys($schemaProperties) : [];
         $dataBlockIdLookup = array_fill_keys($dataBlockIds, true);
 
-        foreach ($template->rows as $row) {
+        foreach ($this->dataRows($template) as $row) {
             foreach ($row->blocks as $block) {
                 $id = (string) $block->id;
 
@@ -177,7 +202,16 @@ final class TemplateRenderer
         return $runtimeData;
     }
 
-    private function wrapDocument(string $bodyHtml, Template $template, RenderContext $ctx, RenderOptions $options): string
+    /** @return list<Row> */
+    private function dataRows(Template $template): array
+    {
+        return [
+            ...$template->rows,
+            ...$template->config->page->footer->rows,
+        ];
+    }
+
+    private function wrapDocument(string $bodyHtml, string $footerHtml, Template $template, RenderContext $ctx, RenderOptions $options): string
     {
         $page = $template->config->page;
         $css = $ctx->collectedCss();
@@ -214,6 +248,7 @@ final class TemplateRenderer
 </head>
 <body>
 {$bodyHtml}
+{$footerHtml}
 </body>
 </html>
 HTML;
@@ -236,6 +271,10 @@ hr { border: none; border-top: 1px solid #d1d5db; margin: 2.5mm 0; }
 .data-table th { padding: 1.6mm 2.2mm; background: #f3f4f6; color: #374151; font-weight: 700; border-bottom: 1px solid #d1d5db; }
 .data-table td { padding: 1.6mm 2.2mm; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
 .data-table tbody tr:last-child td { border-bottom: 1px solid #d1d5db; }
+.page-footer { color: #6b7280; font-size: 8pt; line-height: 1.25; }
+.page-footer .row { margin: 0; }
+.page-footer-repeated { position: fixed; left: 0; right: 0; bottom: 0; }
+.page-footer-preview { margin-top: 6mm; padding-top: 2mm; border-top: 1px solid #d1d5db; }
 CSS;
     }
 
@@ -244,8 +283,10 @@ CSS;
         $margin = $this->marginShorthand($page->margins);
         $css = "@page { size: {$page->format->value}; margin: {$margin}; }";
 
-        if ($page->pageNumbers->enabled) {
-            $position = $page->pageNumbers->position->value;
+        $pageNumbers = $page->footer->pageNumbers->enabled ? $page->footer->pageNumbers : $page->pageNumbers;
+
+        if ($pageNumbers->enabled) {
+            $position = $pageNumbers->position->value;
             $css .= " @page { @bottom-{$position} { content: counter(page) \" / \" counter(pages); font-size: 8pt; color: #9ca3af; } }";
         }
 

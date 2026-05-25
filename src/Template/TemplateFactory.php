@@ -5,6 +5,7 @@ namespace Bambamboole\PdfUaClient\Template;
 
 use Bambamboole\PdfUaClient\Block\BlockRegistry;
 use Bambamboole\PdfUaClient\Config\PageConfig;
+use Bambamboole\PdfUaClient\Config\PageFooterConfig;
 use Bambamboole\PdfUaClient\Config\PageNumbersConfig;
 use Bambamboole\PdfUaClient\Config\SpacingConfig;
 use Bambamboole\PdfUaClient\Config\TemplateConfig;
@@ -67,6 +68,10 @@ final readonly class TemplateFactory
             ? $this->buildPageNumbersConfig((array) $data['pageNumbers'])
             : new PageNumbersConfig;
 
+        $footer = isset($data['footer'])
+            ? $this->buildPageFooterConfig((array) $data['footer'], $pageNumbers)
+            : new PageFooterConfig(pageNumbers: $pageNumbers);
+
         $format = isset($data['format'])
             ? PageFormat::from((string) $data['format'])
             : PageFormat::A4;
@@ -75,6 +80,21 @@ final readonly class TemplateFactory
             format: $format,
             locale: (string) ($data['locale'] ?? 'de_DE'),
             margins: $margins,
+            pageNumbers: $pageNumbers,
+            footer: $footer,
+        );
+    }
+
+    /** @param array<string, mixed> $data */
+    private function buildPageFooterConfig(array $data, PageNumbersConfig $fallbackPageNumbers): PageFooterConfig
+    {
+        $pageNumbers = isset($data['pageNumbers'])
+            ? $this->buildPageNumbersConfig((array) $data['pageNumbers'])
+            : $fallbackPageNumbers;
+
+        return new PageFooterConfig(
+            repeat: isset($data['repeat']) ? (bool) $data['repeat'] : true,
+            rows: isset($data['rows']) ? $this->buildRows((array) $data['rows'], 'f') : [],
             pageNumbers: $pageNumbers,
         );
     }
@@ -118,7 +138,7 @@ final readonly class TemplateFactory
      * @param  list<array<string, mixed>>  $rowsData
      * @return list<Row>
      */
-    private function buildRows(array $rowsData): array
+    private function buildRows(array $rowsData, string $idPrefix = 'r'): array
     {
         $rows = [];
 
@@ -128,7 +148,7 @@ final readonly class TemplateFactory
             foreach ($rowData['blocks'] as $blockIndex => $blockData) {
                 $blocks[] = new BlockInstance(
                     type: (string) $blockData['type'],
-                    id: $blockData['id'] ?? "r{$rowIndex}b{$blockIndex}",
+                    id: $blockData['id'] ?? "{$idPrefix}{$rowIndex}b{$blockIndex}",
                     config: (array) ($blockData['config'] ?? []),
                 );
             }

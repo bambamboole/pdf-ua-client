@@ -32,7 +32,7 @@ final readonly class DataSchemaCompiler
         $properties = [];
         $required = [];
 
-        foreach ($template->rows as $row) {
+        foreach ($this->dataRows($template) as $row) {
             foreach ($row->blocks as $block) {
                 $dataSchema = $this->reflector->reflectBlock($this->registry->resolve($block->type))['data'];
 
@@ -62,6 +62,15 @@ final readonly class DataSchemaCompiler
         }
 
         return $schema;
+    }
+
+    /** @return list<Row> */
+    private function dataRows(Template $template): array
+    {
+        return [
+            ...$template->rows,
+            ...$template->config->page->footer->rows,
+        ];
     }
 
     /** @param array<string, mixed> $schema */

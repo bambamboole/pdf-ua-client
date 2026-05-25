@@ -5,6 +5,8 @@ namespace Bambamboole\PdfUaClient\Template;
 
 use Bambamboole\PdfUaClient\Block\BlockRegistry;
 use Bambamboole\PdfUaClient\Block\PropsReflector;
+use Bambamboole\PdfUaClient\Config\PageFooterConfig;
+use Bambamboole\PdfUaClient\Config\PageNumbersConfig;
 use Bambamboole\PdfUaClient\Config\TemplateConfig;
 use ReflectionClass;
 use stdClass;
@@ -21,10 +23,6 @@ final readonly class TemplateSchemaCompiler
     {
         $defs = new SchemaRegistry;
         $blockRefs = [];
-
-        $templateConfigSchema = $this->reflector->reflectWithRefs(TemplateConfig::class, $defs);
-        $templateConfigSchema = $this->stripRequired($templateConfigSchema);
-        $templateConfigRef = $defs->ref('templateConfig', $templateConfigSchema);
 
         $defs->ref('blockBase', [
             'type' => 'object',
@@ -77,6 +75,11 @@ final readonly class TemplateSchemaCompiler
         ]);
 
         $defs->ref('block', ['oneOf' => $blockRefs]);
+        $this->registerPageFooterConfig($defs);
+
+        $templateConfigSchema = $this->reflector->reflectWithRefs(TemplateConfig::class, $defs);
+        $templateConfigSchema = $this->stripRequired($templateConfigSchema);
+        $templateConfigRef = $defs->ref('templateConfig', $templateConfigSchema);
 
         $allDefs = $this->stripRequiredFromConfigs($defs->all());
 
@@ -102,6 +105,35 @@ final readonly class TemplateSchemaCompiler
         }
 
         return $schema;
+    }
+
+    private function registerPageFooterConfig(SchemaRegistry $defs): void
+    {
+        $pageNumbersRef = $this->registerConfigRef(PageNumbersConfig::class, $defs);
+
+        $defs->ref(lcfirst((new ReflectionClass(PageFooterConfig::class))->getShortName()), [
+            'type' => 'object',
+            'properties' => [
+                'repeat' => [
+                    'type' => 'boolean',
+                    'title' => 'Repeat',
+                    'description' => 'Repeat the footer on every rendered page.',
+                    'default' => true,
+                ],
+                'rows' => [
+                    'type' => 'array',
+                    'title' => 'Rows',
+                    'description' => 'Footer rows rendered after the page body.',
+                    'items' => ['$ref' => '#/$defs/row'],
+                    'default' => [],
+                ],
+                'pageNumbers' => $pageNumbersRef + [
+                    'title' => 'Pagination',
+                    'description' => 'Page number display settings for this footer.',
+                ],
+            ],
+            'additionalProperties' => false,
+        ]);
     }
 
     /**

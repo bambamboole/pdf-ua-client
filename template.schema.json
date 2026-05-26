@@ -549,30 +549,55 @@
                 }
             ],
             "properties": {
-                "columnAlignments": {
-                    "type": [
-                        "array",
-                        "null"
-                    ],
-                    "items": {
-                        "type": "string"
-                    },
-                    "title": "Column alignments",
-                    "description": "Text alignment per table column, ordered from left to right."
+                "numberRows": {
+                    "type": "boolean",
+                    "title": "Number rows",
+                    "description": "Render an auto-incrementing row number column before configured data columns.",
+                    "default": false
                 },
-                "columnWidths": {
-                    "type": [
-                        "array",
-                        "null"
-                    ],
+                "columns": {
+                    "type": "array",
                     "items": {
-                        "type": [
-                            "integer",
-                            "string"
-                        ]
+                        "type": "object",
+                        "properties": {
+                            "key": {
+                                "type": "string",
+                                "title": "Key",
+                                "description": "Runtime data key used for this table column.",
+                                "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+                            },
+                            "label": {
+                                "type": "string",
+                                "title": "Label",
+                                "description": "Header label rendered for this table column."
+                            },
+                            "align": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "enum": [
+                                    "left",
+                                    "center",
+                                    "right"
+                                ],
+                                "title": "Alignment",
+                                "description": "Text alignment for this table column."
+                            },
+                            "width": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "title": "Width",
+                                "description": "Column width as millimetres or a CSS width value."
+                            }
+                        },
+                        "additionalProperties": false
                     },
-                    "title": "Column widths",
-                    "description": "Column widths as millimetres or CSS width values, ordered from left to right."
+                    "title": "Columns",
+                    "description": "Fixed table columns. Runtime data uses these keys for each row object.",
+                    "default": []
                 },
                 "style": {
                     "type": "string",
@@ -586,34 +611,12 @@
         "tableProps": {
             "type": "object",
             "properties": {
-                "headers": {
-                    "type": "array",
-                    "examples": [
-                        [
-                            "Column A",
-                            "Column B"
-                        ]
-                    ]
-                },
                 "rows": {
-                    "type": "array",
-                    "examples": [
-                        [
-                            [
-                                "A1",
-                                "B1"
-                            ],
-                            [
-                                "A2",
-                                "B2"
-                            ]
-                        ]
-                    ]
+                    "type": "array"
                 }
             },
             "additionalProperties": false,
             "required": [
-                "headers",
                 "rows"
             ],
             "title": "Table"

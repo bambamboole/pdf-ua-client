@@ -16,11 +16,14 @@
     "status": "Active",
     "owner": "Acme GmbH"
   },
-  "tbl1": {
-    "headers": ["Item", "Qty"],
-    "rows": [
-      ["Widget A", "3"],
-      ["Widget B", "7"]
-    ]
-  }
+  "tbl1": [
+    {
+      "item": "Widget A",
+      "quantity": "3"
+    },
+    {
+      "item": "Widget B",
+      "quantity": "7"
+    }
+  ]
 }

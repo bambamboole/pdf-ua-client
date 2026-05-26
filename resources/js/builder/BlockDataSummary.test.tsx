@@ -14,6 +14,21 @@ function block(type: EditorBlock["type"], data: EditorBlock["data"]): EditorBloc
 }
 
 describe("BlockDataSummary", () => {
+  it("renders image data directly when a source is available", () => {
+    const html = renderToStaticMarkup(
+      <BlockDataSummary
+        block={block("image", {
+          src: "https://example.test/logo.png",
+          alt: "Company logo",
+        })}
+      />,
+    );
+
+    expect(html).toContain("<img");
+    expect(html).toContain('src="https://example.test/logo.png"');
+    expect(html).toContain('alt="Company logo"');
+  });
+
   it("renders key-value data as a compact table preview", () => {
     const html = renderToStaticMarkup(
       <BlockDataSummary
@@ -37,13 +52,18 @@ describe("BlockDataSummary", () => {
     expect(html).toContain("PDF UA Kit GmbH");
   });
 
-  it("renders table data with headers and rows", () => {
+  it("renders configured table object rows", () => {
     const html = renderToStaticMarkup(
       <BlockDataSummary
-        block={block("table", {
-          headers: ["Description", "Total"],
-          rows: [["Implementation", "3.800,00 €"]],
-        })}
+        block={{
+          ...block("table", [{ description: "Implementation", total: "3.800,00 €" }]),
+          config: {
+            columns: [
+              { key: "description", label: "Description" },
+              { key: "total", label: "Total" },
+            ],
+          },
+        }}
       />,
     );
 
@@ -55,15 +75,37 @@ describe("BlockDataSummary", () => {
   it("renders every example row", () => {
     const html = renderToStaticMarkup(
       <BlockDataSummary
-        block={block("table", {
-          headers: ["Item"],
-          rows: [["One"], ["Two"], ["Three"], ["Four"]],
-        })}
+        block={{
+          ...block("table", [
+            { item: "One" },
+            { item: "Two" },
+            { item: "Three" },
+            { item: "Four" },
+          ]),
+          config: {
+            columns: [{ key: "item", label: "Item" }],
+          },
+        }}
       />,
     );
 
     expect(html).toContain("One");
     expect(html).toContain("Four");
     expect(html).not.toContain("more rows");
+  });
+
+  it("renders an empty summary when table columns are missing", () => {
+    const html = renderToStaticMarkup(
+      <BlockDataSummary
+        block={block("table", {
+          headers: ["Description", "Total"],
+          rows: [["Implementation", "3.800,00 €"]],
+        })}
+      />,
+    );
+
+    expect(html).toContain("0 cols × 0 rows");
+    expect(html).not.toContain("Description");
+    expect(html).not.toContain("Implementation");
   });
 });

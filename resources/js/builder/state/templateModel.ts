@@ -1,5 +1,6 @@
 import type {
   DataMap,
+  DataValue,
   EditorBlock,
   EditorArea,
   EditorModel,
@@ -110,7 +111,7 @@ function mergeDataMaps(...maps: DataMap[]): DataMap {
 
   for (const map of maps) {
     for (const [id, value] of Object.entries(map)) {
-      merged[id] = mergeJson(merged[id] ?? {}, value) as Json;
+      merged[id] = mergeJson(merged[id] ?? {}, value) as DataValue;
     }
   }
 
@@ -144,7 +145,7 @@ export function addBlock(
   opts: {
     rowUid?: string | null;
     index?: number | null;
-    data?: Json;
+    data?: DataValue;
     area?: "body" | "footer";
   } = {},
 ): EditorModel {
@@ -336,14 +337,21 @@ export function updateBlockConfig(model: EditorModel, blockUid: string, config: 
   const block = findBlock(model, blockUid)?.block;
   const updated = mapBlock(model, blockUid, (b) => ({ ...b, config }));
 
-  if (block?.type !== "key-value") {
-    return updated;
+  if (block?.type === "key-value") {
+    return {
+      ...updated,
+      data: pruneDataFieldsForId(updated.data, block.id, keyValueFieldKeys(config.fields)),
+    };
   }
 
-  return {
-    ...updated,
-    data: pruneDataFieldsForId(updated.data, block.id, keyValueFieldKeys(config.fields)),
-  };
+  if (block?.type === "table") {
+    return {
+      ...updated,
+      data: pruneDataRowsForId(updated.data, block.id, keyValueFieldKeys(config.columns)),
+    };
+  }
+
+  return updated;
 }
 
 export function updateBlockId(model: EditorModel, blockUid: string, rawId: string): EditorModel {
@@ -374,6 +382,42 @@ export function updateDataField(
     data = writeDataField(data, "example", blockId, field, value);
   } else {
     data = writeDataField(data, "defaults", blockId, field, value);
+  }
+
+  const previewData = mergeDataMaps(data.defaults, data.example, data.constants);
+
+  return {
+    ...model,
+    data,
+    rows: model.rows.map((row) => ({
+      ...row,
+      blocks: row.blocks.map((block) =>
+        block.id === blockId ? { ...block, data: previewData[blockId] ?? {} } : block,
+      ),
+    })),
+    footerRows: model.footerRows.map((row) => ({
+      ...row,
+      blocks: row.blocks.map((block) =>
+        block.id === blockId ? { ...block, data: previewData[blockId] ?? {} } : block,
+      ),
+    })),
+  };
+}
+
+export function updateBlockData(
+  model: EditorModel,
+  blockId: string,
+  value: DataValue,
+  options: { example: boolean; locked: boolean },
+): EditorModel {
+  let data = removeDataForId(model.data, blockId);
+
+  if (options.locked) {
+    data = writeDataBlock(data, "constants", blockId, value);
+  } else if (options.example) {
+    data = writeDataBlock(data, "example", blockId, value);
+  } else {
+    data = writeDataBlock(data, "defaults", blockId, value);
   }
 
   const previewData = mergeDataMaps(data.defaults, data.example, data.constants);
@@ -448,7 +492,7 @@ function removeDataField(
 
 function omitDataField(data: DataMap, blockId: string, field: string): DataMap {
   const blockData = data[blockId];
-  if (!blockData || !(field in blockData)) {
+  if (!isPlainObject(blockData) || !(field in blockData)) {
     return data;
   }
 
@@ -476,6 +520,21 @@ function writeDataField(
     [layer]: {
       ...layers[layer],
       [blockId]: blockData,
+    },
+  };
+}
+
+function writeDataBlock(
+  layers: TemplateDataLayers,
+  layer: keyof TemplateDataLayers,
+  blockId: string,
+  value: DataValue,
+): TemplateDataLayers {
+  return {
+    ...layers,
+    [layer]: {
+      ...layers[layer],
+      [blockId]: value,
     },
   };
 }
@@ -509,6 +568,35 @@ function pruneDataMapFields(data: DataMap, blockId: string, keys: Set<string>): 
   return Object.keys(nextBlockData).length > 0
     ? { ...data, [blockId]: nextBlockData }
     : omitDataId(data, blockId);
+}
+
+function pruneDataRowsForId(
+  layers: TemplateDataLayers,
+  blockId: string,
+  keys: Set<string>,
+): TemplateDataLayers {
+  return {
+    example: pruneDataMapRows(layers.example, blockId, keys),
+    defaults: pruneDataMapRows(layers.defaults, blockId, keys),
+    constants: pruneDataMapRows(layers.constants, blockId, keys),
+  };
+}
+
+function pruneDataMapRows(data: DataMap, blockId: string, keys: Set<string>): DataMap {
+  const blockData = data[blockId];
+  if (!Array.isArray(blockData)) {
+    return data;
+  }
+
+  const rows = blockData.map((row) => {
+    if (!isPlainObject(row)) {
+      return row;
+    }
+
+    return Object.fromEntries(Object.entries(row).filter(([field]) => keys.has(field)));
+  });
+
+  return { ...data, [blockId]: rows };
 }
 
 function keyValueFieldKeys(fields: unknown): Set<string> {
@@ -562,7 +650,7 @@ function rowsFromTemplate(rows: Template["rows"], previewData: DataMap): EditorR
           id,
           type: block.type,
           config: (block.config ?? {}) as Json,
-          data: (previewData[id] ?? {}) as Json,
+          data: previewData[id] ?? {},
         };
       }),
     }),

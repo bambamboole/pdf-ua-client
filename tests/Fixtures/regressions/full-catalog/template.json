@@ -96,7 +96,18 @@
             "style": "bordered",
             "spacing": {
               "bottom": 4
-            }
+            },
+            "columns": [
+              {
+                "key": "item",
+                "label": "Item"
+              },
+              {
+                "key": "quantity",
+                "label": "Qty"
+              }
+            ],
+            "numberRows": false
           }
         }
       ]

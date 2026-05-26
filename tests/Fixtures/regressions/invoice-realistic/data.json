@@ -14,15 +14,32 @@
     "issueDate": "2026-02-17",
     "dueDate": "2026-03-19"
   },
-  "items": {
-    "headers": ["Description", "Qty", "Unit price", "Total"],
-    "rows": [
-      ["Web development", "40", "95,00 €", "3.800,00 €"],
-      ["UI/UX design", "16", "85,00 €", "1.360,00 €"],
-      ["Project management", "8", "90,00 €", "720,00 €"],
-      ["Hosting (annual)", "1", "240,00 €", "240,00 €"]
-    ]
-  },
+  "items": [
+    {
+      "description": "Web development",
+      "quantity": "40",
+      "unitPrice": "95,00 €",
+      "total": "3.800,00 €"
+    },
+    {
+      "description": "UI/UX design",
+      "quantity": "16",
+      "unitPrice": "85,00 €",
+      "total": "1.360,00 €"
+    },
+    {
+      "description": "Project management",
+      "quantity": "8",
+      "unitPrice": "90,00 €",
+      "total": "720,00 €"
+    },
+    {
+      "description": "Hosting (annual)",
+      "quantity": "1",
+      "unitPrice": "240,00 €",
+      "total": "240,00 €"
+    }
+  ],
   "totals": {
     "netAmount": "6.120,00 €",
     "vatAmount": "1.162,80 €",

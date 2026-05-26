@@ -47,7 +47,18 @@
           "type": "table",
           "id": "line-items",
           "config": {
-            "style": "striped"
+            "style": "striped",
+            "columns": [
+              {
+                "key": "description",
+                "label": "Description"
+              },
+              {
+                "key": "amount",
+                "label": "Amount"
+              }
+            ],
+            "numberRows": false
           }
         }
       ]

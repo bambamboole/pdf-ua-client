@@ -145,6 +145,39 @@ it('supplies key value block content from flat runtime data keyed by configured 
         ->and($html)->not->toContain('entries');
 });
 
+it('supplies table rows from configured column object data', function (): void {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['format' => 'A4']],
+        'rows' => [[
+            'blocks' => [[
+                'type' => 'table',
+                'id' => 'lineItems',
+                'config' => [
+                    'columns' => [
+                        ['key' => 'sku', 'label' => 'SKU'],
+                        ['key' => 'description', 'label' => 'Description'],
+                        ['key' => 'quantity', 'label' => 'Qty'],
+                    ],
+                ],
+            ]],
+        ]],
+    ]);
+
+    $html = $this->renderer->render($template, runtimeData: [
+        'lineItems' => [
+            ['sku' => 'A-100', 'description' => 'Accessible PDF setup', 'quantity' => '2'],
+            ['sku' => 'B-200', 'description' => 'Structure review', 'quantity' => '1'],
+        ],
+    ]);
+
+    expect($html)->toContain('<th>SKU</th>')
+        ->and($html)->toContain('<th>Description</th>')
+        ->and($html)->toContain('<td>A-100</td>')
+        ->and($html)->toContain('<td>Accessible PDF setup</td>')
+        ->and($html)->toContain('<td>2</td>');
+});
+
 it('emits per-block typography as a wrapper-class-scoped CSS rule', function () {
     $template = $this->factory->fromArray([
         'version' => 1,

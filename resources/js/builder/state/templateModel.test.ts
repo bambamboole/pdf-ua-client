@@ -14,6 +14,7 @@ import {
   updateBlockConfig,
   updateTemplateConfig,
   updateBlockId,
+  updateBlockData,
   updateDataField,
 } from "./templateModel";
 import type { Template, DataMap } from "../types";
@@ -146,12 +147,12 @@ describe("addBlock", () => {
   it("adds a block with a unique id and the provided data", () => {
     const m = addBlock(fromTemplate(template, data), "table", {
       rowUid: null,
-      data: { headers: ["X"], rows: [["1"]] },
+      data: [{ sku: "A-100", quantity: "2" }],
     });
     const added = m.rows[m.rows.length - 1].blocks[0];
     expect(added.type).toBe("table");
     expect(added.id).toBe("table-1");
-    expect(m.data.example["table-1"]).toEqual({ headers: ["X"], rows: [["1"]] });
+    expect(m.data.example["table-1"]).toEqual([{ sku: "A-100", quantity: "2" }]);
   });
   it("defaults to empty data when none is provided", () => {
     const m = addBlock(fromTemplate(template, data), "table", { rowUid: null });
@@ -317,6 +318,25 @@ describe("updateDataField", () => {
   });
 });
 
+describe("updateBlockData", () => {
+  it("writes array values as whole-block example data", () => {
+    const m = updateBlockData(
+      fromTemplate({
+        version: 1,
+        config: {},
+        rows: [{ blocks: [{ type: "table", id: "lineItems", config: { columns: [] } }] }],
+      }),
+      "lineItems",
+      [{ sku: "A-100", quantity: "2" }],
+      { example: true, locked: false },
+    );
+
+    expect(m.data.example.lineItems).toEqual([{ sku: "A-100", quantity: "2" }]);
+    expect(m.rows[0].blocks[0].data).toEqual([{ sku: "A-100", quantity: "2" }]);
+    expect(toDataMap(m)).toEqual({ lineItems: [{ sku: "A-100", quantity: "2" }] });
+  });
+});
+
 describe("setRowWidths", () => {
   it("writes each block config.width in the row", () => {
     const m = fromTemplate(template, data);
@@ -368,6 +388,39 @@ describe("config / moves / remove", () => {
     expect(out.data.example.meta).toEqual({ invoiceNumber: "RE-1" });
     expect(out.data.defaults.meta).toBeUndefined();
     expect(out.data.constants.meta).toEqual({ invoiceNumber: "RE-1" });
+  });
+  it("prunes stale object row keys when table config columns change", () => {
+    const m = fromTemplate({
+      version: 1,
+      config: {},
+      rows: [
+        {
+          blocks: [
+            {
+              type: "table",
+              id: "lineItems",
+              config: {
+                columns: [
+                  { key: "sku", label: "SKU" },
+                  { key: "description", label: "Description" },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+      data: {
+        example: {
+          lineItems: [{ sku: "A-100", description: "Accessible PDF setup" }],
+        },
+      },
+    });
+
+    const out = updateBlockConfig(m, m.rows[0].blocks[0].uid, {
+      columns: [{ key: "sku", label: "SKU" }],
+    });
+
+    expect(out.data.example.lineItems).toEqual([{ sku: "A-100" }]);
   });
   it("removeBlock prunes empty rows", () => {
     const m = fromTemplate(template, data);

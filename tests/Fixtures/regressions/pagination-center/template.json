@@ -28,7 +28,24 @@
           "id": "items",
           "config": {
             "style": "striped",
-            "columnAlignments": ["left", "left", "right"]
+            "columns": [
+              {
+                "key": "item",
+                "label": "Item",
+                "align": "left"
+              },
+              {
+                "key": "description",
+                "label": "Description",
+                "align": "left"
+              },
+              {
+                "key": "amount",
+                "label": "Amount",
+                "align": "right"
+              }
+            ],
+            "numberRows": false
           }
         }
       ]

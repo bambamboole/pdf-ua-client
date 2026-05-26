@@ -1,10 +1,16 @@
 import { lazy, Suspense, useEffect, useState } from "react";
-import type { EditorBlock, Json, JsonSchema, TemplateDataLayers } from "./types";
-import { getBlockConfigSchema, getBlockSubschemas } from "./lib/schema";
+import type { DataValue, EditorBlock, Json, JsonSchema, TemplateDataLayers } from "./types";
+import {
+  getBlockConfigGroupSchema,
+  getBlockSubschemas,
+  getNestedBlockConfigSchema,
+} from "./lib/schema";
 import BlockDataEditor from "./BlockDataEditor";
 import KeyValueConfigFields from "./KeyValueConfigFields";
+import TableConfigColumns from "./TableConfigColumns";
 
 const SettingsForm = lazy(() => import("./SettingsForm"));
+type InlineEditorTab = "data" | "config" | "typography" | "spacing";
 
 interface Props {
   block: EditorBlock;
@@ -19,6 +25,11 @@ interface Props {
     value: unknown,
     options: { example: boolean; locked: boolean },
   ) => void;
+  onUpdateBlockData: (
+    blockId: string,
+    value: DataValue,
+    options: { example: boolean; locked: boolean },
+  ) => void;
 }
 
 export default function InlineBlockEditor({
@@ -29,6 +40,7 @@ export default function InlineBlockEditor({
   onUpdateBlockId,
   onUpdateBlockConfig,
   onUpdateDataField,
+  onUpdateBlockData,
 }: Props) {
   const blockDataSchema = getBlockSubschemas(schema, block.type).props;
   const dataProperties = blockDataSchema.properties;
@@ -37,11 +49,16 @@ export default function InlineBlockEditor({
     dataProperties !== null &&
     !Array.isArray(dataProperties) &&
     Object.keys(dataProperties).length > 0;
-  const [tab, setTab] = useState<"settings" | "data" | "config">("settings");
+  const configSchema = getBlockConfigGroupSchema(schema, block.type);
+  const hasGenericConfig = hasSchemaProperties(configSchema);
+  const hasConfigTab = hasGenericConfig || block.type === "key-value" || block.type === "table";
+  const typographySchema = getNestedBlockConfigSchema(schema, block.type, "typography");
+  const spacingSchema = getNestedBlockConfigSchema(schema, block.type, "spacing");
+  const [tab, setTab] = useState<InlineEditorTab>(() => (hasDataProperties ? "data" : "config"));
 
   useEffect(() => {
-    if (detailsOpen && hasDataProperties) {
-      setTab("data");
+    if (detailsOpen) {
+      setTab(hasDataProperties ? "data" : "config");
     }
   }, [block.uid, detailsOpen, hasDataProperties]);
 
@@ -52,92 +69,214 @@ export default function InlineBlockEditor({
       onPointerDown={(event) => event.stopPropagation()}
       className="mt-3 border-t border-[var(--builder-stroke)] pt-3"
     >
-      <div className="mb-3 flex gap-1">
-        <button
-          type="button"
-          data-inline-editor-tab="settings"
-          onClick={() => setTab("settings")}
-          className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${tab === "settings" ? "bg-[var(--builder-ink)] text-white" : "text-[var(--builder-muted)] hover:bg-[var(--builder-surface)] hover:text-[var(--builder-ink)]"}`}
-        >
-          Settings
-        </button>
+      <div className="mb-3 flex flex-wrap gap-1">
         {hasDataProperties ? (
-          <button
-            type="button"
-            data-inline-editor-tab="data"
-            onClick={() => setTab("data")}
-            className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${tab === "data" ? "bg-[var(--builder-ink)] text-white" : "text-[var(--builder-muted)] hover:bg-[var(--builder-surface)] hover:text-[var(--builder-ink)]"}`}
-          >
+          <TabButton tab="data" activeTab={tab} onChange={setTab}>
             Data
-          </button>
+          </TabButton>
         ) : null}
-        <button
-          type="button"
-          data-inline-editor-tab="config"
-          onClick={() => setTab("config")}
-          className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${tab === "config" ? "bg-[var(--builder-ink)] text-white" : "text-[var(--builder-muted)] hover:bg-[var(--builder-surface)] hover:text-[var(--builder-ink)]"}`}
-        >
-          Config
-        </button>
+        {hasConfigTab ? (
+          <TabButton tab="config" activeTab={tab} onChange={setTab}>
+            Config
+          </TabButton>
+        ) : null}
+        {typographySchema ? (
+          <TabButton tab="typography" activeTab={tab} onChange={setTab}>
+            Typography
+          </TabButton>
+        ) : null}
+        {spacingSchema ? (
+          <TabButton tab="spacing" activeTab={tab} onChange={setTab}>
+            Spacing
+          </TabButton>
+        ) : null}
       </div>
-      {tab === "settings" ? (
-        <div>
-          <label className="mb-1 block text-xs font-medium text-[var(--builder-muted-strong)]">
-            Block id
-          </label>
-          <input
-            key={block.uid}
-            className="block w-full rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-field)] px-2 py-1 font-mono text-sm text-[var(--builder-ink)] focus:border-[var(--builder-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--builder-accent-soft)]"
-            defaultValue={block.id}
-            onBlur={(event) => onUpdateBlockId(block.uid, event.target.value)}
-          />
-        </div>
-      ) : tab === "data" && hasDataProperties ? (
+      {tab === "data" && hasDataProperties ? (
         <BlockDataEditor
           block={block}
           schema={schema}
           data={data}
           onUpdateDataField={onUpdateDataField}
+          onUpdateBlockData={onUpdateBlockData}
         />
-      ) : block.type === "key-value" ? (
-        <div>
+      ) : tab === "config" && block.type === "key-value" ? (
+        <div className="space-y-3">
+          <BlockIdControl block={block} onUpdateBlockId={onUpdateBlockId} />
           <KeyValueConfigFields
             config={block.config ?? {}}
             onChange={(config) => onUpdateBlockConfig(block.uid, config)}
           />
-          <Suspense
-            fallback={
-              <div className="h-24 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-surface)]" />
+          <ConfigSettingsForm
+            schema={configSchema}
+            config={block.config ?? {}}
+            onChange={(config) =>
+              onUpdateBlockConfig(block.uid, { ...config, fields: block.config.fields })
             }
-          >
-            <SettingsForm
-              schema={withoutProperty(getBlockConfigSchema(schema, block.type), "fields")}
-              formData={withoutProperty(block.config ?? {}, "fields")}
-              onChange={(config) =>
-                onUpdateBlockConfig(block.uid, { ...config, fields: block.config.fields })
-              }
-            />
-          </Suspense>
+          />
         </div>
-      ) : (
-        <Suspense
-          fallback={
-            <div className="h-24 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-surface)]" />
-          }
-        >
-          <SettingsForm
-            schema={getBlockConfigSchema(schema, block.type)}
-            formData={block.config ?? {}}
+      ) : tab === "config" && block.type === "table" ? (
+        <div className="space-y-3">
+          <BlockIdControl block={block} onUpdateBlockId={onUpdateBlockId} />
+          <TableConfigColumns
+            config={block.config ?? {}}
             onChange={(config) => onUpdateBlockConfig(block.uid, config)}
           />
-        </Suspense>
-      )}
+          <ConfigSettingsForm
+            schema={configSchema}
+            config={block.config ?? {}}
+            onChange={(config) =>
+              onUpdateBlockConfig(block.uid, {
+                ...config,
+                columns: block.config.columns,
+                numberRows: block.config.numberRows,
+                style: block.config.style,
+              })
+            }
+          />
+        </div>
+      ) : tab === "config" ? (
+        <div className="space-y-3">
+          <BlockIdControl block={block} onUpdateBlockId={onUpdateBlockId} />
+          <ConfigSettingsForm
+            schema={configSchema}
+            config={block.config ?? {}}
+            onChange={(config) => onUpdateBlockConfig(block.uid, config)}
+          />
+        </div>
+      ) : tab === "typography" && typographySchema ? (
+        <NestedConfigSettingsForm
+          schema={typographySchema}
+          config={block.config ?? {}}
+          property="typography"
+          onChange={(config) => onUpdateBlockConfig(block.uid, config)}
+        />
+      ) : tab === "spacing" && spacingSchema ? (
+        <NestedConfigSettingsForm
+          schema={spacingSchema}
+          config={block.config ?? {}}
+          property="spacing"
+          onChange={(config) => onUpdateBlockConfig(block.uid, config)}
+        />
+      ) : null}
     </div>
   );
 }
 
-function withoutProperty<T extends Record<string, unknown>>(value: T, property: string): T {
-  const next = { ...value };
-  delete next[property];
-  return next;
+function BlockIdControl({
+  block,
+  onUpdateBlockId,
+}: {
+  block: EditorBlock;
+  onUpdateBlockId: (uid: string, id: string) => void;
+}) {
+  return (
+    <div>
+      <label className="mb-1 block text-xs font-medium text-[var(--builder-muted-strong)]">
+        Block id
+      </label>
+      <input
+        key={block.uid}
+        className="block w-full rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-field)] px-2 py-1 font-mono text-sm text-[var(--builder-ink)] focus:border-[var(--builder-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--builder-accent-soft)]"
+        defaultValue={block.id}
+        onBlur={(event) => onUpdateBlockId(block.uid, event.target.value)}
+      />
+    </div>
+  );
+}
+
+function TabButton({
+  tab,
+  activeTab,
+  onChange,
+  children,
+}: {
+  tab: InlineEditorTab;
+  activeTab: InlineEditorTab;
+  onChange: (tab: InlineEditorTab) => void;
+  children: string;
+}) {
+  return (
+    <button
+      type="button"
+      data-inline-editor-tab={tab}
+      onClick={() => onChange(tab)}
+      className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${activeTab === tab ? "bg-[var(--builder-ink)] text-white" : "text-[var(--builder-muted)] hover:bg-[var(--builder-surface)] hover:text-[var(--builder-ink)]"}`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function ConfigSettingsForm({
+  schema,
+  config,
+  onChange,
+}: {
+  schema: JsonSchema;
+  config: Json;
+  onChange: (config: Json) => void;
+}) {
+  if (!hasSchemaProperties(schema)) {
+    return null;
+  }
+
+  const keys = Object.keys((schema.properties ?? {}) as Record<string, unknown>);
+
+  return (
+    <Suspense
+      fallback={
+        <div className="h-24 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-surface)]" />
+      }
+    >
+      <SettingsForm
+        schema={schema}
+        formData={pickProperties(config, keys)}
+        onChange={(nextConfig) => onChange({ ...config, ...nextConfig })}
+      />
+    </Suspense>
+  );
+}
+
+function NestedConfigSettingsForm({
+  schema,
+  config,
+  property,
+  onChange,
+}: {
+  schema: JsonSchema;
+  config: Json;
+  property: string;
+  onChange: (config: Json) => void;
+}) {
+  return (
+    <Suspense
+      fallback={
+        <div className="h-24 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-surface)]" />
+      }
+    >
+      <SettingsForm
+        schema={schema}
+        formData={objectValue(config[property])}
+        onChange={(nextConfig) => onChange({ ...config, [property]: nextConfig })}
+      />
+    </Suspense>
+  );
+}
+
+function hasSchemaProperties(schema: JsonSchema): boolean {
+  return Object.keys((schema.properties ?? {}) as Record<string, unknown>).length > 0;
+}
+
+function pickProperties(config: Json, keys: string[]): Json {
+  return Object.fromEntries(
+    keys.map((key) => [key, config[key]]).filter(([, value]) => value !== undefined),
+  );
+}
+
+function objectValue(value: unknown): Json {
+  return isRecord(value) ? value : {};
+}
+
+function isRecord(value: unknown): value is Json {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

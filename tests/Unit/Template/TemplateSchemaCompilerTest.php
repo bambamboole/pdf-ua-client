@@ -148,20 +148,19 @@ it('composes a per-block config schema from its parent via allOf and only emits 
     expect($baseConfig['properties'])->toHaveKeys(['typography', 'spacing', 'width', 'align']);
 });
 
-it('emits renderable array item schemas for table config lists', function () {
+it('emits renderable table column config schemas', function () {
     $this->registry->register(TableBlock::class);
 
     $schema = $this->compiler->compile($this->registry);
     $tableConfig = $schema['$defs']['tableConfig']['properties'];
+    $tableColumn = $tableConfig['columns']['items']['properties'];
 
-    expect($tableConfig['columnAlignments'])->toMatchArray([
-        'type' => ['array', 'null'],
-        'items' => ['type' => 'string'],
-    ]);
-    expect($tableConfig['columnWidths'])->toMatchArray([
-        'type' => ['array', 'null'],
-        'items' => ['type' => ['integer', 'string']],
-    ]);
+    expect($tableConfig)->not->toHaveKeys(['columnAlignments', 'columnWidths'])
+        ->and($tableConfig['numberRows'])->toMatchArray([
+            'type' => 'boolean',
+            'default' => false,
+        ])
+        ->and($tableColumn)->toHaveKeys(['key', 'label', 'align', 'width']);
 });
 
 it('emits registered fonts as select options for typography family', function () {

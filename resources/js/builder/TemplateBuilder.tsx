@@ -29,6 +29,7 @@ import {
   updateBlockId,
   updateTemplateConfig,
   setRowWidths,
+  updateBlockData,
   updateDataField,
 } from "./state/templateModel";
 import { exampleFromSchema } from "./lib/exampleFromSchema";
@@ -417,6 +418,9 @@ export default function TemplateBuilder({
                   }
                   onUpdateDataField={(blockId, field, value, options) =>
                     setModel((m) => updateDataField(m, blockId, field, value, options))
+                  }
+                  onUpdateBlockData={(blockId, value, options) =>
+                    setModel((m) => updateBlockData(m, blockId, value, options))
                   }
                 />
               </div>

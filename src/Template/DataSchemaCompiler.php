@@ -51,7 +51,7 @@ final readonly class DataSchemaCompiler
 
                 $properties[$id] = $dataSchema;
 
-                if (($dataSchema['required'] ?? []) !== []) {
+                if ($this->requiresBlockData($dataSchema)) {
                     $required[] = $id;
                 }
             }
@@ -77,6 +77,10 @@ final readonly class DataSchemaCompiler
     {
         if ($block->type === 'key-value') {
             return $this->keyValueDataSchema(is_array($block->config['fields'] ?? null) ? $block->config['fields'] : []);
+        }
+
+        if ($block->type === 'table') {
+            return $this->tableDataSchema(is_array($block->config['columns'] ?? null) ? $block->config['columns'] : []);
         }
 
         return $this->reflector->reflectBlock($this->registry->resolve($block->type))['data'];
@@ -117,6 +121,51 @@ final readonly class DataSchemaCompiler
     }
 
     /**
+     * @param  list<array<string, mixed>>  $columns
+     * @return array<string, mixed>
+     */
+    private function tableDataSchema(array $columns): array
+    {
+        $properties = [];
+        $required = [];
+
+        foreach ($columns as $column) {
+            $key = (string) ($column['key'] ?? '');
+            if ($key === '') {
+                continue;
+            }
+
+            $properties[$key] = [
+                'type' => 'string',
+            ];
+            $required[] = $key;
+        }
+
+        if ($properties === []) {
+            return [
+                'type' => 'object',
+                'properties' => new stdClass,
+                'additionalProperties' => false,
+            ];
+        }
+
+        $schema = [
+            'type' => 'array',
+            'items' => [
+                'type' => 'object',
+                'properties' => $properties,
+                'additionalProperties' => false,
+            ],
+        ];
+
+        if ($required !== []) {
+            $schema['items']['required'] = $required;
+        }
+
+        return $schema;
+    }
+
+    /**
      * @param  array<string, mixed>  $schema
      * @param  array<string, mixed>  $defaults
      * @param  array<string, mixed>  $constants
@@ -124,6 +173,22 @@ final readonly class DataSchemaCompiler
      */
     private function withDataLayerAnnotations(array $schema, array $defaults, array $constants): array
     {
+        if (($schema['type'] ?? null) === 'array') {
+            if ($constants !== []) {
+                return [
+                    'type' => 'object',
+                    'properties' => new stdClass,
+                    'additionalProperties' => false,
+                ];
+            }
+
+            if ($defaults !== []) {
+                $schema['default'] = $defaults;
+            }
+
+            return $schema;
+        }
+
         if (! isset($schema['properties']) || ! is_array($schema['properties'])) {
             return $schema;
         }
@@ -192,8 +257,22 @@ final readonly class DataSchemaCompiler
     /** @param array<string, mixed> $schema */
     private function hasNoProperties(array $schema): bool
     {
+        if (($schema['type'] ?? null) === 'array') {
+            return false;
+        }
+
         $properties = $schema['properties'] ?? null;
 
         return $properties === null || $properties instanceof stdClass || $properties === [];
+    }
+
+    /** @param array<string, mixed> $schema */
+    private function requiresBlockData(array $schema): bool
+    {
+        if (($schema['type'] ?? null) === 'array') {
+            return ! array_key_exists('default', $schema);
+        }
+
+        return ($schema['required'] ?? []) !== [];
     }
 }

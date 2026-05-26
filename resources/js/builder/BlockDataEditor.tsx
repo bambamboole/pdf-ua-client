@@ -1,12 +1,17 @@
-import { useState, type ChangeEvent, type ReactNode } from "react";
+import { useEffect, useState, type ChangeEvent, type ReactNode } from "react";
 import { getBlockSubschemas } from "./lib/schema";
 import { IMAGE_ACCEPT, imageFileError, imageFileToDataUrl } from "./lib/imageUpload";
-import type { EditorBlock, JsonSchema, TemplateDataLayers } from "./types";
+import type { DataValue, EditorBlock, JsonSchema, TemplateDataLayers } from "./types";
 
 type UpdateDataField = (
   blockId: string,
   field: string,
   value: unknown,
+  options: { example: boolean; locked: boolean },
+) => void;
+type UpdateBlockData = (
+  blockId: string,
+  value: DataValue,
   options: { example: boolean; locked: boolean },
 ) => void;
 
@@ -15,6 +20,7 @@ interface Props {
   schema: JsonSchema;
   data: TemplateDataLayers;
   onUpdateDataField: UpdateDataField;
+  onUpdateBlockData: UpdateBlockData;
 }
 
 interface FieldProps {
@@ -32,7 +38,18 @@ interface KeyValueField {
   label: string;
 }
 
-export default function BlockDataEditor({ block, schema, data, onUpdateDataField }: Props) {
+interface TableColumn {
+  key: string;
+  label: string;
+}
+
+export default function BlockDataEditor({
+  block,
+  schema,
+  data,
+  onUpdateDataField,
+  onUpdateBlockData,
+}: Props) {
   if (block.type === "image") {
     return <ImageDataEditor block={block} data={data} onUpdateDataField={onUpdateDataField} />;
   }
@@ -42,7 +59,7 @@ export default function BlockDataEditor({ block, schema, data, onUpdateDataField
   }
 
   if (block.type === "table") {
-    return <TableDataEditor block={block} data={data} onUpdateDataField={onUpdateDataField} />;
+    return <TableDataEditor block={block} data={data} onUpdateBlockData={onUpdateBlockData} />;
   }
 
   return (
@@ -51,6 +68,7 @@ export default function BlockDataEditor({ block, schema, data, onUpdateDataField
       schema={schema}
       data={data}
       onUpdateDataField={onUpdateDataField}
+      onUpdateBlockData={onUpdateBlockData}
     />
   );
 }
@@ -215,54 +233,145 @@ function KeyValueDataEditor({
 function TableDataEditor({
   block,
   data,
-  onUpdateDataField,
+  onUpdateBlockData,
 }: {
   block: EditorBlock;
   data: TemplateDataLayers;
-  onUpdateDataField: UpdateDataField;
+  onUpdateBlockData: UpdateBlockData;
 }) {
+  const columns = tableColumns(block.config.columns);
+
+  if (columns.length === 0) {
+    return (
+      <div className="rounded-[var(--builder-radius)] border border-dashed border-[var(--builder-stroke)] p-3 text-xs text-[var(--builder-muted)]">
+        Define table columns in Config.
+      </div>
+    );
+  }
+
   return (
     <div data-inline-data-fields className="space-y-3">
-      <FieldControl
+      <BlockDataControl
         blockId={block.id}
-        field="headers"
-        label="Headers"
-        value={currentFieldValue(data, block.id, "headers")}
-        data={data}
-        onUpdateDataField={onUpdateDataField}
-      >
-        {({ value, update }) => (
-          <input
-            className={inputClass}
-            value={stringList(value).join(", ")}
-            onChange={(event) =>
-              update(
-                event.currentTarget.value
-                  .split(",")
-                  .map((header) => header.trim())
-                  .filter(Boolean),
-              )
-            }
-          />
-        )}
-      </FieldControl>
-      <FieldControl
-        blockId={block.id}
-        field="rows"
         label="Rows"
-        value={currentFieldValue(data, block.id, "rows")}
+        value={currentBlockValue(data, block.id)}
         data={data}
-        onUpdateDataField={onUpdateDataField}
+        onUpdateBlockData={onUpdateBlockData}
       >
         {({ value, update }) => (
-          <textarea
-            className={`${inputClass} min-h-24 font-mono`}
-            value={rowsToText(value)}
-            onChange={(event) => update(textToRows(event.currentTarget.value))}
-          />
+          <div className="grid gap-2">
+            <div className="flex flex-wrap gap-1">
+              {columns.map((column) => (
+                <span
+                  key={column.key}
+                  className="rounded-[var(--builder-radius)] bg-[var(--builder-panel)] px-2 py-1 text-[10px] font-medium text-[var(--builder-muted-strong)]"
+                >
+                  {column.label}
+                </span>
+              ))}
+            </div>
+            <TableJsonInput value={value} onChange={update} />
+          </div>
         )}
-      </FieldControl>
+      </BlockDataControl>
     </div>
+  );
+}
+
+function TableJsonInput({
+  value,
+  onChange,
+}: {
+  value: DataValue;
+  onChange: (value: DataValue) => void;
+}) {
+  const [draft, setDraft] = useState(() => rowsToJson(value));
+
+  useEffect(() => {
+    setDraft(rowsToJson(value));
+  }, [value]);
+
+  return (
+    <textarea
+      className={`${inputClass} min-h-36 font-mono`}
+      value={draft}
+      onChange={(event) => {
+        const nextDraft = event.currentTarget.value;
+        setDraft(nextDraft);
+
+        try {
+          const parsed = JSON.parse(nextDraft);
+          if (Array.isArray(parsed)) {
+            onChange(parsed);
+          }
+        } catch {
+          return;
+        }
+      }}
+    />
+  );
+}
+
+function BlockDataControl({
+  blockId,
+  label,
+  value,
+  data,
+  onUpdateBlockData,
+  children,
+}: {
+  blockId: string;
+  label: string;
+  value: DataValue;
+  data: TemplateDataLayers;
+  onUpdateBlockData: UpdateBlockData;
+  children: (props: { value: DataValue; update: (value: DataValue) => void }) => ReactNode;
+}) {
+  const example = Object.hasOwn(data.example, blockId);
+  const locked = Object.hasOwn(data.constants, blockId);
+
+  function update(nextValue: DataValue): void {
+    onUpdateBlockData(blockId, nextValue, { example, locked });
+  }
+
+  return (
+    <section className="min-w-0 overflow-hidden rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-surface)] p-3">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <div className="min-w-0">
+          <div className="text-xs font-medium text-[var(--builder-muted-strong)]">{label}</div>
+          <div className="font-mono text-[10px] text-[var(--builder-muted)]">{blockId}</div>
+        </div>
+        <span className="flex items-center gap-3 text-xs text-[var(--builder-muted-strong)]">
+          <label className="inline-flex items-center gap-1.5">
+            <input
+              type="checkbox"
+              checked={example}
+              onChange={(event) =>
+                onUpdateBlockData(blockId, value, {
+                  example: event.currentTarget.checked,
+                  locked,
+                })
+              }
+            />
+            Example
+          </label>
+          <label className="inline-flex items-center gap-1.5">
+            <input
+              type="checkbox"
+              checked={locked}
+              onChange={(event) =>
+                onUpdateBlockData(blockId, value, {
+                  example,
+                  locked: event.currentTarget.checked,
+                })
+              }
+            />
+            Lock
+          </label>
+        </span>
+      </div>
+      {children({ value, update })}
+    </section>
   );
 }
 
@@ -365,19 +474,39 @@ function FieldControl({
 }
 
 function currentFieldValue(data: TemplateDataLayers, blockId: string, field: string): unknown {
-  if (Object.hasOwn(data.constants[blockId] ?? {}, field)) {
-    return data.constants[blockId][field];
+  const constants = data.constants[blockId];
+  const example = data.example[blockId];
+  const defaults = data.defaults[blockId];
+
+  if (isPlainObject(constants) && Object.hasOwn(constants, field)) {
+    return constants[field];
   }
 
-  if (Object.hasOwn(data.example[blockId] ?? {}, field)) {
-    return data.example[blockId][field];
+  if (isPlainObject(example) && Object.hasOwn(example, field)) {
+    return example[field];
   }
 
-  if (Object.hasOwn(data.defaults[blockId] ?? {}, field)) {
-    return data.defaults[blockId][field];
+  if (isPlainObject(defaults) && Object.hasOwn(defaults, field)) {
+    return defaults[field];
   }
 
   return "";
+}
+
+function currentBlockValue(data: TemplateDataLayers, blockId: string): DataValue {
+  if (Object.hasOwn(data.constants, blockId)) {
+    return data.constants[blockId];
+  }
+
+  if (Object.hasOwn(data.example, blockId)) {
+    return data.example[blockId];
+  }
+
+  if (Object.hasOwn(data.defaults, blockId)) {
+    return data.defaults[blockId];
+  }
+
+  return [];
 }
 
 function keyValueFields(block: EditorBlock): KeyValueField[] {
@@ -403,6 +532,10 @@ function keyValueFields(block: EditorBlock): KeyValueField[] {
     .filter((field): field is KeyValueField => field !== null);
 }
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 function fieldTitle(field: string, schema: JsonSchema): string {
   return typeof schema.title === "string" ? schema.title : field;
 }
@@ -411,19 +544,34 @@ function stringValue(value: unknown): string {
   return value == null ? "" : String(value);
 }
 
-function stringList(value: unknown): string[] {
-  return Array.isArray(value) ? value.map(stringValue) : [];
-}
+function tableColumns(value: unknown): TableColumn[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
 
-function rowsToText(value: unknown): string {
-  return Array.isArray(value) ? value.map((row) => stringList(row).join("\t")).join("\n") : "";
-}
-
-function textToRows(value: string): string[][] {
   return value
-    .split("\n")
-    .map((row) => row.split("\t").map((cell) => cell.trim()))
-    .filter((row) => row.some((cell) => cell !== ""));
+    .map((column) => {
+      if (!column || typeof column !== "object") {
+        return null;
+      }
+
+      const record = column as Record<string, unknown>;
+      const key = stringValue(record.key);
+      if (key === "") {
+        return null;
+      }
+
+      return { key, label: stringValue(record.label) || key };
+    })
+    .filter((column): column is TableColumn => column !== null);
+}
+
+function rowsToJson(value: unknown): string {
+  if (!Array.isArray(value)) {
+    return "[]";
+  }
+
+  return JSON.stringify(value, null, 2);
 }
 
 const inputClass =

@@ -112,10 +112,89 @@ export function getBlockConfigSchema(schema: JsonSchema, type: string): JsonSche
   return getBlockSubschemas(schema, type).config;
 }
 
+export function getBlockConfigGroupSchema(schema: JsonSchema, type: string): JsonSchema {
+  const omitted = new Set(["typography", "spacing"]);
+
+  if (type === "key-value") {
+    omitted.add("fields");
+  }
+
+  if (type === "table") {
+    omitted.add("columns");
+    omitted.add("numberRows");
+    omitted.add("style");
+  }
+
+  return objectSchema(
+    Object.fromEntries(
+      Object.entries(configProperties(schema, type)).filter(([property]) => !omitted.has(property)),
+    ),
+    schema,
+  );
+}
+
+export function getNestedBlockConfigSchema(
+  schema: JsonSchema,
+  type: string,
+  property: string,
+): JsonSchema | null {
+  const configProperty = configProperties(schema, type)[property];
+  const ref = record(configProperty)?.$ref;
+
+  if (typeof ref !== "string") {
+    return null;
+  }
+
+  const resolved = resolveRef(schema, ref);
+
+  return resolved ? { ...resolved, $defs: schema.$defs } : null;
+}
+
 export function getTemplateConfigSchema(schema: JsonSchema): JsonSchema {
   const templateConfig = defs(schema).templateConfig ?? {
     type: "object",
     properties: {},
   };
   return { ...templateConfig, $defs: schema.$defs };
+}
+
+function configProperties(schema: JsonSchema, type: string): Record<string, unknown> {
+  const configSchema = getBlockConfigSchema(schema, type);
+  const properties = { ...propertiesFromAllOf(schema, configSchema) };
+  Object.assign(properties, record(configSchema.properties) ?? {});
+
+  return properties;
+}
+
+function propertiesFromAllOf(
+  schema: JsonSchema,
+  configSchema: JsonSchema,
+): Record<string, unknown> {
+  const allOf = Array.isArray(configSchema.allOf) ? configSchema.allOf : [];
+
+  return allOf.reduce<Record<string, unknown>>((properties, item) => {
+    const ref = record(item)?.$ref;
+    if (typeof ref !== "string") {
+      return properties;
+    }
+
+    const resolved = resolveRef(schema, ref);
+    if (!resolved) {
+      return properties;
+    }
+
+    return {
+      ...properties,
+      ...propertiesFromAllOf(schema, resolved),
+      ...record(resolved.properties),
+    };
+  }, {});
+}
+
+function objectSchema(properties: Record<string, unknown>, schema: JsonSchema): JsonSchema {
+  return {
+    type: "object",
+    properties,
+    $defs: schema.$defs,
+  };
 }

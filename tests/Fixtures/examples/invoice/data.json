@@ -10,19 +10,44 @@
     "email": "invoice@musterkunde.example",
     "reference": "04011000-12345-67"
   },
-  "items": {
-    "headers": ["#", "Description", "Qty", "Unit price", "VAT", "Total"],
-    "rows": [
-      ["1", "Accessible PDF template implementation", "40", "95,00 €", "19%", "3.800,00 €"],
-      ["2", "Document structure and tagging review", "16", "85,00 €", "19%", "1.360,00 €"],
-      ["3", "Project management and acceptance testing", "8", "90,00 €", "19%", "720,00 €"],
-      ["4", "Annual hosting and maintenance package", "1", "240,00 €", "19%", "240,00 €"]
-    ]
-  },
-  "vat-breakdown": {
-    "headers": ["VAT category", "Rate", "Taxable amount", "VAT amount"],
-    "rows": [["Standard rate", "19%", "6.120,00 €", "1.162,80 €"]]
-  },
+  "lineItems": [
+    {
+      "description": "Accessible PDF template implementation",
+      "quantity": "40",
+      "unitPrice": "95,00 €",
+      "vatRate": "19%",
+      "total": "3.800,00 €"
+    },
+    {
+      "description": "Document structure and tagging review",
+      "quantity": "16",
+      "unitPrice": "85,00 €",
+      "vatRate": "19%",
+      "total": "1.360,00 €"
+    },
+    {
+      "description": "Project management and acceptance testing",
+      "quantity": "8",
+      "unitPrice": "90,00 €",
+      "vatRate": "19%",
+      "total": "720,00 €"
+    },
+    {
+      "description": "Annual hosting and maintenance package",
+      "quantity": "1",
+      "unitPrice": "240,00 €",
+      "vatRate": "19%",
+      "total": "240,00 €"
+    }
+  ],
+  "vat-breakdown": [
+    {
+      "vatCategory": "Standard rate",
+      "rate": "19%",
+      "taxableAmount": "6.120,00 €",
+      "vatAmount": "1.162,80 €"
+    }
+  ],
   "totals": {
     "netAmount": "6.120,00 €",
     "vatAmount": "1.162,80 €",

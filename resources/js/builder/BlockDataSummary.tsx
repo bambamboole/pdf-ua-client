@@ -36,12 +36,48 @@ function keyValueEntries(
     .filter((entry): entry is { label: string; value: string } => entry !== null);
 }
 
-function stringList(value: unknown): string[] {
-  return Array.isArray(value) ? value.map(stringValue) : [];
+interface TableColumn {
+  key: string;
+  label: string;
 }
 
-function tableRows(value: unknown): string[][] {
-  return Array.isArray(value) ? value.map(stringList).filter((row) => row.length > 0) : [];
+function tableColumns(value: unknown): TableColumn[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((column) => {
+      if (!column || typeof column !== "object") {
+        return null;
+      }
+
+      const record = column as Record<string, unknown>;
+      const key = stringValue(record.key);
+      if (key === "") {
+        return null;
+      }
+
+      return { key, label: stringValue(record.label) || key };
+    })
+    .filter((column): column is TableColumn => column !== null);
+}
+
+function objectTableRows(value: unknown, columns: TableColumn[]): string[][] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((row) => {
+      if (!row || typeof row !== "object" || Array.isArray(row)) {
+        return [];
+      }
+
+      const record = row as Record<string, unknown>;
+      return columns.map((column) => stringValue(record[column.key]));
+    })
+    .filter((row) => row.length > 0);
 }
 
 function keyPart(parts: string[]): string {
@@ -110,6 +146,14 @@ function TablePreview({ headers, rows }: { headers: string[]; rows: string[][] }
   );
 }
 
+function ImagePreview({ src, alt }: { src: string; alt: string }) {
+  return (
+    <div className="mt-2 overflow-hidden rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-surface)] p-2">
+      <img src={src} alt={alt} className="max-h-28 w-full object-contain" />
+    </div>
+  );
+}
+
 export default function BlockDataSummary({ block }: { block: EditorBlock }) {
   const d = block.data as Record<string, unknown>;
   let summary = "";
@@ -121,9 +165,15 @@ export default function BlockDataSummary({ block }: { block: EditorBlock }) {
     case "html":
       summary = "HTML";
       break;
-    case "image":
+    case "image": {
+      const src = stringValue(d.src);
+      if (src !== "") {
+        return <ImagePreview src={src} alt={stringValue(d.alt)} />;
+      }
+
       summary = String(d.alt ?? "image");
       break;
+    }
     case "key-value": {
       const entries = keyValueEntries(d, block.config.fields);
       return entries.length > 0 ? (
@@ -133,8 +183,9 @@ export default function BlockDataSummary({ block }: { block: EditorBlock }) {
       );
     }
     case "table": {
-      const headers = stringList(d.headers);
-      const rows = tableRows(d.rows);
+      const columns = tableColumns(block.config.columns);
+      const headers = columns.map((column) => column.label);
+      const rows = objectTableRows(block.data, columns);
       return headers.length > 0 || rows.length > 0 ? (
         <TablePreview headers={headers} rows={rows} />
       ) : (

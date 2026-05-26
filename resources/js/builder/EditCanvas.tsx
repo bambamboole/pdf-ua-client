@@ -9,6 +9,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { gridTemplateForWidths } from "./lib/columns";
 import { pageSizeForFormat } from "./lib/pageSizes";
+import { mmToScaledPx } from "./lib/displayScale";
 import { getBlockTitle } from "./lib/schema";
 import BlockDataSummary from "./BlockDataSummary";
 import ColumnResizer from "./ColumnResizer";
@@ -26,6 +27,7 @@ interface Props {
   model: { rows: EditorRow[]; data: TemplateDataLayers };
   schema: JsonSchema;
   format: string;
+  scale: number;
   selectedBlockUid: string | null;
   onSelectBlock: (uid: string) => void;
   onRemoveBlock: (uid: string) => void;
@@ -291,6 +293,7 @@ export default function EditCanvas({
   model,
   schema,
   format,
+  scale,
   selectedBlockUid,
   onSelectBlock,
   onRemoveBlock,
@@ -301,12 +304,13 @@ export default function EditCanvas({
   onUpdateDataField,
 }: Props) {
   const [width] = pageSizeForFormat(format);
+  const scaledWidth = mmToScaledPx(width, scale);
 
   return (
     <div
       data-edit-canvas
       className="mx-auto box-border w-full space-y-3 rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-panel)] p-3 shadow-[var(--builder-shadow)]"
-      style={{ maxWidth: `${width}mm` }}
+      style={{ maxWidth: `${scaledWidth}px` }}
     >
       <SortableContext
         items={model.rows.map((r) => `row-${r.uid}`)}

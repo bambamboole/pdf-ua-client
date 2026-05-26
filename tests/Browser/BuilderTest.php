@@ -45,11 +45,18 @@ it('opens block settings inline on the selected block', function (): void {
 });
 
 it('sizes the build canvas to the selected page format', function (): void {
-    visit('/')
+    $page = visit('/')
         ->click('Invoice')
-        ->assertScript('document.querySelector("[data-edit-canvas]")?.getBoundingClientRect().width <= 810')
-        ->assertScript('document.querySelector("[data-edit-canvas]")?.style.maxWidth === "210mm"')
+        ->assertSee('Page scale')
+        ->assertSee('Default')
+        ->assertScript('document.querySelector("[data-edit-canvas]")?.style.maxWidth.endsWith("px")')
         ->assertNoJavaScriptErrors();
+
+    $before = $page->script('document.querySelector("[data-edit-canvas]")?.getBoundingClientRect().width');
+    $page->script('document.querySelector("[aria-label=\"Increase page scale\"]")?.click()');
+    $after = $page->script('document.querySelector("[data-edit-canvas]")?.getBoundingClientRect().width');
+
+    expect($after)->toBeGreaterThan($before);
 });
 
 it('renders the invoice example preview and matches the browser screenshot', function (): void {

@@ -31,8 +31,10 @@ import {
   updateDataField,
 } from "./state/templateModel";
 import { exampleFromSchema } from "./lib/exampleFromSchema";
+import { estimatedPhysicalScale } from "./lib/displayScale";
 import { useLatest } from "./useLatest";
 import type { DataMap, DragData, EditorModel, Json, JsonSchema, Template } from "./types";
+import CanvasZoomControls from "./CanvasZoomControls";
 
 const PageCanvas = lazy(() => import("./PageCanvas"));
 const PdfCanvas = lazy(() => import("./PdfCanvas"));
@@ -46,6 +48,10 @@ const tabs: Array<{ key: BuilderTab; label: string }> = [
   { key: "html", label: "HTML" },
   { key: "pdf", label: "PDF" },
 ];
+
+const ZOOM_STEP = 0.05;
+const MIN_ZOOM = 0.75;
+const MAX_ZOOM = 1.6;
 
 export interface TemplateBuilderProps {
   schema: JsonSchema;
@@ -84,6 +90,8 @@ export default function TemplateBuilder({
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const defaultCanvasScale = useMemo(() => estimatedPhysicalScale(), []);
+  const [canvasScale, setCanvasScale] = useState(defaultCanvasScale);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -326,10 +334,18 @@ export default function TemplateBuilder({
           <div className="flex-1 overflow-auto bg-[var(--builder-bg)] p-5">
             {tab === "build" ? (
               <div className="grid items-start gap-5">
+                <CanvasZoomControls
+                  scale={canvasScale}
+                  defaultScale={defaultCanvasScale}
+                  onDecrease={() => setCanvasScale((scale) => clampZoom(scale - ZOOM_STEP))}
+                  onIncrease={() => setCanvasScale((scale) => clampZoom(scale + ZOOM_STEP))}
+                  onReset={() => setCanvasScale(defaultCanvasScale)}
+                />
                 <EditCanvas
                   model={model}
                   schema={schema}
                   format={format}
+                  scale={canvasScale}
                   selectedBlockUid={selectedBlockUid}
                   onSelectBlock={selectBlock}
                   onRemoveBlock={(uid) => setModel((m) => removeBlock(m, uid))}
@@ -401,4 +417,8 @@ export default function TemplateBuilder({
       </DragOverlay>
     </DndContext>
   );
+}
+
+function clampZoom(scale: number): number {
+  return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Number(scale.toFixed(2))));
 }

@@ -88,6 +88,7 @@ function BlockBox({
       style={style}
       onPointerDownCapture={() => onSelect(block.uid)}
       data-builder-block
+      data-builder-block-type={block.type}
       className={`${layoutStyle ? "" : "flex-1"} rounded-[var(--builder-radius)] border bg-[var(--builder-panel)] px-3 py-2 text-sm shadow-sm transition ${selected ? "border-[var(--builder-accent)] ring-2 ring-[var(--builder-accent-soft)]" : "border-[var(--builder-stroke)] hover:border-[var(--builder-stroke-strong)]"} ${isDragging ? "opacity-50" : ""}`}
     >
       <div className="flex items-center justify-between gap-2">

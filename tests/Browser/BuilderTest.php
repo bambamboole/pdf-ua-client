@@ -40,7 +40,8 @@ it('opens block settings inline on the selected block', function (): void {
         ->assertSee('Lock')
         ->assertSee('Upload')
         ->assertScript('document.querySelector("main [data-inline-data-fields]") !== null')
-        ->assertScript('document.querySelector("main [data-inline-data-fields] input[type=checkbox]") !== null');
+        ->assertScript('document.querySelector("main [data-inline-data-fields] input[type=checkbox]") !== null')
+        ->assertScript('(() => { const source = document.querySelector("[data-image-source-input]"); const editor = document.querySelector("[data-inline-block-editor]"); return source && editor ? source.getBoundingClientRect().right <= editor.getBoundingClientRect().right + 1 : false; })()');
 });
 
 it('sizes the build canvas to the selected page format', function (): void {

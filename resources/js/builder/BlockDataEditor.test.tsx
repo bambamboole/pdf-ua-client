@@ -55,6 +55,8 @@ describe("BlockDataEditor", () => {
     expect(html).toContain("Upload");
     expect(html).toContain("Example");
     expect(html).toContain("Lock");
+    expect(html).toContain("overflow-hidden");
+    expect(html).toContain("truncate");
   });
 
   it("renders key value rows from config fields and flat data keys", () => {

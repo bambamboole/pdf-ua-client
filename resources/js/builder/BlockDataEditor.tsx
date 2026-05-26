@@ -124,15 +124,15 @@ function ImageSourceInput({
   }
 
   return (
-    <div className="grid gap-2">
+    <div data-image-source-input className="grid min-w-0 gap-2">
       {value ? (
-        <div className="flex items-center gap-3 rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-panel)] p-2">
+        <div className="flex min-w-0 items-center gap-3 overflow-hidden rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-panel)] p-2">
           <img
             src={value}
             alt=""
-            className="h-12 max-w-24 rounded border border-[var(--builder-stroke)] object-contain"
+            className="h-12 max-w-24 shrink-0 rounded border border-[var(--builder-stroke)] object-contain"
           />
-          <span className="min-w-0 truncate font-mono text-[10px] text-[var(--builder-muted)]">
+          <span className="block min-w-0 flex-1 truncate font-mono text-[10px] text-[var(--builder-muted)]">
             {value}
           </span>
         </div>
@@ -324,7 +324,7 @@ function FieldControl({
   }
 
   return (
-    <section className="rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-surface)] p-3">
+    <section className="min-w-0 overflow-hidden rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-surface)] p-3">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0">
           <div className="text-xs font-medium text-[var(--builder-muted-strong)]">{label}</div>
@@ -427,4 +427,4 @@ function textToRows(value: string): string[][] {
 }
 
 const inputClass =
-  "block w-full rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-field)] px-2 py-1 text-sm text-[var(--builder-field-ink)] focus:border-[var(--builder-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--builder-accent-soft)] disabled:bg-[var(--builder-surface)]";
+  "block min-w-0 w-full rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-field)] px-2 py-1 text-sm text-[var(--builder-field-ink)] focus:border-[var(--builder-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--builder-accent-soft)] disabled:bg-[var(--builder-surface)]";

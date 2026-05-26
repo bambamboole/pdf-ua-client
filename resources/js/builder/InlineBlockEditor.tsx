@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import type { EditorBlock, Json, JsonSchema, TemplateDataLayers } from "./types";
 import { getBlockConfigSchema, getBlockSubschemas } from "./lib/schema";
 import BlockDataEditor from "./BlockDataEditor";
+import KeyValueConfigFields from "./KeyValueConfigFields";
 
 const SettingsForm = lazy(() => import("./SettingsForm"));
 
@@ -98,6 +99,26 @@ export default function InlineBlockEditor({
           data={data}
           onUpdateDataField={onUpdateDataField}
         />
+      ) : block.type === "key-value" ? (
+        <div>
+          <KeyValueConfigFields
+            config={block.config ?? {}}
+            onChange={(config) => onUpdateBlockConfig(block.uid, config)}
+          />
+          <Suspense
+            fallback={
+              <div className="h-24 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-surface)]" />
+            }
+          >
+            <SettingsForm
+              schema={withoutProperty(getBlockConfigSchema(schema, block.type), "fields")}
+              formData={withoutProperty(block.config ?? {}, "fields")}
+              onChange={(config) =>
+                onUpdateBlockConfig(block.uid, { ...config, fields: block.config.fields })
+              }
+            />
+          </Suspense>
+        </div>
       ) : (
         <Suspense
           fallback={
@@ -113,4 +134,10 @@ export default function InlineBlockEditor({
       )}
     </div>
   );
+}
+
+function withoutProperty<T extends Record<string, unknown>>(value: T, property: string): T {
+  const next = { ...value };
+  delete next[property];
+  return next;
 }

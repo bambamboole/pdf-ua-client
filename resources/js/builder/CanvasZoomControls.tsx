@@ -1,18 +1,10 @@
 interface Props {
-  scale: number;
-  defaultScale: number;
   onDecrease: () => void;
   onIncrease: () => void;
   onReset: () => void;
 }
 
-export default function CanvasZoomControls({
-  scale,
-  defaultScale,
-  onDecrease,
-  onIncrease,
-  onReset,
-}: Props) {
+export default function CanvasZoomControls({ onDecrease, onIncrease, onReset }: Props) {
   return (
     <div className="mx-auto mb-3 flex max-w-[calc(100vw-24rem)] flex-wrap items-center justify-center gap-2 text-xs text-[var(--builder-muted-strong)]">
       <span className="font-medium">Page scale</span>
@@ -25,8 +17,8 @@ export default function CanvasZoomControls({
         >
           -
         </button>
-        <span data-canvas-scale-value className="min-w-14 px-2 text-center font-mono">
-          {Math.round(scale * 100)}%
+        <span data-canvas-scale-value className="px-2 text-center font-medium">
+          Scale
         </span>
         <button
           type="button"
@@ -42,7 +34,7 @@ export default function CanvasZoomControls({
         className="rounded-full border border-[var(--builder-stroke)] bg-[var(--builder-panel)] px-2.5 py-1 font-medium shadow-sm transition hover:border-[var(--builder-accent)] hover:text-[var(--builder-ink)]"
         onClick={onReset}
       >
-        Default {Math.round(defaultScale * 100)}%
+        Default
       </button>
     </div>
   );

@@ -335,8 +335,6 @@ export default function TemplateBuilder({
             {tab === "build" ? (
               <div className="grid items-start gap-5">
                 <CanvasZoomControls
-                  scale={canvasScale}
-                  defaultScale={defaultCanvasScale}
                   onDecrease={() => setCanvasScale((scale) => clampZoom(scale - ZOOM_STEP))}
                   onIncrease={() => setCanvasScale((scale) => clampZoom(scale + ZOOM_STEP))}
                   onReset={() => setCanvasScale(defaultCanvasScale)}

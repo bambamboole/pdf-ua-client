@@ -34,16 +34,24 @@ final readonly class DataSchemaCompiler
 
         foreach ($this->dataRows($template) as $row) {
             foreach ($row->blocks as $block) {
-                $dataSchema = $this->reflector->reflectBlock($this->registry->resolve($block->type))['data'];
+                $dataSchema = $this->dataSchemaForBlock($block);
 
                 if ($this->hasNoProperties($dataSchema)) {
                     continue;
                 }
 
                 $id = (string) $block->id;
+                $defaults = $template->data->defaults[$id] ?? [];
+                $constants = $template->data->constants[$id] ?? [];
+                $dataSchema = $this->withDataLayerAnnotations($dataSchema, $defaults, $constants);
+
+                if ($this->hasNoProperties($dataSchema)) {
+                    continue;
+                }
+
                 $properties[$id] = $dataSchema;
 
-                if (isset($dataSchema['required']) && $dataSchema['required'] !== []) {
+                if (($dataSchema['required'] ?? []) !== []) {
                     $required[] = $id;
                 }
             }
@@ -59,6 +67,114 @@ final readonly class DataSchemaCompiler
 
         if ($required !== []) {
             $schema['required'] = array_values(array_unique($required));
+        }
+
+        return $schema;
+    }
+
+    /** @return array<string, mixed> */
+    private function dataSchemaForBlock(BlockInstance $block): array
+    {
+        if ($block->type === 'key-value') {
+            return $this->keyValueDataSchema(is_array($block->config['fields'] ?? null) ? $block->config['fields'] : []);
+        }
+
+        return $this->reflector->reflectBlock($this->registry->resolve($block->type))['data'];
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $fields
+     * @return array<string, mixed>
+     */
+    private function keyValueDataSchema(array $fields): array
+    {
+        $properties = [];
+        $required = [];
+
+        foreach ($fields as $field) {
+            $key = (string) ($field['key'] ?? '');
+            if ($key === '') {
+                continue;
+            }
+
+            $properties[$key] = [
+                'type' => 'string',
+            ];
+            $required[] = $key;
+        }
+
+        $schema = [
+            'type' => 'object',
+            'properties' => $properties === [] ? new stdClass : $properties,
+            'additionalProperties' => false,
+        ];
+
+        if ($required !== []) {
+            $schema['required'] = $required;
+        }
+
+        return $schema;
+    }
+
+    /**
+     * @param  array<string, mixed>  $schema
+     * @param  array<string, mixed>  $defaults
+     * @param  array<string, mixed>  $constants
+     * @return array<string, mixed>
+     */
+    private function withDataLayerAnnotations(array $schema, array $defaults, array $constants): array
+    {
+        if (! isset($schema['properties']) || ! is_array($schema['properties'])) {
+            return $schema;
+        }
+
+        foreach ($defaults as $key => $value) {
+            if (! isset($schema['properties'][$key]) || ! is_array($schema['properties'][$key])) {
+                continue;
+            }
+
+            $schema['properties'][$key]['default'] = $value;
+        }
+
+        foreach (array_keys($constants) as $key) {
+            unset($schema['properties'][$key]);
+        }
+
+        $required = $schema['required'] ?? [];
+        if (is_array($required)) {
+            $required = array_values(array_filter(
+                $required,
+                static fn (mixed $field): bool => is_string($field) && ! array_key_exists($field, $defaults) && ! array_key_exists($field, $constants),
+            ));
+
+            if ($required === []) {
+                unset($schema['required']);
+            } else {
+                $schema['required'] = $required;
+            }
+        }
+
+        if ($schema['properties'] === []) {
+            $schema['properties'] = new stdClass;
+        } else {
+            $schema = $this->withNullableOptionalStrings($schema);
+        }
+
+        return $schema;
+    }
+
+    /** @param array<string, mixed> $schema */
+    private function withNullableOptionalStrings(array $schema): array
+    {
+        $required = $schema['required'] ?? [];
+        $required = is_array($required) ? array_flip($required) : [];
+
+        foreach ($schema['properties'] as $key => $property) {
+            if (! is_string($key) || isset($required[$key]) || ! is_array($property) || ($property['type'] ?? null) !== 'string') {
+                continue;
+            }
+
+            $schema['properties'][$key]['type'] = ['string', 'null'];
         }
 
         return $schema;

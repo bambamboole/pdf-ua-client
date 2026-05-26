@@ -1,4 +1,13 @@
-import type { DataMap, EditorBlock, EditorModel, EditorRow, Json, Template } from "../types";
+import type {
+  DataMap,
+  EditorBlock,
+  EditorArea,
+  EditorModel,
+  EditorRow,
+  Json,
+  Template,
+  TemplateDataLayers,
+} from "../types";
 
 function uid(): string {
   return crypto.randomUUID();
@@ -24,7 +33,7 @@ function makeUnique(base: string, taken: Set<string>): string {
 }
 
 export function uniqueBlockId(model: EditorModel, type: string): string {
-  const taken = new Set(model.rows.flatMap((r) => r.blocks.map((b) => b.id)));
+  const taken = new Set(allRows(model).flatMap((r) => r.blocks.map((b) => b.id)));
   let n = 1;
   while (taken.has(`${type}-${n}`)) {
     n += 1;
@@ -33,58 +42,96 @@ export function uniqueBlockId(model: EditorModel, type: string): string {
 }
 
 export function fromTemplate(template: Template, data: DataMap = {}): EditorModel {
+  const layers = normalizeDataLayers(template.data, data);
+  const previewData = mergeDataMaps(layers.defaults, layers.example, layers.constants);
+  const footerRows = footerRowsFromConfig(template.config);
+
   return {
     version: template.version,
     config: template.config ?? {},
-    rows: (template.rows ?? []).map(
-      (row): EditorRow => ({
-        uid: uid(),
-        gap: row.gap ?? null,
-        blocks: (row.blocks ?? []).map((block): EditorBlock => {
-          const id = block.id ?? block.type;
-          return {
-            uid: uid(),
-            id,
-            type: block.type,
-            config: (block.config ?? {}) as Json,
-            data: (data[id] ?? {}) as Json,
-          };
-        }),
-      }),
-    ),
+    data: layers,
+    rows: rowsFromTemplate(template.rows ?? [], previewData),
+    footerRows: rowsFromTemplate(footerRows, previewData),
   };
 }
 
 export function toTemplate(model: EditorModel): Template {
+  const data = compactDataLayers(model.data);
+
   return {
     version: model.version,
-    config: model.config ?? {},
-    rows: model.rows
-      .filter((row) => row.blocks.length > 0)
-      .map((row) => {
-        const out: Template["rows"][number] = {
-          blocks: row.blocks.map((b) => ({ type: b.type, id: b.id, config: b.config ?? {} })),
-        };
-        if (typeof row.gap === "number") {
-          out.gap = row.gap;
-        }
-        return out;
-      }),
+    config: configWithFooterRows(model.config ?? {}, rowsToTemplate(model.footerRows)),
+    rows: rowsToTemplate(model.rows),
+    ...(Object.keys(data).length > 0 ? { data } : {}),
   };
 }
 
 export function toDataMap(model: EditorModel): DataMap {
-  const map: DataMap = {};
-  for (const row of model.rows) {
-    for (const block of row.blocks) {
-      if (Object.keys(block.data ?? {}).length === 0) {
-        continue;
-      }
+  return cleanDataMap(model.data.example);
+}
 
-      map[block.id] = block.data ?? {};
+export function previewDataMap(model: EditorModel): DataMap {
+  return mergeDataMaps(model.data.defaults, model.data.example, model.data.constants);
+}
+
+function normalizeDataLayers(
+  layers: Partial<TemplateDataLayers> | undefined,
+  legacyExampleData: DataMap,
+): TemplateDataLayers {
+  return {
+    example: cleanDataMap({ ...layers?.example, ...legacyExampleData }),
+    defaults: cleanDataMap(layers?.defaults ?? {}),
+    constants: cleanDataMap(layers?.constants ?? {}),
+  };
+}
+
+function cleanDataMap(data: DataMap): DataMap {
+  const map: DataMap = {};
+
+  for (const [id, value] of Object.entries(data)) {
+    if (Object.keys(value ?? {}).length > 0) {
+      map[id] = value;
     }
   }
+
   return map;
+}
+
+function compactDataLayers(layers: TemplateDataLayers): Partial<TemplateDataLayers> {
+  return Object.fromEntries(
+    Object.entries(layers)
+      .map(([key, value]) => [key, cleanDataMap(value)])
+      .filter(([, value]) => Object.keys(value as DataMap).length > 0),
+  ) as Partial<TemplateDataLayers>;
+}
+
+function mergeDataMaps(...maps: DataMap[]): DataMap {
+  const merged: DataMap = {};
+
+  for (const map of maps) {
+    for (const [id, value] of Object.entries(map)) {
+      merged[id] = mergeJson(merged[id] ?? {}, value) as Json;
+    }
+  }
+
+  return cleanDataMap(merged);
+}
+
+function mergeJson(base: unknown, override: unknown): unknown {
+  if (!isPlainObject(base) || !isPlainObject(override)) {
+    return override;
+  }
+
+  const merged: Record<string, unknown> = { ...base };
+  for (const [key, value] of Object.entries(override)) {
+    merged[key] = mergeJson(merged[key], value);
+  }
+
+  return merged;
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function newRow(block: EditorBlock): EditorRow {
@@ -94,9 +141,14 @@ function newRow(block: EditorBlock): EditorRow {
 export function addBlock(
   model: EditorModel,
   type: string,
-  opts: { rowUid?: string | null; index?: number | null; data?: Json } = {},
+  opts: {
+    rowUid?: string | null;
+    index?: number | null;
+    data?: Json;
+    area?: "body" | "footer";
+  } = {},
 ): EditorModel {
-  const { rowUid = null, index = null, data = {} } = opts;
+  const { rowUid = null, index = null, data = {}, area = "body" } = opts;
   const block: EditorBlock = {
     uid: uid(),
     id: uniqueBlockId(model, type),
@@ -104,34 +156,57 @@ export function addBlock(
     config: {},
     data,
   };
+  const dataLayers =
+    Object.keys(data).length > 0
+      ? { ...model.data, example: { ...model.data.example, [block.id]: data } }
+      : model.data;
+
   if (rowUid === null) {
-    return { ...model, rows: [...model.rows, newRow(block)] };
+    return area === "footer"
+      ? { ...model, data: dataLayers, footerRows: [...model.footerRows, newRow(block)] }
+      : { ...model, data: dataLayers, rows: [...model.rows, newRow(block)] };
   }
+  const targetRows = area === "footer" ? model.footerRows : model.rows;
+  const nextRows = targetRows.map((row) => {
+    if (row.uid !== rowUid) {
+      return row;
+    }
+    const blocks = [...row.blocks];
+    const at = index === null || index > blocks.length ? blocks.length : index;
+    blocks.splice(at, 0, block);
+    return { ...row, blocks };
+  });
+
   return {
     ...model,
-    rows: model.rows.map((row) => {
-      if (row.uid !== rowUid) {
-        return row;
-      }
-      const blocks = [...row.blocks];
-      const at = index === null || index > blocks.length ? blocks.length : index;
-      blocks.splice(at, 0, block);
-      return { ...row, blocks };
-    }),
+    data: dataLayers,
+    ...(area === "footer" ? { footerRows: nextRows } : { rows: nextRows }),
   };
 }
 
 export function removeBlock(model: EditorModel, blockUid: string): EditorModel {
+  const block = findBlock(model, blockUid)?.block;
+
   return {
     ...model,
-    rows: model.rows
-      .map((row) => ({ ...row, blocks: row.blocks.filter((b) => b.uid !== blockUid) }))
-      .filter((row) => row.blocks.length > 0),
+    data: block ? removeDataForId(model.data, block.id) : model.data,
+    rows: removeBlockFromRows(model.rows, blockUid),
+    footerRows: removeBlockFromRows(model.footerRows, blockUid),
   };
 }
 
 export function removeRow(model: EditorModel, rowUid: string): EditorModel {
-  return { ...model, rows: model.rows.filter((row) => row.uid !== rowUid) };
+  const removedRow = allRows(model).find((candidate) => candidate.uid === rowUid);
+  const data = removedRow
+    ? removedRow.blocks.reduce((layers, block) => removeDataForId(layers, block.id), model.data)
+    : model.data;
+
+  return {
+    ...model,
+    data,
+    rows: model.rows.filter((candidate) => candidate.uid !== rowUid),
+    footerRows: model.footerRows.filter((candidate) => candidate.uid !== rowUid),
+  };
 }
 
 export function moveBlock(
@@ -139,23 +214,29 @@ export function moveBlock(
   blockUid: string,
   toRowUid: string | null,
   toIndex: number | null,
+  toArea: EditorArea = "body",
 ): EditorModel {
   let moving: EditorBlock | null = null;
-  let rows = model.rows.map((row) => {
-    const idx = row.blocks.findIndex((b) => b.uid === blockUid);
-    if (idx === -1) {
-      return { ...row, blocks: [...row.blocks] };
+  const takeMovingBlock = (rows: EditorRow[]): EditorRow[] =>
+    rows.map((row) => {
+      const idx = row.blocks.findIndex((b) => b.uid === blockUid);
+      if (idx === -1) {
+        return { ...row, blocks: [...row.blocks] };
+      }
+      moving = row.blocks[idx];
+      return { ...row, blocks: row.blocks.filter((b) => b.uid !== blockUid) };
+    });
+
+  const placeMovingBlock = (rows: EditorRow[]): EditorRow[] => {
+    if (!moving) {
+      return rows;
     }
-    moving = row.blocks[idx];
-    return { ...row, blocks: row.blocks.filter((b) => b.uid !== blockUid) };
-  });
-  if (!moving) {
-    return model;
-  }
-  if (toRowUid === null) {
-    rows.push(newRow(moving));
-  } else {
-    rows = rows.map((row) => {
+
+    if (toRowUid === null) {
+      return [...rows, newRow(moving)];
+    }
+
+    return rows.map((row) => {
       if (row.uid !== toRowUid) {
         return row;
       }
@@ -164,26 +245,62 @@ export function moveBlock(
       blocks.splice(at, 0, moving as EditorBlock);
       return { ...row, blocks };
     });
+  };
+
+  let rows = takeMovingBlock(model.rows);
+  let footerRows = takeMovingBlock(model.footerRows);
+
+  if (!moving) {
+    return model;
   }
-  return { ...model, rows: rows.filter((row) => row.blocks.length > 0) };
+
+  if (toArea === "footer") {
+    footerRows = placeMovingBlock(footerRows);
+  } else {
+    rows = placeMovingBlock(rows);
+  }
+
+  return {
+    ...model,
+    rows: rows.filter((row) => row.blocks.length > 0),
+    footerRows: footerRows.filter((row) => row.blocks.length > 0),
+  };
 }
 
-export function moveRow(model: EditorModel, rowUid: string, toIndex: number): EditorModel {
-  const from = model.rows.findIndex((row) => row.uid === rowUid);
+export function moveRow(
+  model: EditorModel,
+  rowUid: string,
+  toIndex: number,
+  area: EditorArea = "body",
+): EditorModel {
+  const targetRows = area === "footer" ? model.footerRows : model.rows;
+  const from = targetRows.findIndex((row) => row.uid === rowUid);
   if (from === -1) {
     return model;
   }
-  const rows = [...model.rows];
+  const rows = [...targetRows];
   const [row] = rows.splice(from, 1);
   const at = toIndex < 0 ? 0 : toIndex > rows.length ? rows.length : toIndex;
   rows.splice(at, 0, row);
-  return { ...model, rows };
+
+  return area === "footer" ? { ...model, footerRows: rows } : { ...model, rows };
 }
 
 export function setRowWidths(model: EditorModel, rowUid: string, widths: string[]): EditorModel {
   return {
     ...model,
     rows: model.rows.map((row) => {
+      if (row.uid !== rowUid) {
+        return row;
+      }
+      return {
+        ...row,
+        blocks: row.blocks.map((b, i) =>
+          i < widths.length ? { ...b, config: { ...b.config, width: widths[i] } } : b,
+        ),
+      };
+    }),
+    footerRows: model.footerRows.map((row) => {
       if (row.uid !== rowUid) {
         return row;
       }
@@ -208,19 +325,202 @@ function mapBlock(
       ...row,
       blocks: row.blocks.map((b) => (b.uid === blockUid ? fn(b) : b)),
     })),
+    footerRows: model.footerRows.map((row) => ({
+      ...row,
+      blocks: row.blocks.map((b) => (b.uid === blockUid ? fn(b) : b)),
+    })),
   };
 }
 
 export function updateBlockConfig(model: EditorModel, blockUid: string, config: Json): EditorModel {
-  return mapBlock(model, blockUid, (b) => ({ ...b, config }));
+  const block = findBlock(model, blockUid)?.block;
+  const updated = mapBlock(model, blockUid, (b) => ({ ...b, config }));
+
+  if (block?.type !== "key-value") {
+    return updated;
+  }
+
+  return {
+    ...updated,
+    data: pruneDataFieldsForId(updated.data, block.id, keyValueFieldKeys(config.fields)),
+  };
 }
 
 export function updateBlockId(model: EditorModel, blockUid: string, rawId: string): EditorModel {
   const taken = new Set(
-    model.rows.flatMap((r) => r.blocks.filter((b) => b.uid !== blockUid).map((b) => b.id)),
+    allRows(model).flatMap((r) => r.blocks.filter((b) => b.uid !== blockUid).map((b) => b.id)),
   );
   const id = makeUnique(slugify(rawId) || "block", taken);
-  return mapBlock(model, blockUid, (b) => ({ ...b, id }));
+  const block = findBlock(model, blockUid)?.block;
+
+  return {
+    ...mapBlock(model, blockUid, (b) => ({ ...b, id })),
+    data: block ? renameDataId(model.data, block.id, id) : model.data,
+  };
+}
+
+export function updateDataField(
+  model: EditorModel,
+  blockId: string,
+  field: string,
+  value: unknown,
+  options: { example: boolean; locked: boolean },
+): EditorModel {
+  let data = removeDataField(model.data, blockId, field);
+
+  if (options.locked) {
+    data = writeDataField(data, "constants", blockId, field, value);
+  } else if (options.example) {
+    data = writeDataField(data, "example", blockId, field, value);
+  } else {
+    data = writeDataField(data, "defaults", blockId, field, value);
+  }
+
+  const previewData = mergeDataMaps(data.defaults, data.example, data.constants);
+
+  return {
+    ...model,
+    data,
+    rows: model.rows.map((row) => ({
+      ...row,
+      blocks: row.blocks.map((block) =>
+        block.id === blockId ? { ...block, data: previewData[blockId] ?? {} } : block,
+      ),
+    })),
+    footerRows: model.footerRows.map((row) => ({
+      ...row,
+      blocks: row.blocks.map((block) =>
+        block.id === blockId ? { ...block, data: previewData[blockId] ?? {} } : block,
+      ),
+    })),
+  };
+}
+
+function renameDataId(layers: TemplateDataLayers, from: string, to: string): TemplateDataLayers {
+  return {
+    example: renameInDataMap(layers.example, from, to),
+    defaults: renameInDataMap(layers.defaults, from, to),
+    constants: renameInDataMap(layers.constants, from, to),
+  };
+}
+
+function renameInDataMap(data: DataMap, from: string, to: string): DataMap {
+  if (!(from in data)) {
+    return data;
+  }
+
+  const next = { ...data, [to]: data[from] };
+  delete next[from];
+
+  return next;
+}
+
+function removeDataForId(layers: TemplateDataLayers, id: string): TemplateDataLayers {
+  return {
+    example: omitDataId(layers.example, id),
+    defaults: omitDataId(layers.defaults, id),
+    constants: omitDataId(layers.constants, id),
+  };
+}
+
+function omitDataId(data: DataMap, id: string): DataMap {
+  if (!(id in data)) {
+    return data;
+  }
+
+  const next = { ...data };
+  delete next[id];
+
+  return next;
+}
+
+function removeDataField(
+  layers: TemplateDataLayers,
+  blockId: string,
+  field: string,
+): TemplateDataLayers {
+  return {
+    example: omitDataField(layers.example, blockId, field),
+    defaults: omitDataField(layers.defaults, blockId, field),
+    constants: omitDataField(layers.constants, blockId, field),
+  };
+}
+
+function omitDataField(data: DataMap, blockId: string, field: string): DataMap {
+  const blockData = data[blockId];
+  if (!blockData || !(field in blockData)) {
+    return data;
+  }
+
+  const nextBlockData = { ...blockData };
+  delete nextBlockData[field];
+
+  if (Object.keys(nextBlockData).length === 0) {
+    return omitDataId(data, blockId);
+  }
+
+  return { ...data, [blockId]: nextBlockData };
+}
+
+function writeDataField(
+  layers: TemplateDataLayers,
+  layer: keyof TemplateDataLayers,
+  blockId: string,
+  field: string,
+  value: unknown,
+): TemplateDataLayers {
+  const blockData = { ...layers[layer][blockId], [field]: value };
+
+  return {
+    ...layers,
+    [layer]: {
+      ...layers[layer],
+      [blockId]: blockData,
+    },
+  };
+}
+
+function pruneDataFieldsForId(
+  layers: TemplateDataLayers,
+  blockId: string,
+  keys: Set<string>,
+): TemplateDataLayers {
+  return {
+    example: pruneDataMapFields(layers.example, blockId, keys),
+    defaults: pruneDataMapFields(layers.defaults, blockId, keys),
+    constants: pruneDataMapFields(layers.constants, blockId, keys),
+  };
+}
+
+function pruneDataMapFields(data: DataMap, blockId: string, keys: Set<string>): DataMap {
+  const blockData = data[blockId];
+  if (!blockData) {
+    return data;
+  }
+
+  const nextBlockData = Object.fromEntries(
+    Object.entries(blockData).filter(([field]) => keys.has(field)),
+  );
+
+  if (Object.keys(nextBlockData).length === Object.keys(blockData).length) {
+    return data;
+  }
+
+  return Object.keys(nextBlockData).length > 0
+    ? { ...data, [blockId]: nextBlockData }
+    : omitDataId(data, blockId);
+}
+
+function keyValueFieldKeys(fields: unknown): Set<string> {
+  if (!Array.isArray(fields)) {
+    return new Set();
+  }
+
+  return new Set(
+    fields
+      .map((field) => (isPlainObject(field) && typeof field.key === "string" ? field.key : ""))
+      .filter((key) => key !== ""),
+  );
 }
 
 export function updateTemplateConfig(model: EditorModel, config: Json): EditorModel {
@@ -235,12 +535,78 @@ export interface FoundBlock {
 }
 
 export function findBlock(model: EditorModel, blockUid: string): FoundBlock | null {
-  for (let rowIndex = 0; rowIndex < model.rows.length; rowIndex += 1) {
-    const row = model.rows[rowIndex];
+  const rows = allRows(model);
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
+    const row = rows[rowIndex];
     const blockIndex = row.blocks.findIndex((b) => b.uid === blockUid);
     if (blockIndex !== -1) {
       return { row, block: row.blocks[blockIndex], rowIndex, blockIndex };
     }
   }
   return null;
+}
+
+function allRows(model: EditorModel): EditorRow[] {
+  return [...model.rows, ...model.footerRows];
+}
+
+function rowsFromTemplate(rows: Template["rows"], previewData: DataMap): EditorRow[] {
+  return rows.map(
+    (row): EditorRow => ({
+      uid: uid(),
+      gap: row.gap ?? null,
+      blocks: (row.blocks ?? []).map((block): EditorBlock => {
+        const id = block.id ?? block.type;
+        return {
+          uid: uid(),
+          id,
+          type: block.type,
+          config: (block.config ?? {}) as Json,
+          data: (previewData[id] ?? {}) as Json,
+        };
+      }),
+    }),
+  );
+}
+
+function rowsToTemplate(rows: EditorRow[]): Template["rows"] {
+  return rows
+    .filter((row) => row.blocks.length > 0)
+    .map((row) => {
+      const out: Template["rows"][number] = {
+        blocks: row.blocks.map((b) => ({ type: b.type, id: b.id, config: b.config ?? {} })),
+      };
+      if (typeof row.gap === "number") {
+        out.gap = row.gap;
+      }
+      return out;
+    });
+}
+
+function footerRowsFromConfig(config: Json): Template["rows"] {
+  const page = isPlainObject(config.page) ? config.page : {};
+  const footer = isPlainObject(page.footer) ? page.footer : {};
+  return Array.isArray(footer.rows) ? (footer.rows as Template["rows"]) : [];
+}
+
+function configWithFooterRows(config: Json, footerRows: Template["rows"]): Json {
+  const page = isPlainObject(config.page) ? config.page : {};
+  const footer = isPlainObject(page.footer) ? page.footer : {};
+
+  return {
+    ...config,
+    page: {
+      ...page,
+      footer: {
+        ...footer,
+        rows: footerRows,
+      },
+    },
+  };
+}
+
+function removeBlockFromRows(rows: EditorRow[], blockUid: string): EditorRow[] {
+  return rows
+    .map((row) => ({ ...row, blocks: row.blocks.filter((b) => b.uid !== blockUid) }))
+    .filter((row) => row.blocks.length > 0);
 }

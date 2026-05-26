@@ -31,6 +31,7 @@ export function loadExample(entry: {
     version: entry.template.version as number,
     config: (entry.template.config ?? {}) as Json,
     rows: (entry.template.rows ?? []) as Template["rows"],
+    data: entry.template.data as Template["data"],
   } as Template;
 
   return fromTemplate(template, (entry.data ?? {}) as DataMap);

@@ -19,6 +19,7 @@ use Bambamboole\PdfUaClient\Template\BlockInstance;
 use Bambamboole\PdfUaClient\Template\DataSchemaCompiler;
 use Bambamboole\PdfUaClient\Template\Row;
 use Bambamboole\PdfUaClient\Template\Template;
+use Bambamboole\PdfUaClient\Template\TemplateDataMerger;
 use Opis\JsonSchema\Validator;
 
 final class TemplateRenderer
@@ -34,6 +35,7 @@ final class TemplateRenderer
         private readonly BlockHydrator $hydrator,
         private readonly DataSchemaCompiler $dataSchemaCompiler,
         private readonly ?FontRegistry $fonts = null,
+        private readonly TemplateDataMerger $dataMerger = new TemplateDataMerger,
     ) {}
 
     /**
@@ -48,6 +50,7 @@ final class TemplateRenderer
         $this->usedFontKeys = [];
 
         $this->validateData($template, $runtimeData);
+        $runtimeData = $this->dataMerger->runtimeData($template, $runtimeData);
 
         $ctx = new RenderContext;
 
@@ -93,7 +96,7 @@ final class TemplateRenderer
     {
         $resolvedInstance = new BlockInstance(
             type: $instance->type,
-            props: $runtimeData[$instance->id] ?? [],
+            props: $this->blockProps($instance, $runtimeData[$instance->id] ?? []),
             id: $instance->id,
             config: $instance->config,
         );
@@ -123,6 +126,19 @@ final class TemplateRenderer
     }
 
     /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function blockProps(BlockInstance $instance, array $data): array
+    {
+        if ($instance->type === 'key-value' && isset($instance->config['fields'])) {
+            return ['values' => $data];
+        }
+
+        return $data;
+    }
+
+    /**
      * @param  array<string, array<string, mixed>>  $runtimeData
      */
     private function renderFooter(Template $template, array $runtimeData, RenderContext $ctx, RenderOptions $options): string
@@ -138,11 +154,13 @@ final class TemplateRenderer
             $rowsHtml .= $this->renderRow($row, $runtimeData, $ctx);
         }
 
+        $pageNumbersHtml = $this->footerPageNumbersHtml($template->config->page, $options);
+
         $class = $options->mode === 'print' && $footer->repeat
             ? 'page-footer page-footer-repeated'
             : 'page-footer page-footer-preview';
 
-        return "<footer class=\"{$class}\" role=\"contentinfo\">{$rowsHtml}</footer>";
+        return "<footer class=\"{$class}\" role=\"contentinfo\">{$rowsHtml}{$pageNumbersHtml}</footer>";
     }
 
     private function emitPositioningCss(RenderContext $ctx, string $id, BlockConfig $config, bool $widthOnCell = false): void
@@ -280,6 +298,8 @@ hr { border: none; border-top: 1px solid #d1d5db; margin: 2.5mm 0; }
 .page-footer .row { margin: 0; }
 .page-footer-repeated { position: running(pageFooter); width: 100%; }
 .page-footer-preview { margin-top: 6mm; padding-top: 2mm; border-top: 1px solid #d1d5db; }
+.page-footer-page-numbers { color: #9ca3af; font-size: 8pt; padding-top: 2mm; text-align: center; }
+.page-footer-page-numbers::after { content: counter(page) " / " counter(pages); }
 CSS;
     }
 
@@ -292,12 +312,29 @@ CSS;
             $css .= ' @page { @bottom-center { content: element(pageFooter); } }';
         }
 
-        if ($page->pageNumbers->enabled) {
+        if ($page->pageNumbers->enabled && ! $this->rendersPageNumbersInsideFooter($page)) {
             $position = $page->pageNumbers->position->value;
             $css .= " @page { @bottom-{$position} { content: counter(page) \" / \" counter(pages); font-size: 8pt; color: #9ca3af; vertical-align: bottom; padding-bottom: 4mm; } }";
         }
 
         return $css;
+    }
+
+    private function rendersPageNumbersInsideFooter(PageConfig $page): bool
+    {
+        return $page->footer->repeat
+            && $page->footer->rows !== []
+            && $page->pageNumbers->enabled
+            && $page->pageNumbers->position->value === 'center';
+    }
+
+    private function footerPageNumbersHtml(PageConfig $page, RenderOptions $options): string
+    {
+        if ($options->mode !== 'print' || ! $this->rendersPageNumbersInsideFooter($page)) {
+            return '';
+        }
+
+        return '<div class="page-footer-page-numbers" aria-hidden="true"></div>';
     }
 
     /** @return array<string, string> */

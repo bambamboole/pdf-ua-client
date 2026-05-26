@@ -116,6 +116,36 @@ it('supplies block content via runtime data by block id', function () {
     expect($html)->toContain('Runtime title');
 });
 
+it('supplies key value block content from flat runtime data keyed by configured fields', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['format' => 'A4']],
+        'rows' => [[
+            'blocks' => [[
+                'type' => 'key-value',
+                'id' => 'invoice-meta',
+                'config' => [
+                    'fields' => [
+                        ['key' => 'invoiceNumber', 'label' => 'Invoice number'],
+                        ['key' => 'issueDate', 'label' => 'Issue date'],
+                    ],
+                ],
+            ]],
+        ]],
+    ]);
+
+    $html = $this->renderer->render($template, runtimeData: [
+        'invoice-meta' => [
+            'invoiceNumber' => 'RE-2026-001234',
+            'issueDate' => '2026-02-17',
+        ],
+    ]);
+
+    expect($html)->toContain('<td>Invoice number</td><td>RE-2026-001234</td>')
+        ->and($html)->toContain('<td>Issue date</td><td>2026-02-17</td>')
+        ->and($html)->not->toContain('entries');
+});
+
 it('emits per-block typography as a wrapper-class-scoped CSS rule', function () {
     $template = $this->factory->fromArray([
         'version' => 1,
@@ -398,6 +428,37 @@ it('renders repeated footer rows and page numbers through the page margin box in
     expect($html)->toContain('position: running(pageFooter); width: 100%;');
 });
 
+it('keeps repeated footer full width when page numbers are centered', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => [
+            'page' => [
+                'format' => 'A4',
+                'pageNumbers' => ['enabled' => true, 'position' => 'center'],
+                'footer' => [
+                    'repeat' => true,
+                    'rows' => [[
+                        'blocks' => [['type' => 'text', 'id' => 'footer_note']],
+                    ]],
+                ],
+            ],
+        ],
+        'rows' => [['blocks' => [['type' => 'text', 'id' => 'body']]]],
+    ]);
+
+    $html = $this->renderer->render($template, [
+        'body' => ['text' => 'Body'],
+        'footer_note' => ['text' => 'Footer'],
+    ], options: new RenderOptions(mode: 'print'));
+
+    expect($html)->toContain('@page { @bottom-center { content: element(pageFooter); } }');
+    expect($html)->not->toContain('@page { @bottom-center { content: counter(page)');
+    expect($html)->toContain('<footer class="page-footer page-footer-repeated" role="contentinfo">');
+    expect($html)->toContain('<p>Footer</p>');
+    expect($html)->toContain('<div class="page-footer-page-numbers" aria-hidden="true"></div>');
+    expect($html)->toContain('.page-footer-page-numbers::after { content: counter(page) " / " counter(pages); }');
+});
+
 it('renders footer rows inline in preview mode', function () {
     $template = $this->factory->fromArray([
         'version' => 1,
@@ -432,6 +493,68 @@ it('rejects a data payload that violates the template data contract', function (
     ]);
 
     expect(fn () => $this->renderer->render($template, []))
+        ->toThrow(DataValidationException::class);
+});
+
+it('renders fallback data when runtime data omits a block', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['format' => 'A4']],
+        'rows' => [['blocks' => [['type' => 'heading', 'id' => 'h', 'config' => ['level' => 1]]]]],
+        'data' => [
+            'defaults' => ['h' => ['text' => 'Fallback title']],
+        ],
+    ]);
+
+    $html = $this->renderer->render($template);
+
+    expect($html)->toContain('<h1>Fallback title</h1>');
+});
+
+it('lets runtime data override fallback data', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['format' => 'A4']],
+        'rows' => [['blocks' => [['type' => 'heading', 'id' => 'h', 'config' => ['level' => 1]]]]],
+        'data' => [
+            'defaults' => ['h' => ['text' => 'Fallback title']],
+        ],
+    ]);
+
+    $html = $this->renderer->render($template, ['h' => ['text' => 'Runtime title']]);
+
+    expect($html)->toContain('<h1>Runtime title</h1>')
+        ->and($html)->not->toContain('Fallback title');
+});
+
+it('renders locked constants after validating the incoming runtime data', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['format' => 'A4']],
+        'rows' => [['blocks' => [['type' => 'heading', 'id' => 'h', 'config' => ['level' => 1]]]]],
+        'data' => [
+            'defaults' => ['h' => ['text' => 'Fallback title']],
+            'constants' => ['h' => ['text' => 'Locked title']],
+        ],
+    ]);
+
+    $html = $this->renderer->render($template);
+
+    expect($html)->toContain('<h1>Locked title</h1>')
+        ->and($html)->not->toContain('Fallback title');
+});
+
+it('rejects runtime data for locked constant fields', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['format' => 'A4']],
+        'rows' => [['blocks' => [['type' => 'heading', 'id' => 'h', 'config' => ['level' => 1]]]]],
+        'data' => [
+            'constants' => ['h' => ['text' => 'Locked title']],
+        ],
+    ]);
+
+    expect(fn () => $this->renderer->render($template, ['h' => ['text' => 'Runtime title']]))
         ->toThrow(DataValidationException::class);
 });
 

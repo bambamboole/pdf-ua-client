@@ -17,6 +17,24 @@ final class InvoiceExample
                     'locale' => 'de_DE',
                     'margins' => ['top' => 20, 'right' => 20, 'bottom' => 20, 'left' => 25],
                     'pageNumbers' => ['enabled' => true, 'position' => 'center'],
+                    'footer' => [
+                        'repeat' => true,
+                        'rows' => [
+                            [
+                                'blocks' => [
+                                    ['type' => 'text', 'id' => 'footer-legal', 'config' => ['width' => '68%']],
+                                    ['type' => 'key-value', 'id' => 'footer-meta', 'config' => [
+                                        'width' => '32%',
+                                        'align' => 'right',
+                                        'fields' => [
+                                            ['key' => 'registration', 'label' => 'Registry'],
+                                            ['key' => 'taxNumber', 'label' => 'Tax no.'],
+                                        ],
+                                    ]],
+                                ],
+                            ],
+                        ],
+                    ],
                 ],
                 'typography' => ['family' => 'Inter', 'size' => 10],
             ],
@@ -24,13 +42,33 @@ final class InvoiceExample
                 [
                     'blocks' => [
                         ['type' => 'image', 'id' => 'logo', 'config' => ['width' => '58%', 'maxHeight' => 28]],
-                        ['type' => 'key-value', 'id' => 'invoice-meta', 'config' => ['width' => '42%', 'align' => 'right']],
+                        ['type' => 'key-value', 'id' => 'invoice-meta', 'config' => [
+                            'width' => '42%',
+                            'align' => 'right',
+                            'fields' => [
+                                ['key' => 'invoiceNumber', 'label' => 'Invoice number'],
+                                ['key' => 'issueDate', 'label' => 'Issue date'],
+                                ['key' => 'dueDate', 'label' => 'Due date'],
+                                ['key' => 'currency', 'label' => 'Currency'],
+                            ],
+                        ]],
                     ],
                 ],
                 [
                     'blocks' => [
-                        ['type' => 'key-value', 'id' => 'seller', 'config' => ['width' => '50%']],
-                        ['type' => 'key-value', 'id' => 'buyer', 'config' => ['width' => '50%']],
+                        ['type' => 'key-value', 'id' => 'seller', 'config' => ['width' => '50%', 'fields' => [
+                            ['key' => 'name', 'label' => 'Seller'],
+                            ['key' => 'address', 'label' => 'Address'],
+                            ['key' => 'contact', 'label' => 'Contact'],
+                            ['key' => 'email', 'label' => 'Email'],
+                            ['key' => 'vatId', 'label' => 'VAT ID'],
+                        ]]],
+                        ['type' => 'key-value', 'id' => 'buyer', 'config' => ['width' => '50%', 'fields' => [
+                            ['key' => 'name', 'label' => 'Buyer'],
+                            ['key' => 'address', 'label' => 'Address'],
+                            ['key' => 'email', 'label' => 'Email'],
+                            ['key' => 'reference', 'label' => 'Buyer reference'],
+                        ]]],
                     ],
                 ],
                 ['blocks' => [['type' => 'divider', 'id' => 'address-rule']]],
@@ -50,48 +88,69 @@ final class InvoiceExample
                             'width' => '54%',
                             'columnAlignments' => ['left', 'right', 'right', 'right'],
                         ]],
-                        ['type' => 'key-value', 'id' => 'totals', 'config' => ['width' => '46%', 'align' => 'right']],
+                        ['type' => 'key-value', 'id' => 'totals', 'config' => [
+                            'width' => '46%',
+                            'align' => 'right',
+                            'fields' => [
+                                ['key' => 'netAmount', 'label' => 'Net amount'],
+                                ['key' => 'vatAmount', 'label' => 'VAT 19%'],
+                                ['key' => 'grandTotal', 'label' => 'Grand total'],
+                                ['key' => 'amountDue', 'label' => 'Amount due'],
+                            ],
+                        ]],
                     ],
                 ],
                 [
                     'blocks' => [
                         ['type' => 'text', 'id' => 'notice', 'config' => ['width' => '54%', 'spacing' => ['top' => 4]]],
-                        ['type' => 'key-value', 'id' => 'payment', 'config' => ['width' => '46%', 'align' => 'right']],
+                        ['type' => 'key-value', 'id' => 'payment', 'config' => [
+                            'width' => '46%',
+                            'align' => 'right',
+                            'fields' => [
+                                ['key' => 'bank', 'label' => 'Bank'],
+                                ['key' => 'iban', 'label' => 'IBAN'],
+                                ['key' => 'bic', 'label' => 'BIC'],
+                                ['key' => 'reference', 'label' => 'Payment reference'],
+                            ],
+                        ]],
                     ],
                 ],
-                ['blocks' => [['type' => 'divider', 'id' => 'footer-rule']]],
-                ['blocks' => [['type' => 'text', 'id' => 'footer']]],
             ],
+            'data' => self::templateData(),
         ];
     }
 
     /** @return array<string, mixed> */
     public static function data(): array
     {
+        return self::exampleData();
+    }
+
+    /** @return array<string, mixed> */
+    private static function templateData(): array
+    {
         return [
-            'logo' => [
-                'src' => 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNjAiIGhlaWdodD0iNzIiIHZpZXdCb3g9IjAgMCAyNjAgNzIiPjx0ZXh0IHg9IjAiIHk9IjQyIiBmaWxsPSIjMTExODI3IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI3MDAiPlBERiBVQSBLaXQ8L3RleHQ+PC9zdmc+',
-                'alt' => 'PDF UA Kit GmbH logo',
+            'example' => self::exampleData(),
+            'defaults' => self::defaultData(),
+            'constants' => self::lockedData(),
+        ];
+    }
+
+    /** @return array<string, array<string, mixed>> */
+    private static function exampleData(): array
+    {
+        return [
+            'invoice-meta' => [
+                'invoiceNumber' => 'RE-2026-001234',
+                'issueDate' => '2026-02-17',
+                'dueDate' => '2026-03-19',
             ],
-            'invoice-meta' => ['entries' => [
-                ['label' => 'Invoice number', 'value' => 'RE-2026-001234'],
-                ['label' => 'Issue date', 'value' => '2026-02-17'],
-                ['label' => 'Due date', 'value' => '2026-03-19'],
-                ['label' => 'Currency', 'value' => 'EUR'],
-            ]],
-            'seller' => ['entries' => [
-                ['label' => 'Seller', 'value' => 'PDF UA Kit GmbH'],
-                ['label' => 'Address', 'value' => 'Musterstraße 1, 10115 Berlin, DE'],
-                ['label' => 'Contact', 'value' => 'Max Mustermann'],
-                ['label' => 'Email', 'value' => 'billing@pdfua-kit.example'],
-                ['label' => 'VAT ID', 'value' => 'DE123456789'],
-            ]],
-            'buyer' => ['entries' => [
-                ['label' => 'Buyer', 'value' => 'Musterkunde AG'],
-                ['label' => 'Address', 'value' => 'Käuferweg 2, 80331 München, DE'],
-                ['label' => 'Email', 'value' => 'invoice@musterkunde.example'],
-                ['label' => 'Buyer reference', 'value' => '04011000-12345-67'],
-            ]],
+            'buyer' => [
+                'name' => 'Musterkunde AG',
+                'address' => 'Käuferweg 2, 80331 München, DE',
+                'email' => 'invoice@musterkunde.example',
+                'reference' => '04011000-12345-67',
+            ],
             'items' => [
                 'headers' => ['#', 'Description', 'Qty', 'Unit price', 'VAT', 'Total'],
                 'rows' => [
@@ -107,20 +166,56 @@ final class InvoiceExample
                     ['Standard rate', '19%', '6.120,00 €', '1.162,80 €'],
                 ],
             ],
-            'totals' => ['entries' => [
-                ['label' => 'Net amount', 'value' => '6.120,00 €'],
-                ['label' => 'VAT 19%', 'value' => '1.162,80 €'],
-                ['label' => 'Grand total', 'value' => '7.282,80 €'],
-                ['label' => 'Amount due', 'value' => '7.282,80 €'],
-            ]],
+            'totals' => [
+                'netAmount' => '6.120,00 €',
+                'vatAmount' => '1.162,80 €',
+                'grandTotal' => '7.282,80 €',
+                'amountDue' => '7.282,80 €',
+            ],
+            'payment' => [
+                'reference' => 'RE-2026-001234',
+            ],
+        ];
+    }
+
+    /** @return array<string, array<string, mixed>> */
+    private static function defaultData(): array
+    {
+        return [
             'notice' => ['text' => 'Please transfer the amount due within 30 days. Include the invoice number as the payment reference.'],
-            'payment' => ['entries' => [
-                ['label' => 'Bank', 'value' => 'Musterbank Berlin'],
-                ['label' => 'IBAN', 'value' => 'DE89370400440532013000'],
-                ['label' => 'BIC', 'value' => 'COBADEFFXXX'],
-                ['label' => 'Payment reference', 'value' => 'RE-2026-001234'],
-            ]],
-            'footer' => ['text' => 'PDF UA Kit GmbH · Musterstraße 1 · 10115 Berlin · Germany · VAT ID DE123456789 · Invoice was created electronically and is valid without signature.'],
+            'payment' => [
+                'bank' => 'Musterbank Berlin',
+                'iban' => 'DE89370400440532013000',
+                'bic' => 'COBADEFFXXX',
+            ],
+        ];
+    }
+
+    /** @return array<string, array<string, mixed>> */
+    private static function lockedData(): array
+    {
+        return [
+            'logo' => [
+                'src' => 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNjAiIGhlaWdodD0iNzIiIHZpZXdCb3g9IjAgMCAyNjAgNzIiPjx0ZXh0IHg9IjAiIHk9IjQyIiBmaWxsPSIjMTExODI3IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI3MDAiPlBERiBVQSBLaXQ8L3RleHQ+PC9zdmc+',
+                'alt' => 'PDF UA Kit GmbH logo',
+            ],
+            'invoice-meta' => [
+                'currency' => 'EUR',
+            ],
+            'seller' => [
+                'name' => 'PDF UA Kit GmbH',
+                'address' => 'Musterstraße 1, 10115 Berlin, DE',
+                'contact' => 'Max Mustermann',
+                'email' => 'billing@pdfua-kit.example',
+                'vatId' => 'DE123456789',
+            ],
+            'footer-legal' => [
+                'text' => 'PDF UA Kit GmbH · Musterstraße 1 · 10115 Berlin · Germany · Invoice was created electronically and is valid without signature.',
+            ],
+            'footer-meta' => [
+                'registration' => 'HRB 123456 B',
+                'taxNumber' => 'DE123456789',
+            ],
         ];
     }
 }

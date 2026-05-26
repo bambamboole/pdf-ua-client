@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import type { FieldTemplateProps, WidgetProps } from "@rjsf/utils";
+import type { FieldTemplateProps } from "@rjsf/utils";
 import { describe, expect, it } from "vitest";
-import { DescriptionFieldTemplate, FieldTemplate, ImageUploadWidget } from "./templates";
+import { DescriptionFieldTemplate, FieldTemplate } from "./templates";
 
 describe("FieldTemplate", () => {
   it("does not render a separate label for object fields", () => {
@@ -61,38 +61,5 @@ describe("FieldTemplate", () => {
     );
     expect(html).toContain("text-[10px]");
     expect(html).toContain("CSS width for this block.");
-  });
-});
-
-describe("ImageUploadWidget", () => {
-  it("renders a url field and an image file picker", () => {
-    const props = {
-      id: "root_src",
-      name: "src",
-      schema: { type: "string" },
-      uiSchema: {},
-      value: "https://example.test/logo.png",
-      required: true,
-      disabled: false,
-      readonly: false,
-      autofocus: false,
-      label: "Image source",
-      hideLabel: false,
-      multiple: false,
-      options: { accept: "image/*,.svg" },
-      onChange: () => undefined,
-      onBlur: () => undefined,
-      onFocus: () => undefined,
-      registry: {} as never,
-      formContext: {},
-      rawErrors: [],
-    } as WidgetProps;
-
-    const html = renderToStaticMarkup(<ImageUploadWidget {...props} />);
-
-    expect(html).toContain('type="url"');
-    expect(html).toContain('type="file"');
-    expect(html).toContain('accept="image/*,.svg"');
-    expect(html).toContain("Upload image");
   });
 });

@@ -14,6 +14,10 @@ final class ExampleRegistry
      */
     public function register(string $title, array $template, array $data = []): self
     {
+        if ($data !== [] && ! isset($template['data']['example'])) {
+            $template['data']['example'] = $data;
+        }
+
         $this->examples[] = ['title' => $title, 'template' => $template, 'data' => $data];
 
         return $this;

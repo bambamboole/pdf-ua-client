@@ -1,5 +1,3 @@
-import type { JsonSchema } from "../types";
-
 export const MAX_IMAGE_BYTES = 200 * 1024;
 export const IMAGE_ACCEPT = "image/*,.svg";
 
@@ -47,24 +45,4 @@ export async function imageFileToDataUrl(file: File): Promise<string> {
   const type = file.type || (isSvgFile(file) ? "image/svg+xml" : "application/octet-stream");
 
   return `data:${type};base64,${bytesToBase64(bytes)}`;
-}
-
-export function imageUploadUiSchema(schema: JsonSchema): Record<string, unknown> {
-  const properties = schema.properties;
-  if (
-    !properties ||
-    typeof properties !== "object" ||
-    Array.isArray(properties) ||
-    !("src" in properties) ||
-    !("alt" in properties)
-  ) {
-    return {};
-  }
-
-  return {
-    src: {
-      "ui:widget": "ImageUploadWidget",
-      "ui:options": { accept: IMAGE_ACCEPT },
-    },
-  };
 }

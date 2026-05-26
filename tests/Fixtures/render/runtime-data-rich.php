@@ -19,6 +19,13 @@ return new TestFixture(
                 [
                     'type' => 'key-value',
                     'id' => 'customer-meta',
+                    'config' => [
+                        'fields' => [
+                            ['key' => 'customer', 'label' => 'Customer'],
+                            ['key' => 'invoiceNumber', 'label' => 'Invoice number'],
+                            ['key' => 'dueDate', 'label' => 'Due date'],
+                        ],
+                    ],
                 ],
             ]],
             ['blocks' => [
@@ -32,11 +39,11 @@ return new TestFixture(
     ],
     data: [
         'invoice-title' => ['text' => 'Invoice 2026-042'],
-        'customer-meta' => ['entries' => [
-            ['label' => 'Customer', 'value' => 'Globex AG'],
-            ['label' => 'Invoice number', 'value' => 'RE-2026-000042'],
-            ['label' => 'Due date', 'value' => '2026-06-21'],
-        ]],
+        'customer-meta' => [
+            'customer' => 'Globex AG',
+            'invoiceNumber' => 'RE-2026-000042',
+            'dueDate' => '2026-06-21',
+        ],
         'line-items' => [
             'headers' => ['Description', 'Amount'],
             'rows' => [

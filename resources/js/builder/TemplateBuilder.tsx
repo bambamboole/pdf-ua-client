@@ -11,7 +11,8 @@ import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import BlockPalette from "./BlockPalette";
 import EditCanvas from "./EditCanvas";
-import DataView from "./DataView";
+import PageCanvas from "./PageCanvas";
+import PdfCanvas from "./PdfCanvas";
 import { getPageFormat, getBlockTitle, getBlockSubschemas } from "./lib/schema";
 import { listExamples, loadExample } from "./lib/examples";
 import { dataSchemaForTemplate } from "./lib/dataSchema";
@@ -29,13 +30,22 @@ import {
   updateBlockId,
   updateTemplateConfig,
   setRowWidths,
+  updateDataField,
 } from "./state/templateModel";
 import { exampleFromSchema } from "./lib/exampleFromSchema";
+import { estimatedPhysicalScale } from "./lib/displayScale";
 import { useLatest } from "./useLatest";
-import type { DataMap, DragData, EditorModel, Json, JsonSchema, Template } from "./types";
+import type {
+  DataMap,
+  DragData,
+  EditorArea,
+  EditorModel,
+  Json,
+  JsonSchema,
+  Template,
+} from "./types";
+import CanvasZoomControls from "./CanvasZoomControls";
 
-const PageCanvas = lazy(() => import("./PageCanvas"));
-const PdfCanvas = lazy(() => import("./PdfCanvas"));
 const SchemaView = lazy(() => import("./SchemaView"));
 
 type BuilderTab = "build" | "schema" | "html" | "pdf";
@@ -46,6 +56,10 @@ const tabs: Array<{ key: BuilderTab; label: string }> = [
   { key: "html", label: "HTML" },
   { key: "pdf", label: "PDF" },
 ];
+
+const ZOOM_STEP = 0.05;
+const MIN_ZOOM = 0.75;
+const MAX_ZOOM = 1.6;
 
 export interface TemplateBuilderProps {
   schema: JsonSchema;
@@ -61,9 +75,10 @@ function errorMessage(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause);
 }
 
-function rowIndexById(model: EditorModel, rowSortableId: string): number {
+function rowIndexById(model: EditorModel, rowSortableId: string, area: EditorArea): number {
   const uid = rowSortableId.replace(/^row-/, "");
-  return model.rows.findIndex((r) => r.uid === uid);
+  const rows = area === "footer" ? model.footerRows : model.rows;
+  return rows.findIndex((r) => r.uid === uid);
 }
 
 export default function TemplateBuilder({
@@ -84,6 +99,8 @@ export default function TemplateBuilder({
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const defaultCanvasScale = useMemo(() => estimatedPhysicalScale(), []);
+  const [canvasScale, setCanvasScale] = useState(defaultCanvasScale);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -221,38 +238,49 @@ export default function TemplateBuilder({
 
       if (a.source === "palette") {
         if (o.source === "newrow") {
-          setModel((m) => addBlock(m, a.type, { rowUid: null, data: blockData(a.type) }));
+          setModel((m) =>
+            addBlock(m, a.type, { rowUid: null, area: o.area, data: blockData(a.type) }),
+          );
         } else if (o.source === "block") {
           setModel((m) => {
             const found = findBlock(m, String(over.id));
             return addBlock(m, a.type, {
               rowUid: o.rowUid,
+              area: o.area,
               index: found ? found.blockIndex : null,
               data: blockData(a.type),
             });
           });
         } else if (o.source === "row") {
-          setModel((m) => addBlock(m, a.type, { rowUid: o.rowUid, data: blockData(a.type) }));
+          setModel((m) =>
+            addBlock(m, a.type, { rowUid: o.rowUid, area: o.area, data: blockData(a.type) }),
+          );
         }
         return;
       }
 
       if (a.source === "block") {
         if (o.source === "newrow") {
-          setModel((m) => moveBlock(m, String(active.id), null, null));
+          setModel((m) => moveBlock(m, String(active.id), null, null, o.area));
         } else if (o.source === "block") {
           setModel((m) => {
             const found = findBlock(m, String(over.id));
-            return moveBlock(m, String(active.id), o.rowUid, found ? found.blockIndex : null);
+            return moveBlock(
+              m,
+              String(active.id),
+              o.rowUid,
+              found ? found.blockIndex : null,
+              o.area,
+            );
           });
         } else if (o.source === "row") {
-          setModel((m) => moveBlock(m, String(active.id), o.rowUid, null));
+          setModel((m) => moveBlock(m, String(active.id), o.rowUid, null, o.area));
         }
         return;
       }
 
-      if (a.source === "row" && o.source === "row" && active.id !== over.id) {
-        setModel((m) => moveRow(m, a.rowUid, rowIndexById(m, String(over.id))));
+      if (a.source === "row" && o.source === "row" && active.id !== over.id && a.area === o.area) {
+        setModel((m) => moveRow(m, a.rowUid, rowIndexById(m, String(over.id), o.area), o.area));
       }
     },
     [blockData],
@@ -325,15 +353,25 @@ export default function TemplateBuilder({
           </div>
           <div className="flex-1 overflow-auto bg-[var(--builder-bg)] p-5">
             {tab === "build" ? (
-              <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
+              <div className="grid items-start gap-5">
+                <CanvasZoomControls
+                  onDecrease={() => setCanvasScale((scale) => clampZoom(scale - ZOOM_STEP))}
+                  onIncrease={() => setCanvasScale((scale) => clampZoom(scale + ZOOM_STEP))}
+                  onReset={() => setCanvasScale(defaultCanvasScale)}
+                />
                 <EditCanvas
                   model={model}
                   schema={schema}
                   format={format}
+                  scale={canvasScale}
                   selectedBlockUid={selectedBlockUid}
                   onSelectBlock={selectBlock}
                   onRemoveBlock={(uid) => setModel((m) => removeBlock(m, uid))}
                   onRemoveRow={(uid) => setModel((m) => removeRow(m, uid))}
+                  onUpdateFooterRepeat={(repeat) => setModel((m) => updateFooterRepeat(m, repeat))}
+                  onUpdatePageNumbers={(position) =>
+                    setModel((m) => updatePageNumbers(m, position))
+                  }
                   onSetRowWidths={(rowUid, widths) =>
                     setModel((m) => setRowWidths(m, rowUid, widths))
                   }
@@ -341,18 +379,10 @@ export default function TemplateBuilder({
                   onUpdateBlockConfig={(uid, config) =>
                     setModel((m) => updateBlockConfig(m, uid, config as Json))
                   }
+                  onUpdateDataField={(blockId, field, value, options) =>
+                    setModel((m) => updateDataField(m, blockId, field, value, options))
+                  }
                 />
-                <section className="sticky top-0 min-w-0 rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-panel)] p-3 shadow-[var(--builder-shadow)]">
-                  <div className="mb-2 flex items-center justify-between">
-                    <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--builder-muted)]">
-                      Example data
-                    </h2>
-                    <span className="rounded-full bg-[var(--builder-surface)] px-2 py-0.5 text-[0.6875rem] font-medium text-[var(--builder-muted)]">
-                      Live
-                    </span>
-                  </div>
-                  <DataView data={data} />
-                </section>
               </div>
             ) : tab === "schema" ? (
               <Suspense
@@ -409,4 +439,54 @@ export default function TemplateBuilder({
       </DragOverlay>
     </DndContext>
   );
+}
+
+function clampZoom(scale: number): number {
+  return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Number(scale.toFixed(2))));
+}
+
+function updateFooterRepeat(model: EditorModel, repeat: boolean): EditorModel {
+  const page = objectOrEmpty(model.config.page);
+  const footer = objectOrEmpty(page.footer);
+
+  return {
+    ...model,
+    config: {
+      ...model.config,
+      page: {
+        ...page,
+        footer: {
+          ...footer,
+          repeat,
+        },
+      },
+    },
+  };
+}
+
+function updatePageNumbers(
+  model: EditorModel,
+  position: "disabled" | "left" | "center" | "right",
+): EditorModel {
+  const page = objectOrEmpty(model.config.page);
+
+  return {
+    ...model,
+    config: {
+      ...model.config,
+      page: {
+        ...page,
+        pageNumbers:
+          position === "disabled"
+            ? { ...objectOrEmpty(page.pageNumbers), enabled: false }
+            : { ...objectOrEmpty(page.pageNumbers), enabled: true, position },
+      },
+    },
+  };
+}
+
+function objectOrEmpty(value: unknown): Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
 }

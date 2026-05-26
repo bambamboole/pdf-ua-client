@@ -337,7 +337,7 @@ function FooterCanvas({
     pageNumbers?.enabled === true ? String(pageNumbers.position ?? "center") : "disabled";
 
   return (
-    <section className="-mx-3 -mb-3 space-y-2 bg-[var(--builder-bg)] px-3 py-3">
+    <section className="space-y-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <div className="text-xs font-semibold uppercase tracking-wide text-[var(--builder-muted)]">
@@ -360,7 +360,7 @@ function FooterCanvas({
       </div>
       <div
         data-footer-canvas
-        className="space-y-2 rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-panel)] p-2 shadow-[var(--builder-shadow)]"
+        className="space-y-2 rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-panel)] p-3 shadow-[var(--builder-shadow)]"
       >
         {model.footerRows.length > 0 ? (
           <SortableContext
@@ -434,33 +434,38 @@ export default function EditCanvas({
   return (
     <div
       data-edit-canvas
-      className="mx-auto box-border w-full space-y-3 rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-panel)] p-3 shadow-[var(--builder-shadow)]"
+      className="mx-auto box-border w-full space-y-3"
       style={{ maxWidth: `${scaledWidth}px` }}
     >
-      <SortableContext
-        items={model.rows.map((r) => `row-${r.uid}`)}
-        strategy={verticalListSortingStrategy}
+      <div
+        data-body-canvas
+        className="space-y-3 rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-panel)] p-3 shadow-[var(--builder-shadow)]"
       >
-        {model.rows.map((row, rowIndex) => (
-          <Row
-            key={row.uid}
-            row={row}
-            rowIndex={rowIndex}
-            area="body"
-            schema={schema}
-            data={model.data}
-            selectedBlockUid={selectedBlockUid}
-            onSelectBlock={onSelectBlock}
-            onRemoveBlock={onRemoveBlock}
-            onRemoveRow={onRemoveRow}
-            onSetRowWidths={onSetRowWidths}
-            onUpdateBlockId={onUpdateBlockId}
-            onUpdateBlockConfig={onUpdateBlockConfig}
-            onUpdateDataField={onUpdateDataField}
-          />
-        ))}
-      </SortableContext>
-      <NewRowZone />
+        <SortableContext
+          items={model.rows.map((r) => `row-${r.uid}`)}
+          strategy={verticalListSortingStrategy}
+        >
+          {model.rows.map((row, rowIndex) => (
+            <Row
+              key={row.uid}
+              row={row}
+              rowIndex={rowIndex}
+              area="body"
+              schema={schema}
+              data={model.data}
+              selectedBlockUid={selectedBlockUid}
+              onSelectBlock={onSelectBlock}
+              onRemoveBlock={onRemoveBlock}
+              onRemoveRow={onRemoveRow}
+              onSetRowWidths={onSetRowWidths}
+              onUpdateBlockId={onUpdateBlockId}
+              onUpdateBlockConfig={onUpdateBlockConfig}
+              onUpdateDataField={onUpdateDataField}
+            />
+          ))}
+        </SortableContext>
+        <NewRowZone />
+      </div>
       <FooterCanvas
         model={model}
         schema={schema}

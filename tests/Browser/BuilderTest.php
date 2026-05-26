@@ -56,6 +56,7 @@ it('sizes the build canvas to the selected page format', function (): void {
         ->assertScript('document.querySelector("[data-footer-canvas]") !== null')
         ->assertScript('document.querySelectorAll("[data-footer-canvas] select").length === 0')
         ->assertScript('document.querySelectorAll("[data-footer-canvas] [data-new-row-zone=\"footer\"]").length === 1')
+        ->assertScript('(() => { const body = document.querySelector("[data-body-canvas] [data-new-row-zone=\"body\"]"); const footer = document.querySelector("[data-footer-canvas] [data-new-row-zone=\"footer\"]"); return body && footer ? Math.abs(body.getBoundingClientRect().width - footer.getBoundingClientRect().width) <= 1 : false; })()')
         ->assertNoJavaScriptErrors();
 
     $before = $page->script('document.querySelector("[data-edit-canvas]")?.getBoundingClientRect().width');

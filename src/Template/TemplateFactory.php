@@ -10,11 +10,10 @@ use Bambamboole\PdfUaClient\Config\PageNumbersConfig;
 use Bambamboole\PdfUaClient\Config\SpacingConfig;
 use Bambamboole\PdfUaClient\Config\TemplateConfig;
 use Bambamboole\PdfUaClient\Config\TypographyConfig;
-use Bambamboole\PdfUaClient\Enums\FontWeight;
 use Bambamboole\PdfUaClient\Enums\PageFormat;
-use Bambamboole\PdfUaClient\Enums\PageNumberPosition;
 use Bambamboole\PdfUaClient\Exceptions\TemplateValidationException;
 use Bambamboole\PdfUaClient\Support\SchemaAwareNormalizer;
+use Bambamboole\PdfUaClient\Support\ValueObjectHydrator;
 use Opis\JsonSchema\Validator;
 
 final readonly class TemplateFactory
@@ -22,6 +21,7 @@ final readonly class TemplateFactory
     public function __construct(
         private BlockRegistry $registry,
         private TemplateSchemaCompiler $compiler,
+        private ValueObjectHydrator $valueObjectHydrator = new ValueObjectHydrator,
     ) {}
 
     /** @param array<string, mixed> $data */
@@ -83,7 +83,7 @@ final readonly class TemplateFactory
     {
         return new TemplateConfig(
             page: $this->buildPageConfig((array) ($data['page'] ?? [])),
-            typography: $this->buildTypographyConfig((array) ($data['typography'] ?? [])),
+            typography: $this->valueObjectHydrator->hydrate(TypographyConfig::class, (array) ($data['typography'] ?? [])),
         );
     }
 
@@ -91,11 +91,11 @@ final readonly class TemplateFactory
     private function buildPageConfig(array $data): PageConfig
     {
         $margins = isset($data['margins'])
-            ? $this->buildSpacingConfig((array) $data['margins'])
+            ? $this->valueObjectHydrator->hydrate(SpacingConfig::class, (array) $data['margins'])
             : new SpacingConfig(20, 20, 20, 25);
 
         $pageNumbers = isset($data['pageNumbers'])
-            ? $this->buildPageNumbersConfig((array) $data['pageNumbers'])
+            ? $this->valueObjectHydrator->hydrate(PageNumbersConfig::class, (array) $data['pageNumbers'])
             : new PageNumbersConfig;
 
         $footer = isset($data['footer'])
@@ -121,41 +121,6 @@ final readonly class TemplateFactory
         return new PageFooterConfig(
             repeat: isset($data['repeat']) ? (bool) $data['repeat'] : true,
             rows: isset($data['rows']) ? $this->buildRows((array) $data['rows'], 'f') : [],
-        );
-    }
-
-    /** @param array<string, mixed> $data */
-    private function buildSpacingConfig(array $data): SpacingConfig
-    {
-        return new SpacingConfig(
-            top: isset($data['top']) ? (int) $data['top'] : null,
-            right: isset($data['right']) ? (int) $data['right'] : null,
-            bottom: isset($data['bottom']) ? (int) $data['bottom'] : null,
-            left: isset($data['left']) ? (int) $data['left'] : null,
-        );
-    }
-
-    /** @param array<string, mixed> $data */
-    private function buildPageNumbersConfig(array $data): PageNumbersConfig
-    {
-        return new PageNumbersConfig(
-            enabled: isset($data['enabled']) ? (bool) $data['enabled'] : true,
-            position: PageNumberPosition::from((string) ($data['position'] ?? PageNumberPosition::Center->value)),
-        );
-    }
-
-    /** @param array<string, mixed> $data */
-    private function buildTypographyConfig(array $data): TypographyConfig
-    {
-        $weight = null;
-        if (isset($data['weight'])) {
-            $weight = FontWeight::from((int) $data['weight']);
-        }
-
-        return new TypographyConfig(
-            family: isset($data['family']) ? (string) $data['family'] : null,
-            size: isset($data['size']) ? (int) $data['size'] : null,
-            weight: $weight,
         );
     }
 

@@ -12,42 +12,28 @@ function keyValueEntries(
   data: Record<string, unknown>,
   fields: unknown,
 ): Array<{ label: string; value: string }> {
-  if (Array.isArray(fields)) {
-    return fields
-      .map((field) => {
-        if (!field || typeof field !== "object") {
-          return null;
-        }
-
-        const record = field as Record<string, unknown>;
-        const key = stringValue(record.key);
-        if (key === "") {
-          return null;
-        }
-
-        return {
-          label: stringValue(record.label) || key,
-          value: stringValue(data[key]),
-        };
-      })
-      .filter((entry): entry is { label: string; value: string } => entry !== null);
+  if (!Array.isArray(fields)) {
+    return [];
   }
 
-  return Array.isArray(data.entries)
-    ? data.entries
-        .map((entry) => {
-          if (!entry || typeof entry !== "object") {
-            return null;
-          }
+  return fields
+    .map((field) => {
+      if (!field || typeof field !== "object") {
+        return null;
+      }
 
-          const pair = entry as Record<string, unknown>;
-          return {
-            label: stringValue(pair.label),
-            value: stringValue(pair.value),
-          };
-        })
-        .filter((entry): entry is { label: string; value: string } => entry !== null)
-    : [];
+      const record = field as Record<string, unknown>;
+      const key = stringValue(record.key);
+      if (key === "") {
+        return null;
+      }
+
+      return {
+        label: stringValue(record.label) || key,
+        value: stringValue(data[key]),
+      };
+    })
+    .filter((entry): entry is { label: string; value: string } => entry !== null);
 }
 
 function stringList(value: unknown): string[] {

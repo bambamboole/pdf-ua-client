@@ -8,7 +8,7 @@ function xsrfToken(): string {
 }
 
 async function renderTemplate(template: Template, data: DataMap): Promise<string> {
-    const response = await fetch('/render', {
+    const response = await fetch('/html', {
         method: 'POST',
         credentials: 'same-origin',
         headers: {
@@ -54,6 +54,27 @@ async function renderPdf(template: Template, data: DataMap): Promise<Blob> {
     return response.blob();
 }
 
+async function fetchSchema(template: Template): Promise<JsonSchema> {
+    const response = await fetch('/schema', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'X-XSRF-TOKEN': xsrfToken(),
+        },
+        body: JSON.stringify({ template }),
+    });
+
+    if (!response.ok) {
+        throw new Error(`Schema request failed (${response.status})`);
+    }
+
+    const payload = await response.json() as { dataSchema: JsonSchema };
+
+    return payload.dataSchema;
+}
+
 const emptyTemplate: Template = { version: 1, config: {}, rows: [] };
 
 export default function Builder({ schema, examples }: { schema: JsonSchema; examples?: unknown }) {
@@ -65,6 +86,7 @@ export default function Builder({ schema, examples }: { schema: JsonSchema; exam
             initialData={{}}
             renderTemplate={renderTemplate}
             renderPdf={renderPdf}
+            fetchSchema={fetchSchema}
         />
     );
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Bambamboole\PdfUaClient\Block\BlockRegistry;
 use Bambamboole\PdfUaClient\Block\PropsReflector;
+use Bambamboole\PdfUaClient\Enums\Align;
 use Bambamboole\PdfUaClient\Enums\PageFormat;
 use Bambamboole\PdfUaClient\Enums\PageNumberPosition;
 use Bambamboole\PdfUaClient\Exceptions\TemplateValidationException;
@@ -67,6 +68,29 @@ it('builds page number settings with a backed enum position', function () {
 
     expect($template->config->page->pageNumbers->enabled)->toBeTrue();
     expect($template->config->page->pageNumbers->position)->toBe(PageNumberPosition::Right);
+});
+
+it('respects the page numbers config default when enabled is omitted', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['pageNumbers' => ['position' => 'right']]],
+        'rows' => [],
+    ]);
+
+    expect($template->config->page->pageNumbers->enabled)->toBeFalse();
+    expect($template->config->page->pageNumbers->position)->toBe(PageNumberPosition::Right);
+});
+
+it('preserves typography align and color fields', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['typography' => ['family' => 'Inter', 'align' => 'center', 'color' => '#222']],
+        'rows' => [],
+    ]);
+
+    expect($template->config->typography->family)->toBe('Inter');
+    expect($template->config->typography->align)->toBe(Align::Center);
+    expect($template->config->typography->color)->toBe('#222');
 });
 
 it('builds footer rows without pagination settings', function () {

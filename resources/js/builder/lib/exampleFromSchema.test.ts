@@ -18,11 +18,11 @@ describe("exampleFromSchema", () => {
     };
     expect(exampleFromSchema(s, root)).toEqual({ text: "T" });
   });
-  it("builds a one-item array from item examples (key-value style)", () => {
+  it("builds a one-item array from object item examples", () => {
     const s: JsonSchema = {
       type: "object",
       properties: {
-        entries: {
+        rows: {
           type: "array",
           items: {
             type: "object",
@@ -34,7 +34,7 @@ describe("exampleFromSchema", () => {
         },
       },
     };
-    expect(exampleFromSchema(s, root)).toEqual({ entries: [{ label: "L", value: "V" }] });
+    expect(exampleFromSchema(s, root)).toEqual({ rows: [{ label: "L", value: "V" }] });
   });
   it("uses an array-valued example directly (table headers)", () => {
     const s: JsonSchema = {

@@ -21,7 +21,7 @@ const schema = {
       },
       unevaluatedProperties: false,
     },
-    keyValueProps: { type: "object", properties: { entries: { type: "array" } } },
+    keyValueProps: { type: "object", properties: { values: { type: "array" } } },
     keyValueConfig: {
       type: "object",
       properties: { labelWidth: { type: "string", default: "30mm" } },
@@ -34,7 +34,7 @@ const schema = {
 describe("getBlockSubschemas", () => {
   it("resolves the camelCase block def via oneOf and attaches $defs", () => {
     const { props, config } = getBlockSubschemas(schema, "key-value");
-    expect((props.properties as any).entries).toBeTruthy();
+    expect((props.properties as any).values).toBeTruthy();
     expect((config.properties as any).labelWidth.default).toBe("30mm");
     expect(props.$defs).toBe(schema.$defs);
     expect(config.$defs).toBe(schema.$defs);

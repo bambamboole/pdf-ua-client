@@ -3,16 +3,19 @@
 declare(strict_types=1);
 
 use Bambamboole\PdfUaClient\Blocks\KeyValueBlock;
-use Bambamboole\PdfUaClient\Blocks\KeyValuePair;
 use Bambamboole\PdfUaClient\Config\KeyValueConfig;
+use Bambamboole\PdfUaClient\Config\KeyValueField;
 
-it('renders a label/value table with rows for each pair', function () {
-    $block = new KeyValueBlock(entries: [
-        new KeyValuePair(label: 'IBAN', value: 'DE89 3704 0044 0532 0130 00'),
-        new KeyValuePair(label: 'BIC', value: 'COBADEFFXXX'),
+it('renders a label/value table with rows for each field', function () {
+    $block = new KeyValueBlock(values: [
+        'iban' => 'DE89 3704 0044 0532 0130 00',
+        'bic' => 'COBADEFFXXX',
     ]);
 
-    $html = (string) $block->render(new KeyValueConfig);
+    $html = (string) $block->render(new KeyValueConfig(fields: [
+        new KeyValueField(key: 'iban', label: 'IBAN'),
+        new KeyValueField(key: 'bic', label: 'BIC'),
+    ]));
 
     expect($html)->toContain('<table class="key-value">');
     expect($html)->toContain('IBAN');
@@ -27,8 +30,8 @@ it('renders configured fields from flat keyed values', function () {
     ]);
 
     $html = (string) $block->render(new KeyValueConfig(fields: [
-        ['key' => 'invoiceNumber', 'label' => 'Invoice number'],
-        ['key' => 'issueDate', 'label' => 'Issue date'],
+        new KeyValueField(key: 'invoiceNumber', label: 'Invoice number'),
+        new KeyValueField(key: 'issueDate', label: 'Issue date'),
     ]));
 
     expect($html)->toContain('Invoice number')

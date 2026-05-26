@@ -10,6 +10,7 @@ use Bambamboole\PdfUaClient\Http\Exceptions\PdfApiException;
 use Bambamboole\PdfUaClient\Http\PdfApiClient;
 use Bambamboole\PdfUaClient\Rendering\RenderOptions;
 use Bambamboole\PdfUaClient\Rendering\TemplateRenderer;
+use Bambamboole\PdfUaClient\Template\DataSchemaCompiler;
 use Bambamboole\PdfUaClient\Template\ExampleRegistry;
 use Bambamboole\PdfUaClient\Template\Template;
 use Bambamboole\PdfUaClient\Template\TemplateFactory;
@@ -29,7 +30,7 @@ final class TemplateBuilderController
         ]);
     }
 
-    public function render(Request $request, TemplateFactory $factory, TemplateRenderer $renderer): JsonResponse
+    public function html(Request $request, TemplateFactory $factory, TemplateRenderer $renderer): JsonResponse
     {
         try {
             [$built, $data] = $this->buildTemplate($request, $factory);
@@ -39,6 +40,18 @@ final class TemplateBuilderController
         }
 
         return response()->json(['html' => $html]);
+    }
+
+    public function schema(Request $request, TemplateFactory $factory, DataSchemaCompiler $compiler): JsonResponse
+    {
+        try {
+            [$built] = $this->buildTemplate($request, $factory);
+            $schema = $compiler->compile($built);
+        } catch (TemplateValidationException|DataValidationException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+
+        return response()->json(['dataSchema' => $schema]);
     }
 
     public function pdf(Request $request, TemplateFactory $factory, TemplateRenderer $renderer, PdfApiClient $client): mixed

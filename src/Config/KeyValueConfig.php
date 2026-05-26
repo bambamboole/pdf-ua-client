@@ -11,7 +11,7 @@ use Bambamboole\PdfUaClient\Enums\Align;
 
 final readonly class KeyValueConfig extends BlockConfig
 {
-    /** @param  list<KeyValueField|array{key: string, label: string}>  $fields */
+    /** @param  list<KeyValueField>  $fields */
     public function __construct(
         ?TypographyConfig $typography = null,
         ?SpacingConfig $spacing = null,

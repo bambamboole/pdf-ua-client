@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Http;
 use function Pest\Laravel\postJson;
 
 it('renders a posted template to html', function (): void {
-    $response = postJson('/render', [
+    $response = postJson('/html', [
         'template' => [
             'version' => 1,
             'config' => ['page' => ['format' => 'A4']],
@@ -26,7 +26,7 @@ it('renders a posted template to html', function (): void {
 });
 
 it('returns 422 for an invalid template', function (): void {
-    $response = postJson('/render', [
+    $response = postJson('/html', [
         'template' => ['version' => 1, 'config' => [], 'rows' => [['blocks' => []]]],
     ]);
 
@@ -34,7 +34,7 @@ it('returns 422 for an invalid template', function (): void {
 });
 
 it('injects posted data as runtime data by block id', function (): void {
-    $response = postJson('/render', [
+    $response = postJson('/html', [
         'template' => [
             'version' => 1,
             'config' => ['page' => ['format' => 'A4']],
@@ -54,7 +54,7 @@ it('injects posted data as runtime data by block id', function (): void {
 });
 
 it('returns 422 when posted data violates the template data contract', function (): void {
-    $response = postJson('/render', [
+    $response = postJson('/html', [
         'template' => [
             'version' => 1,
             'config' => ['page' => ['format' => 'A4']],
@@ -71,7 +71,7 @@ it('returns 422 when posted data violates the template data contract', function 
 });
 
 it('renders the registered invoice example payload', function (): void {
-    $response = postJson('/render', [
+    $response = postJson('/html', [
         'template' => InvoiceExample::document(),
         'data' => InvoiceExample::data(),
     ]);
@@ -128,4 +128,32 @@ it('returns 502 when pdf conversion fails upstream', function (): void {
 
     $response->assertStatus(502);
     expect($response->json('message'))->toContain('PDF API convert failed');
+});
+
+it('returns the data schema for a valid template', function (): void {
+    $response = postJson('/schema', [
+        'template' => [
+            'version' => 1,
+            'config' => ['page' => ['format' => 'A4']],
+            'rows' => [
+                ['blocks' => [
+                    ['type' => 'heading', 'id' => 'title', 'config' => ['level' => 1]],
+                ]],
+            ],
+        ],
+    ]);
+
+    $response->assertOk();
+    expect($response->json('dataSchema'))->toBeArray()
+        ->toHaveKey('$schema')
+        ->toHaveKey('properties');
+});
+
+it('returns 422 from schema endpoint for an invalid template', function (): void {
+    $response = postJson('/schema', [
+        'template' => ['version' => 1, 'config' => [], 'rows' => [['blocks' => []]]],
+    ]);
+
+    $response->assertStatus(422);
+    expect($response->json('message'))->toBeString();
 });

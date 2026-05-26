@@ -1,4 +1,4 @@
-import type { DataMap, Template } from "@builder";
+import type { DataMap, JsonSchema, Template } from "@builder";
 
 function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -18,4 +18,8 @@ export function renderStub(template: Template, _data: DataMap): Promise<string> 
 
 export function renderPdfStub(_template: Template, _data: DataMap): Promise<Blob> {
   return Promise.reject(new Error("PDF preview requires the PHP backend. This is a static demo."));
+}
+
+export function fetchSchemaStub(_template: Template): Promise<JsonSchema> {
+  return Promise.resolve({});
 }

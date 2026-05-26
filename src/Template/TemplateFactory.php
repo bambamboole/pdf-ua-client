@@ -69,8 +69,8 @@ final readonly class TemplateFactory
             : new PageNumbersConfig;
 
         $footer = isset($data['footer'])
-            ? $this->buildPageFooterConfig((array) $data['footer'], $pageNumbers)
-            : new PageFooterConfig(pageNumbers: $pageNumbers);
+            ? $this->buildPageFooterConfig((array) $data['footer'])
+            : new PageFooterConfig;
 
         $format = isset($data['format'])
             ? PageFormat::from((string) $data['format'])
@@ -88,16 +88,11 @@ final readonly class TemplateFactory
     }
 
     /** @param array<string, mixed> $data */
-    private function buildPageFooterConfig(array $data, PageNumbersConfig $fallbackPageNumbers): PageFooterConfig
+    private function buildPageFooterConfig(array $data): PageFooterConfig
     {
-        $pageNumbers = isset($data['pageNumbers'])
-            ? $this->buildPageNumbersConfig((array) $data['pageNumbers'])
-            : $fallbackPageNumbers;
-
         return new PageFooterConfig(
             repeat: isset($data['repeat']) ? (bool) $data['repeat'] : true,
             rows: isset($data['rows']) ? $this->buildRows((array) $data['rows'], 'f') : [],
-            pageNumbers: $pageNumbers,
         );
     }
 

@@ -6,7 +6,6 @@ namespace Bambamboole\PdfUaClient\Template;
 use Bambamboole\PdfUaClient\Block\BlockRegistry;
 use Bambamboole\PdfUaClient\Block\PropsReflector;
 use Bambamboole\PdfUaClient\Config\PageFooterConfig;
-use Bambamboole\PdfUaClient\Config\PageNumbersConfig;
 use Bambamboole\PdfUaClient\Config\TemplateConfig;
 use ReflectionClass;
 use stdClass;
@@ -105,8 +104,6 @@ final readonly class TemplateSchemaCompiler
 
     private function registerPageFooterConfig(SchemaRegistry $defs): void
     {
-        $pageNumbersRef = $this->registerConfigRef(PageNumbersConfig::class, $defs);
-
         $defs->ref(lcfirst((new ReflectionClass(PageFooterConfig::class))->getShortName()), [
             'type' => 'object',
             'properties' => [
@@ -122,10 +119,6 @@ final readonly class TemplateSchemaCompiler
                     'description' => 'Footer rows rendered after the page body.',
                     'items' => ['$ref' => '#/$defs/row'],
                     'default' => [],
-                ],
-                'pageNumbers' => $pageNumbersRef + [
-                    'title' => 'Pagination',
-                    'description' => 'Page number display settings for this footer.',
                 ],
             ],
             'additionalProperties' => false,

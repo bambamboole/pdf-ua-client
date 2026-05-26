@@ -82,14 +82,13 @@ it('builds page mark settings', function () {
     expect($template->config->page->punchMarks)->toBeTrue();
 });
 
-it('builds footer rows and footer page numbers', function () {
+it('builds footer rows without pagination settings', function () {
     $template = $this->factory->fromArray([
         'version' => 1,
         'config' => [
             'page' => [
                 'footer' => [
                     'repeat' => true,
-                    'pageNumbers' => ['enabled' => true, 'position' => 'right'],
                     'rows' => [[
                         'blocks' => [
                             ['type' => 'test-fixture', 'id' => 'footer_note', 'config' => ['width' => '70%']],
@@ -103,8 +102,7 @@ it('builds footer rows and footer page numbers', function () {
     ]);
 
     expect($template->config->page->footer->repeat)->toBeTrue();
-    expect($template->config->page->footer->pageNumbers->enabled)->toBeTrue();
-    expect($template->config->page->footer->pageNumbers->position)->toBe(PageNumberPosition::Right);
+    expect(property_exists($template->config->page->footer, 'pageNumbers'))->toBeFalse();
     expect($template->config->page->footer->rows)->toHaveCount(1);
     expect($template->config->page->footer->rows[0]->blocks[0]->id)->toBe('footer_note');
     expect($template->config->page->footer->rows[0]->blocks[0]->config['width'])->toBe('70%');

@@ -21,9 +21,9 @@ return new TestFixture(
                 'format' => 'A4',
                 'locale' => 'de_DE',
                 'margins' => ['top' => 20, 'right' => 20, 'bottom' => 20, 'left' => 25],
+                'pageNumbers' => ['enabled' => true, 'position' => 'right'],
                 'footer' => [
                     'repeat' => true,
-                    'pageNumbers' => ['enabled' => true, 'position' => 'right'],
                     'rows' => [[
                         'blocks' => [
                             ['type' => 'text', 'id' => 'footer_note'],

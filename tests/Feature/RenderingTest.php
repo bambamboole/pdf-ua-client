@@ -381,16 +381,16 @@ it('renders fold and punch marks in print mode', function () {
     expect($previewHtml)->not->toContain('page-marks');
 });
 
-it('renders repeated footer rows and page numbers in print mode', function () {
+it('renders repeated footer rows and page numbers through the page margin box in print mode', function () {
     $template = $this->factory->fromArray([
         'version' => 1,
         'config' => [
             'page' => [
                 'format' => 'A4',
                 'margins' => ['top' => 25, 'right' => 20, 'bottom' => 20, 'left' => 25],
+                'pageNumbers' => ['enabled' => true, 'position' => 'right'],
                 'footer' => [
                     'repeat' => true,
-                    'pageNumbers' => ['enabled' => true, 'position' => 'right'],
                     'rows' => [[
                         'blocks' => [
                             ['type' => 'text', 'id' => 'footer_note', 'config' => ['width' => '70%']],
@@ -411,8 +411,8 @@ it('renders repeated footer rows and page numbers in print mode', function () {
 
     expect($html)->toContain('@page { size: A4; margin: 25mm 20mm 28mm 25mm; }');
     expect($html)->toContain('@page { @bottom-center { content: element(pageFooter); } }');
-    expect($html)->not->toContain('@bottom-right');
-    expect($html)->toContain('.page-footer-repeated::after { content: counter(page) " / " counter(pages); display: block; margin-top: 2mm; padding-right: 2.2mm; text-align: right; font-size: 8pt; color: #9ca3af; }');
+    expect($html)->toContain('@page { @bottom-right { content: counter(page) " / " counter(pages); font-size: 8pt; color: #9ca3af; vertical-align: bottom; padding-bottom: 4mm; } }');
+    expect($html)->not->toContain('.page-footer-repeated::after');
     expect($html)->toContain('<footer class="page-footer page-footer-repeated" role="contentinfo">');
     expect($html)->toContain('<p>Confidential</p>');
     expect($html)->toContain('position: running(pageFooter); width: 100%;');

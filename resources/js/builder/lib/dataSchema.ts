@@ -30,23 +30,28 @@ export function dataSchemaForTemplate(schema: JsonSchema, template: Template): J
         continue;
       }
 
-      const blockSchema = getBlockSubschemas(schema, block.type).props;
+      const blockSchema =
+        block.type === "key-value"
+          ? keyValueDataSchema(block.config?.fields)
+          : getBlockSubschemas(schema, block.type).props;
       if (!blockHasData(blockSchema)) {
         continue;
       }
 
       const defaults = template.data?.defaults?.[block.id] ?? {};
       const constants = template.data?.constants?.[block.id] ?? {};
-      properties[block.id] = withDataLayerAnnotations(
+      const dataSchema = withDataLayerAnnotations(
         standaloneSchema(blockSchema),
         defaults,
         constants,
       );
+      if (!blockHasData(dataSchema)) {
+        continue;
+      }
 
-      if (
-        Array.isArray(blockSchema.required) &&
-        uncoveredRequired(blockSchema, defaults, constants).length > 0
-      ) {
+      properties[block.id] = dataSchema;
+
+      if (Array.isArray(dataSchema.required) && dataSchema.required.length > 0) {
         required.push(block.id);
       }
     }
@@ -81,13 +86,22 @@ function withDataLayerAnnotations(schema: JsonSchema, defaults: Json, constants:
       nextProperties[key] = { ...nextProperties[key], default: value };
     }
   }
-  for (const [key, value] of Object.entries(constants)) {
-    if (isPlainObject(nextProperties[key])) {
-      nextProperties[key] = { ...nextProperties[key], const: value };
-    }
+  for (const key of Object.keys(constants)) {
+    delete nextProperties[key];
   }
 
-  return { ...schema, properties: nextProperties };
+  const required = uncoveredRequired(schema, defaults, constants);
+  const { required: _required, ...schemaWithoutRequired } = schema;
+
+  return {
+    ...schemaWithoutRequired,
+    properties: nextProperties,
+    ...(required.length > 0 ? { required } : {}),
+  };
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function uncoveredRequired(schema: JsonSchema, defaults: Json, constants: Json): string[] {
@@ -101,6 +115,27 @@ function uncoveredRequired(schema: JsonSchema, defaults: Json, constants: Json):
   );
 }
 
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
+function keyValueDataSchema(fields: unknown): JsonSchema {
+  const properties: Record<string, JsonSchema> = {};
+  const required: string[] = [];
+
+  if (Array.isArray(fields)) {
+    for (const field of fields) {
+      if (!isPlainObject(field) || typeof field.key !== "string" || field.key === "") {
+        continue;
+      }
+
+      properties[field.key] = {
+        type: ["string", "number", "integer", "boolean", "null"],
+      };
+      required.push(field.key);
+    }
+  }
+
+  return {
+    type: "object",
+    properties,
+    ...(required.length > 0 ? { required } : {}),
+    additionalProperties: false,
+  };
 }

@@ -496,7 +496,7 @@ it('lets runtime data override fallback data', function () {
         ->and($html)->not->toContain('Fallback title');
 });
 
-it('keeps locked constants from being overwritten by runtime data', function () {
+it('renders locked constants after validating the incoming runtime data', function () {
     $template = $this->factory->fromArray([
         'version' => 1,
         'config' => ['page' => ['format' => 'A4']],
@@ -507,11 +507,24 @@ it('keeps locked constants from being overwritten by runtime data', function () 
         ],
     ]);
 
-    $html = $this->renderer->render($template, ['h' => ['text' => 'Runtime title']]);
+    $html = $this->renderer->render($template);
 
     expect($html)->toContain('<h1>Locked title</h1>')
-        ->and($html)->not->toContain('Runtime title')
         ->and($html)->not->toContain('Fallback title');
+});
+
+it('rejects runtime data for locked constant fields', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['format' => 'A4']],
+        'rows' => [['blocks' => [['type' => 'heading', 'id' => 'h', 'config' => ['level' => 1]]]]],
+        'data' => [
+            'constants' => ['h' => ['text' => 'Locked title']],
+        ],
+    ]);
+
+    expect(fn () => $this->renderer->render($template, ['h' => ['text' => 'Runtime title']]))
+        ->toThrow(DataValidationException::class);
 });
 
 it('rejects a block config that violates a schema constraint', function () {

@@ -27,7 +27,13 @@ return new TestFixture(
                 ['type' => 'divider', 'config' => ['thickness' => 2, 'lineColor' => '#475569', 'style' => 'dashed']],
             ]],
             ['blocks' => [
-                ['type' => 'key-value', 'id' => 'kv1', 'config' => ['typography' => ['size' => 11, 'color' => '#374151']]],
+                ['type' => 'key-value', 'id' => 'kv1', 'config' => [
+                    'typography' => ['size' => 11, 'color' => '#374151'],
+                    'fields' => [
+                        ['key' => 'status', 'label' => 'Status'],
+                        ['key' => 'owner', 'label' => 'Owner'],
+                    ],
+                ]],
             ]],
             ['blocks' => [
                 ['type' => 'table', 'id' => 'tbl1', 'config' => ['style' => 'bordered', 'spacing' => ['bottom' => 4]]],
@@ -39,10 +45,7 @@ return new TestFixture(
         't1' => ['text' => 'A paragraph of text.'],
         'raw1' => ['html' => '<em>Raw HTML</em>'],
         'img1' => ['src' => 'logo.png', 'alt' => 'Logo'],
-        'kv1' => ['entries' => [
-            ['label' => 'Status', 'value' => 'Active'],
-            ['label' => 'Owner', 'value' => 'Acme GmbH'],
-        ]],
+        'kv1' => ['status' => 'Active', 'owner' => 'Acme GmbH'],
         'tbl1' => [
             'headers' => ['Item', 'Qty'],
             'rows' => [

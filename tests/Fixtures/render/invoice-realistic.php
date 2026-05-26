@@ -4,7 +4,7 @@ declare(strict_types=1);
 use Bambamboole\PdfUaClient\Examples\InvoiceExample;
 use Bambamboole\PdfUaClient\Tests\Fixtures\TestFixture;
 
-$logoSrc = InvoiceExample::data()['logo']['src'];
+$logoSrc = InvoiceExample::document()['data']['constants']['logo']['src'];
 
 return new TestFixture(
     spec: [
@@ -25,7 +25,15 @@ return new TestFixture(
                     'id' => 'logo',
                     'config' => ['width' => '58%', 'maxHeight' => 28],
                 ],
-                ['type' => 'key-value', 'id' => 'meta', 'config' => ['width' => '42%', 'align' => 'right']],
+                ['type' => 'key-value', 'id' => 'meta', 'config' => [
+                    'width' => '42%',
+                    'align' => 'right',
+                    'fields' => [
+                        ['key' => 'invoiceNumber', 'label' => 'Invoice number'],
+                        ['key' => 'issueDate', 'label' => 'Issue date'],
+                        ['key' => 'dueDate', 'label' => 'Due date'],
+                    ],
+                ]],
             ]],
             [
                 'blocks' => [
@@ -49,7 +57,14 @@ return new TestFixture(
             [
                 'blocks' => [
                     ['type' => 'spacer', 'config' => ['width' => '60%']],
-                    ['type' => 'key-value', 'id' => 'totals', 'config' => ['width' => '40%']],
+                    ['type' => 'key-value', 'id' => 'totals', 'config' => [
+                        'width' => '40%',
+                        'fields' => [
+                            ['key' => 'netAmount', 'label' => 'Net'],
+                            ['key' => 'vatAmount', 'label' => 'VAT (19%)'],
+                            ['key' => 'grandTotal', 'label' => 'Grand total'],
+                        ],
+                    ]],
                 ],
             ],
             ['blocks' => [
@@ -68,11 +83,11 @@ return new TestFixture(
         ],
         'addr' => ['text' => "Muster GmbH\n\nBeispielstraße 1\n\n10115 Berlin"],
         'intro' => ['text' => 'Invoice 2026-001'],
-        'meta' => ['entries' => [
-            ['label' => 'Invoice number', 'value' => 'RE-2026-001234'],
-            ['label' => 'Issue date', 'value' => '2026-02-17'],
-            ['label' => 'Due date', 'value' => '2026-03-19'],
-        ]],
+        'meta' => [
+            'invoiceNumber' => 'RE-2026-001234',
+            'issueDate' => '2026-02-17',
+            'dueDate' => '2026-03-19',
+        ],
         'items' => [
             'headers' => ['Description', 'Qty', 'Unit price', 'Total'],
             'rows' => [
@@ -82,11 +97,11 @@ return new TestFixture(
                 ['Hosting (annual)', '1', '240,00 €', '240,00 €'],
             ],
         ],
-        'totals' => ['entries' => [
-            ['label' => 'Net', 'value' => '6.120,00 €'],
-            ['label' => 'VAT (19%)', 'value' => '1.162,80 €'],
-            ['label' => 'Grand total', 'value' => '7.282,80 €'],
-        ]],
+        'totals' => [
+            'netAmount' => '6.120,00 €',
+            'vatAmount' => '1.162,80 €',
+            'grandTotal' => '7.282,80 €',
+        ],
         'footer' => ['text' => 'Please transfer the total amount within 30 days to the bank account stated above. Thank you for your business.'],
     ],
     pdf: 'invoice-realistic.pdf',

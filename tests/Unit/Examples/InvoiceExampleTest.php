@@ -52,15 +52,10 @@ it('models a complete realistic invoice document structure', function () {
     expect($document['data']['constants'])->toHaveKeys(['logo', 'seller', 'invoice-meta', 'footer-legal', 'footer-meta']);
 });
 
-it('provides realistic merged seller, buyer, line items, totals, payment, and footer data', function () {
+it('provides realistic runtime example data without locked constants', function () {
     $data = InvoiceExample::data();
 
-    expect($data['logo']['src'])->toStartWith('data:image/');
-    expect($data['logo']['alt'])->toBe('PDF UA Kit GmbH logo');
-    expect($data['seller'])->toMatchArray([
-        'name' => 'PDF UA Kit GmbH',
-        'vatId' => 'DE123456789',
-    ]);
+    expect($data)->not->toHaveKeys(['logo', 'seller', 'footer-legal', 'footer-meta']);
     expect($data['buyer'])->toMatchArray([
         'name' => 'Musterkunde AG',
         'reference' => '04011000-12345-67',
@@ -73,17 +68,9 @@ it('provides realistic merged seller, buyer, line items, totals, payment, and fo
         'amountDue' => '7.282,80 €',
     ]);
     expect($data['payment'])->toMatchArray([
-        'bank' => 'Musterbank Berlin',
-        'iban' => 'DE89370400440532013000',
         'reference' => 'RE-2026-001234',
     ]);
     expect($data['invoice-meta'])->toMatchArray([
         'invoiceNumber' => 'RE-2026-001234',
-        'currency' => 'EUR',
-    ]);
-    expect($data['footer-legal']['text'])->toContain('PDF UA Kit GmbH');
-    expect($data['footer-meta'])->toMatchArray([
-        'registration' => 'HRB 123456 B',
-        'taxNumber' => 'DE123456789',
     ]);
 });

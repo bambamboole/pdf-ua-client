@@ -43,9 +43,15 @@ final readonly class DataSchemaCompiler
                 $id = (string) $block->id;
                 $defaults = $template->data->defaults[$id] ?? [];
                 $constants = $template->data->constants[$id] ?? [];
-                $properties[$id] = $this->withDataLayerAnnotations($dataSchema, $defaults, $constants);
+                $dataSchema = $this->withDataLayerAnnotations($dataSchema, $defaults, $constants);
 
-                if (isset($dataSchema['required']) && $this->uncoveredRequired($dataSchema, $defaults, $constants) !== []) {
+                if ($this->hasNoProperties($dataSchema)) {
+                    continue;
+                }
+
+                $properties[$id] = $dataSchema;
+
+                if (($dataSchema['required'] ?? []) !== []) {
                     $required[] = $id;
                 }
             }
@@ -69,8 +75,8 @@ final readonly class DataSchemaCompiler
     /** @return array<string, mixed> */
     private function dataSchemaForBlock(BlockInstance $block): array
     {
-        if ($block->type === 'key-value' && isset($block->config['fields']) && is_array($block->config['fields'])) {
-            return $this->keyValueDataSchema($block->config['fields']);
+        if ($block->type === 'key-value') {
+            return $this->keyValueDataSchema(is_array($block->config['fields'] ?? null) ? $block->config['fields'] : []);
         }
 
         return $this->reflector->reflectBlock($this->registry->resolve($block->type))['data'];
@@ -93,7 +99,6 @@ final readonly class DataSchemaCompiler
 
             $properties[$key] = [
                 'type' => ['string', 'number', 'integer', 'boolean', 'null'],
-                'title' => (string) ($field['label'] ?? $key),
             ];
             $required[] = $key;
         }
@@ -131,34 +136,29 @@ final readonly class DataSchemaCompiler
             $schema['properties'][$key]['default'] = $value;
         }
 
-        foreach ($constants as $key => $value) {
-            if (! isset($schema['properties'][$key]) || ! is_array($schema['properties'][$key])) {
-                continue;
-            }
+        foreach (array_keys($constants) as $key) {
+            unset($schema['properties'][$key]);
+        }
 
-            $schema['properties'][$key]['const'] = $value;
+        $required = $schema['required'] ?? [];
+        if (is_array($required)) {
+            $required = array_values(array_filter(
+                $required,
+                static fn (mixed $field): bool => is_string($field) && ! array_key_exists($field, $defaults) && ! array_key_exists($field, $constants),
+            ));
+
+            if ($required === []) {
+                unset($schema['required']);
+            } else {
+                $schema['required'] = $required;
+            }
+        }
+
+        if ($schema['properties'] === []) {
+            $schema['properties'] = new stdClass;
         }
 
         return $schema;
-    }
-
-    /**
-     * @param  array<string, mixed>  $schema
-     * @param  array<string, mixed>  $defaults
-     * @param  array<string, mixed>  $constants
-     * @return list<string>
-     */
-    private function uncoveredRequired(array $schema, array $defaults, array $constants): array
-    {
-        $required = $schema['required'] ?? [];
-        if (! is_array($required)) {
-            return [];
-        }
-
-        return array_values(array_filter(
-            $required,
-            static fn (mixed $field): bool => is_string($field) && ! array_key_exists($field, $defaults) && ! array_key_exists($field, $constants),
-        ));
     }
 
     /** @return list<Row> */

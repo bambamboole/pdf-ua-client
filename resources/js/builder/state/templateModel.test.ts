@@ -76,6 +76,7 @@ describe("fromTemplate", () => {
     expect(m.data.example.title).toEqual({ text: "Example" });
     expect(m.data.defaults.title).toEqual({ text: "Fallback" });
     expect(m.data.constants.title).toEqual({ locked: true });
+    expect(m.rows[0].blocks[0].data).toEqual({ text: "Example", locked: true });
   });
 });
 
@@ -125,6 +126,19 @@ describe("toDataMap", () => {
     );
 
     expect(toDataMap(model)).toEqual({});
+  });
+
+  it("returns runtime example data without fallback defaults or locked constants", () => {
+    const model = fromTemplate({
+      ...template,
+      data: {
+        example: { title: { text: "Example" } },
+        defaults: { title: { fallback: "Fallback" } },
+        constants: { title: { locked: true } },
+      },
+    });
+
+    expect(toDataMap(model)).toEqual({ title: { text: "Example" } });
   });
 });
 

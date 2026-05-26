@@ -123,11 +123,7 @@ final class InvoiceExample
     /** @return array<string, mixed> */
     public static function data(): array
     {
-        return self::mergeDataMaps(
-            self::defaultData(),
-            self::exampleData(),
-            self::lockedData(),
-        );
+        return self::exampleData();
     }
 
     /** @return array<string, mixed> */
@@ -221,22 +217,5 @@ final class InvoiceExample
                 'taxNumber' => 'DE123456789',
             ],
         ];
-    }
-
-    /**
-     * @param  array<string, array<string, mixed>>  $maps
-     * @return array<string, array<string, mixed>>
-     */
-    private static function mergeDataMaps(array ...$maps): array
-    {
-        $merged = [];
-
-        foreach ($maps as $map) {
-            foreach ($map as $blockId => $data) {
-                $merged[$blockId] = array_replace_recursive($merged[$blockId] ?? [], $data);
-            }
-        }
-
-        return $merged;
     }
 }

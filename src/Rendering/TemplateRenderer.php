@@ -49,8 +49,8 @@ final class TemplateRenderer
         $this->blockCounter = 0;
         $this->usedFontKeys = [];
 
-        $runtimeData = $this->dataMerger->runtimeData($template, $runtimeData);
         $this->validateData($template, $runtimeData);
+        $runtimeData = $this->dataMerger->runtimeData($template, $runtimeData);
 
         $ctx = new RenderContext;
 

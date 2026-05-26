@@ -43,14 +43,15 @@ export function uniqueBlockId(model: EditorModel, type: string): string {
 
 export function fromTemplate(template: Template, data: DataMap = {}): EditorModel {
   const layers = normalizeDataLayers(template.data, data);
+  const previewData = mergeDataMaps(layers.defaults, layers.example, layers.constants);
   const footerRows = footerRowsFromConfig(template.config);
 
   return {
     version: template.version,
     config: template.config ?? {},
     data: layers,
-    rows: rowsFromTemplate(template.rows ?? [], layers),
-    footerRows: rowsFromTemplate(footerRows, layers),
+    rows: rowsFromTemplate(template.rows ?? [], previewData),
+    footerRows: rowsFromTemplate(footerRows, previewData),
   };
 }
 
@@ -66,7 +67,7 @@ export function toTemplate(model: EditorModel): Template {
 }
 
 export function toDataMap(model: EditorModel): DataMap {
-  return previewDataMap(model);
+  return cleanDataMap(model.data.example);
 }
 
 export function previewDataMap(model: EditorModel): DataMap {
@@ -500,7 +501,7 @@ function allRows(model: EditorModel): EditorRow[] {
   return [...model.rows, ...model.footerRows];
 }
 
-function rowsFromTemplate(rows: Template["rows"], layers: TemplateDataLayers): EditorRow[] {
+function rowsFromTemplate(rows: Template["rows"], previewData: DataMap): EditorRow[] {
   return rows.map(
     (row): EditorRow => ({
       uid: uid(),
@@ -512,7 +513,7 @@ function rowsFromTemplate(rows: Template["rows"], layers: TemplateDataLayers): E
           id,
           type: block.type,
           config: (block.config ?? {}) as Json,
-          data: (layers.example[id] ?? {}) as Json,
+          data: (previewData[id] ?? {}) as Json,
         };
       }),
     }),

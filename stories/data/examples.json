@@ -17,6 +17,40 @@
                     "pageNumbers": {
                         "enabled": true,
                         "position": "center"
+                    },
+                    "footer": {
+                        "repeat": true,
+                        "rows": [
+                            {
+                                "blocks": [
+                                    {
+                                        "type": "text",
+                                        "id": "footer-legal",
+                                        "config": {
+                                            "width": "68%"
+                                        }
+                                    },
+                                    {
+                                        "type": "key-value",
+                                        "id": "footer-meta",
+                                        "config": {
+                                            "width": "32%",
+                                            "align": "right",
+                                            "fields": [
+                                                {
+                                                    "key": "registration",
+                                                    "label": "Registry"
+                                                },
+                                                {
+                                                    "key": "taxNumber",
+                                                    "label": "Tax no."
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
                     }
                 },
                 "typography": {
@@ -40,7 +74,25 @@
                             "id": "invoice-meta",
                             "config": {
                                 "width": "42%",
-                                "align": "right"
+                                "align": "right",
+                                "fields": [
+                                    {
+                                        "key": "invoiceNumber",
+                                        "label": "Invoice number"
+                                    },
+                                    {
+                                        "key": "issueDate",
+                                        "label": "Issue date"
+                                    },
+                                    {
+                                        "key": "dueDate",
+                                        "label": "Due date"
+                                    },
+                                    {
+                                        "key": "currency",
+                                        "label": "Currency"
+                                    }
+                                ]
                             }
                         }
                     ]
@@ -51,14 +103,54 @@
                             "type": "key-value",
                             "id": "seller",
                             "config": {
-                                "width": "50%"
+                                "width": "50%",
+                                "fields": [
+                                    {
+                                        "key": "name",
+                                        "label": "Seller"
+                                    },
+                                    {
+                                        "key": "address",
+                                        "label": "Address"
+                                    },
+                                    {
+                                        "key": "contact",
+                                        "label": "Contact"
+                                    },
+                                    {
+                                        "key": "email",
+                                        "label": "Email"
+                                    },
+                                    {
+                                        "key": "vatId",
+                                        "label": "VAT ID"
+                                    }
+                                ]
                             }
                         },
                         {
                             "type": "key-value",
                             "id": "buyer",
                             "config": {
-                                "width": "50%"
+                                "width": "50%",
+                                "fields": [
+                                    {
+                                        "key": "name",
+                                        "label": "Buyer"
+                                    },
+                                    {
+                                        "key": "address",
+                                        "label": "Address"
+                                    },
+                                    {
+                                        "key": "email",
+                                        "label": "Email"
+                                    },
+                                    {
+                                        "key": "reference",
+                                        "label": "Buyer reference"
+                                    }
+                                ]
                             }
                         }
                     ]
@@ -119,7 +211,25 @@
                             "id": "totals",
                             "config": {
                                 "width": "46%",
-                                "align": "right"
+                                "align": "right",
+                                "fields": [
+                                    {
+                                        "key": "netAmount",
+                                        "label": "Net amount"
+                                    },
+                                    {
+                                        "key": "vatAmount",
+                                        "label": "VAT 19%"
+                                    },
+                                    {
+                                        "key": "grandTotal",
+                                        "label": "Grand total"
+                                    },
+                                    {
+                                        "key": "amountDue",
+                                        "label": "Amount due"
+                                    }
+                                ]
                             }
                         }
                     ]
@@ -141,97 +251,169 @@
                             "id": "payment",
                             "config": {
                                 "width": "46%",
-                                "align": "right"
+                                "align": "right",
+                                "fields": [
+                                    {
+                                        "key": "bank",
+                                        "label": "Bank"
+                                    },
+                                    {
+                                        "key": "iban",
+                                        "label": "IBAN"
+                                    },
+                                    {
+                                        "key": "bic",
+                                        "label": "BIC"
+                                    },
+                                    {
+                                        "key": "reference",
+                                        "label": "Payment reference"
+                                    }
+                                ]
                             }
                         }
                     ]
-                },
-                {
-                    "blocks": [
-                        {
-                            "type": "divider",
-                            "id": "footer-rule"
-                        }
-                    ]
-                },
-                {
-                    "blocks": [
-                        {
-                            "type": "text",
-                            "id": "footer"
-                        }
-                    ]
                 }
-            ]
+            ],
+            "data": {
+                "example": {
+                    "invoice-meta": {
+                        "invoiceNumber": "RE-2026-001234",
+                        "issueDate": "2026-02-17",
+                        "dueDate": "2026-03-19"
+                    },
+                    "buyer": {
+                        "name": "Musterkunde AG",
+                        "address": "K\u00e4uferweg 2, 80331 M\u00fcnchen, DE",
+                        "email": "invoice@musterkunde.example",
+                        "reference": "04011000-12345-67"
+                    },
+                    "items": {
+                        "headers": [
+                            "#",
+                            "Description",
+                            "Qty",
+                            "Unit price",
+                            "VAT",
+                            "Total"
+                        ],
+                        "rows": [
+                            [
+                                "1",
+                                "Accessible PDF template implementation",
+                                "40",
+                                "95,00 \u20ac",
+                                "19%",
+                                "3.800,00 \u20ac"
+                            ],
+                            [
+                                "2",
+                                "Document structure and tagging review",
+                                "16",
+                                "85,00 \u20ac",
+                                "19%",
+                                "1.360,00 \u20ac"
+                            ],
+                            [
+                                "3",
+                                "Project management and acceptance testing",
+                                "8",
+                                "90,00 \u20ac",
+                                "19%",
+                                "720,00 \u20ac"
+                            ],
+                            [
+                                "4",
+                                "Annual hosting and maintenance package",
+                                "1",
+                                "240,00 \u20ac",
+                                "19%",
+                                "240,00 \u20ac"
+                            ]
+                        ]
+                    },
+                    "vat-breakdown": {
+                        "headers": [
+                            "VAT category",
+                            "Rate",
+                            "Taxable amount",
+                            "VAT amount"
+                        ],
+                        "rows": [
+                            [
+                                "Standard rate",
+                                "19%",
+                                "6.120,00 \u20ac",
+                                "1.162,80 \u20ac"
+                            ]
+                        ]
+                    },
+                    "totals": {
+                        "netAmount": "6.120,00 \u20ac",
+                        "vatAmount": "1.162,80 \u20ac",
+                        "grandTotal": "7.282,80 \u20ac",
+                        "amountDue": "7.282,80 \u20ac"
+                    },
+                    "payment": {
+                        "reference": "RE-2026-001234"
+                    }
+                },
+                "defaults": {
+                    "notice": {
+                        "text": "Please transfer the amount due within 30 days. Include the invoice number as the payment reference."
+                    },
+                    "payment": {
+                        "bank": "Musterbank Berlin",
+                        "iban": "DE89370400440532013000",
+                        "bic": "COBADEFFXXX"
+                    }
+                },
+                "constants": {
+                    "logo": {
+                        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNjAiIGhlaWdodD0iNzIiIHZpZXdCb3g9IjAgMCAyNjAgNzIiPjx0ZXh0IHg9IjAiIHk9IjQyIiBmaWxsPSIjMTExODI3IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI3MDAiPlBERiBVQSBLaXQ8L3RleHQ+PC9zdmc+",
+                        "alt": "PDF UA Kit GmbH logo"
+                    },
+                    "invoice-meta": {
+                        "currency": "EUR"
+                    },
+                    "seller": {
+                        "name": "PDF UA Kit GmbH",
+                        "address": "Musterstra\u00dfe 1, 10115 Berlin, DE",
+                        "contact": "Max Mustermann",
+                        "email": "billing@pdfua-kit.example",
+                        "vatId": "DE123456789"
+                    },
+                    "footer-legal": {
+                        "text": "PDF UA Kit GmbH \u00b7 Musterstra\u00dfe 1 \u00b7 10115 Berlin \u00b7 Germany \u00b7 Invoice was created electronically and is valid without signature."
+                    },
+                    "footer-meta": {
+                        "registration": "HRB 123456 B",
+                        "taxNumber": "DE123456789"
+                    }
+                }
+            }
         },
         "data": {
-            "logo": {
-                "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNjAiIGhlaWdodD0iNzIiIHZpZXdCb3g9IjAgMCAyNjAgNzIiPjx0ZXh0IHg9IjAiIHk9IjQyIiBmaWxsPSIjMTExODI3IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI3MDAiPlBERiBVQSBLaXQ8L3RleHQ+PC9zdmc+",
-                "alt": "PDF UA Kit GmbH logo"
+            "notice": {
+                "text": "Please transfer the amount due within 30 days. Include the invoice number as the payment reference."
+            },
+            "payment": {
+                "bank": "Musterbank Berlin",
+                "iban": "DE89370400440532013000",
+                "bic": "COBADEFFXXX",
+                "reference": "RE-2026-001234"
             },
             "invoice-meta": {
-                "entries": [
-                    {
-                        "label": "Invoice number",
-                        "value": "RE-2026-001234"
-                    },
-                    {
-                        "label": "Issue date",
-                        "value": "2026-02-17"
-                    },
-                    {
-                        "label": "Due date",
-                        "value": "2026-03-19"
-                    },
-                    {
-                        "label": "Currency",
-                        "value": "EUR"
-                    }
-                ]
-            },
-            "seller": {
-                "entries": [
-                    {
-                        "label": "Seller",
-                        "value": "PDF UA Kit GmbH"
-                    },
-                    {
-                        "label": "Address",
-                        "value": "Musterstra\u00dfe 1, 10115 Berlin, DE"
-                    },
-                    {
-                        "label": "Contact",
-                        "value": "Max Mustermann"
-                    },
-                    {
-                        "label": "Email",
-                        "value": "billing@pdfua-kit.example"
-                    },
-                    {
-                        "label": "VAT ID",
-                        "value": "DE123456789"
-                    }
-                ]
+                "invoiceNumber": "RE-2026-001234",
+                "issueDate": "2026-02-17",
+                "dueDate": "2026-03-19",
+                "currency": "EUR"
             },
             "buyer": {
-                "entries": [
-                    {
-                        "label": "Buyer",
-                        "value": "Musterkunde AG"
-                    },
-                    {
-                        "label": "Address",
-                        "value": "K\u00e4uferweg 2, 80331 M\u00fcnchen, DE"
-                    },
-                    {
-                        "label": "Email",
-                        "value": "invoice@musterkunde.example"
-                    },
-                    {
-                        "label": "Buyer reference",
-                        "value": "04011000-12345-67"
-                    }
-                ]
+                "name": "Musterkunde AG",
+                "address": "K\u00e4uferweg 2, 80331 M\u00fcnchen, DE",
+                "email": "invoice@musterkunde.example",
+                "reference": "04011000-12345-67"
             },
             "items": {
                 "headers": [
@@ -294,50 +476,28 @@
                 ]
             },
             "totals": {
-                "entries": [
-                    {
-                        "label": "Net amount",
-                        "value": "6.120,00 \u20ac"
-                    },
-                    {
-                        "label": "VAT 19%",
-                        "value": "1.162,80 \u20ac"
-                    },
-                    {
-                        "label": "Grand total",
-                        "value": "7.282,80 \u20ac"
-                    },
-                    {
-                        "label": "Amount due",
-                        "value": "7.282,80 \u20ac"
-                    }
-                ]
+                "netAmount": "6.120,00 \u20ac",
+                "vatAmount": "1.162,80 \u20ac",
+                "grandTotal": "7.282,80 \u20ac",
+                "amountDue": "7.282,80 \u20ac"
             },
-            "notice": {
-                "text": "Please transfer the amount due within 30 days. Include the invoice number as the payment reference."
+            "logo": {
+                "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNjAiIGhlaWdodD0iNzIiIHZpZXdCb3g9IjAgMCAyNjAgNzIiPjx0ZXh0IHg9IjAiIHk9IjQyIiBmaWxsPSIjMTExODI3IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI3MDAiPlBERiBVQSBLaXQ8L3RleHQ+PC9zdmc+",
+                "alt": "PDF UA Kit GmbH logo"
             },
-            "payment": {
-                "entries": [
-                    {
-                        "label": "Bank",
-                        "value": "Musterbank Berlin"
-                    },
-                    {
-                        "label": "IBAN",
-                        "value": "DE89370400440532013000"
-                    },
-                    {
-                        "label": "BIC",
-                        "value": "COBADEFFXXX"
-                    },
-                    {
-                        "label": "Payment reference",
-                        "value": "RE-2026-001234"
-                    }
-                ]
+            "seller": {
+                "name": "PDF UA Kit GmbH",
+                "address": "Musterstra\u00dfe 1, 10115 Berlin, DE",
+                "contact": "Max Mustermann",
+                "email": "billing@pdfua-kit.example",
+                "vatId": "DE123456789"
             },
-            "footer": {
-                "text": "PDF UA Kit GmbH \u00b7 Musterstra\u00dfe 1 \u00b7 10115 Berlin \u00b7 Germany \u00b7 VAT ID DE123456789 \u00b7 Invoice was created electronically and is valid without signature."
+            "footer-legal": {
+                "text": "PDF UA Kit GmbH \u00b7 Musterstra\u00dfe 1 \u00b7 10115 Berlin \u00b7 Germany \u00b7 Invoice was created electronically and is valid without signature."
+            },
+            "footer-meta": {
+                "registration": "HRB 123456 B",
+                "taxNumber": "DE123456789"
             }
         }
     }

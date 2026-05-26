@@ -17,6 +17,24 @@ final class InvoiceExample
                     'locale' => 'de_DE',
                     'margins' => ['top' => 20, 'right' => 20, 'bottom' => 20, 'left' => 25],
                     'pageNumbers' => ['enabled' => true, 'position' => 'center'],
+                    'footer' => [
+                        'repeat' => true,
+                        'rows' => [
+                            [
+                                'blocks' => [
+                                    ['type' => 'text', 'id' => 'footer-legal', 'config' => ['width' => '68%']],
+                                    ['type' => 'key-value', 'id' => 'footer-meta', 'config' => [
+                                        'width' => '32%',
+                                        'align' => 'right',
+                                        'fields' => [
+                                            ['key' => 'registration', 'label' => 'Registry'],
+                                            ['key' => 'taxNumber', 'label' => 'Tax no.'],
+                                        ],
+                                    ]],
+                                ],
+                            ],
+                        ],
+                    ],
                 ],
                 'typography' => ['family' => 'Inter', 'size' => 10],
             ],
@@ -97,32 +115,39 @@ final class InvoiceExample
                         ]],
                     ],
                 ],
-                ['blocks' => [['type' => 'divider', 'id' => 'footer-rule']]],
-                ['blocks' => [['type' => 'text', 'id' => 'footer']]],
             ],
+            'data' => self::templateData(),
         ];
     }
 
     /** @return array<string, mixed> */
     public static function data(): array
     {
+        return self::mergeDataMaps(
+            self::defaultData(),
+            self::exampleData(),
+            self::lockedData(),
+        );
+    }
+
+    /** @return array<string, mixed> */
+    private static function templateData(): array
+    {
         return [
-            'logo' => [
-                'src' => 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNjAiIGhlaWdodD0iNzIiIHZpZXdCb3g9IjAgMCAyNjAgNzIiPjx0ZXh0IHg9IjAiIHk9IjQyIiBmaWxsPSIjMTExODI3IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI3MDAiPlBERiBVQSBLaXQ8L3RleHQ+PC9zdmc+',
-                'alt' => 'PDF UA Kit GmbH logo',
-            ],
+            'example' => self::exampleData(),
+            'defaults' => self::defaultData(),
+            'constants' => self::lockedData(),
+        ];
+    }
+
+    /** @return array<string, array<string, mixed>> */
+    private static function exampleData(): array
+    {
+        return [
             'invoice-meta' => [
                 'invoiceNumber' => 'RE-2026-001234',
                 'issueDate' => '2026-02-17',
                 'dueDate' => '2026-03-19',
-                'currency' => 'EUR',
-            ],
-            'seller' => [
-                'name' => 'PDF UA Kit GmbH',
-                'address' => 'Musterstraße 1, 10115 Berlin, DE',
-                'contact' => 'Max Mustermann',
-                'email' => 'billing@pdfua-kit.example',
-                'vatId' => 'DE123456789',
             ],
             'buyer' => [
                 'name' => 'Musterkunde AG',
@@ -151,14 +176,67 @@ final class InvoiceExample
                 'grandTotal' => '7.282,80 €',
                 'amountDue' => '7.282,80 €',
             ],
+            'payment' => [
+                'reference' => 'RE-2026-001234',
+            ],
+        ];
+    }
+
+    /** @return array<string, array<string, mixed>> */
+    private static function defaultData(): array
+    {
+        return [
             'notice' => ['text' => 'Please transfer the amount due within 30 days. Include the invoice number as the payment reference.'],
             'payment' => [
                 'bank' => 'Musterbank Berlin',
                 'iban' => 'DE89370400440532013000',
                 'bic' => 'COBADEFFXXX',
-                'reference' => 'RE-2026-001234',
             ],
-            'footer' => ['text' => 'PDF UA Kit GmbH · Musterstraße 1 · 10115 Berlin · Germany · VAT ID DE123456789 · Invoice was created electronically and is valid without signature.'],
         ];
+    }
+
+    /** @return array<string, array<string, mixed>> */
+    private static function lockedData(): array
+    {
+        return [
+            'logo' => [
+                'src' => 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNjAiIGhlaWdodD0iNzIiIHZpZXdCb3g9IjAgMCAyNjAgNzIiPjx0ZXh0IHg9IjAiIHk9IjQyIiBmaWxsPSIjMTExODI3IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI3MDAiPlBERiBVQSBLaXQ8L3RleHQ+PC9zdmc+',
+                'alt' => 'PDF UA Kit GmbH logo',
+            ],
+            'invoice-meta' => [
+                'currency' => 'EUR',
+            ],
+            'seller' => [
+                'name' => 'PDF UA Kit GmbH',
+                'address' => 'Musterstraße 1, 10115 Berlin, DE',
+                'contact' => 'Max Mustermann',
+                'email' => 'billing@pdfua-kit.example',
+                'vatId' => 'DE123456789',
+            ],
+            'footer-legal' => [
+                'text' => 'PDF UA Kit GmbH · Musterstraße 1 · 10115 Berlin · Germany · Invoice was created electronically and is valid without signature.',
+            ],
+            'footer-meta' => [
+                'registration' => 'HRB 123456 B',
+                'taxNumber' => 'DE123456789',
+            ],
+        ];
+    }
+
+    /**
+     * @param  array<string, array<string, mixed>>  $maps
+     * @return array<string, array<string, mixed>>
+     */
+    private static function mergeDataMaps(array ...$maps): array
+    {
+        $merged = [];
+
+        foreach ($maps as $map) {
+            foreach ($map as $blockId => $data) {
+                $merged[$blockId] = array_replace_recursive($merged[$blockId] ?? [], $data);
+            }
+        }
+
+        return $merged;
     }
 }

@@ -338,7 +338,7 @@ function FooterCanvas({
 
   return (
     <section className="space-y-2">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-2">
         <div>
           <div className="text-xs font-semibold uppercase tracking-wide text-[var(--builder-muted)]">
             Footer

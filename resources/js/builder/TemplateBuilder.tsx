@@ -32,7 +32,6 @@ import {
   updateDataField,
 } from "./state/templateModel";
 import { exampleFromSchema } from "./lib/exampleFromSchema";
-import { estimatedPhysicalScale } from "./lib/displayScale";
 import { useLatest } from "./useLatest";
 import type {
   DataMap,
@@ -102,8 +101,7 @@ export default function TemplateBuilder({
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [dataSchema, setDataSchema] = useState<JsonSchema>({});
   const [schemaError, setSchemaError] = useState<string | null>(null);
-  const defaultCanvasScale = useMemo(() => estimatedPhysicalScale(), []);
-  const [canvasScale, setCanvasScale] = useState(defaultCanvasScale);
+  const [canvasScale, setCanvasScale] = useState(1);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -395,7 +393,7 @@ export default function TemplateBuilder({
                 <CanvasZoomControls
                   onDecrease={() => setCanvasScale((scale) => clampZoom(scale - ZOOM_STEP))}
                   onIncrease={() => setCanvasScale((scale) => clampZoom(scale + ZOOM_STEP))}
-                  onReset={() => setCanvasScale(defaultCanvasScale)}
+                  onReset={() => setCanvasScale(1)}
                 />
                 <EditCanvas
                   model={model}

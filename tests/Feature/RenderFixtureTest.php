@@ -109,6 +109,10 @@ it('renders fixture to expected body HTML', function (string $name, string $path
     $fixture = require $path;
     expect($fixture)->toBeInstanceOf(TestFixture::class);
 
+    if ($fixture->html === null) {
+        $this->markTestSkipped("Fixture {$name} has no expected body HTML.");
+    }
+
     $factory = app(TemplateFactory::class);
     $renderer = app(TemplateRenderer::class);
 

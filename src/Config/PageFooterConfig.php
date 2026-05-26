@@ -19,8 +19,5 @@ final readonly class PageFooterConfig
         #[Title('Rows')]
         #[Description('Footer rows rendered after the page body.')]
         public array $rows = [],
-        #[Title('Pagination')]
-        #[Description('Page number display settings for this footer.')]
-        public PageNumbersConfig $pageNumbers = new PageNumbersConfig,
     ) {}
 }

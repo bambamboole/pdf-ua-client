@@ -11,6 +11,8 @@ import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import BlockPalette from "./BlockPalette";
 import EditCanvas from "./EditCanvas";
+import PageCanvas from "./PageCanvas";
+import PdfCanvas from "./PdfCanvas";
 import { getPageFormat, getBlockTitle, getBlockSubschemas } from "./lib/schema";
 import { listExamples, loadExample } from "./lib/examples";
 import { dataSchemaForTemplate } from "./lib/dataSchema";
@@ -44,8 +46,6 @@ import type {
 } from "./types";
 import CanvasZoomControls from "./CanvasZoomControls";
 
-const PageCanvas = lazy(() => import("./PageCanvas"));
-const PdfCanvas = lazy(() => import("./PdfCanvas"));
 const SchemaView = lazy(() => import("./SchemaView"));
 
 type BuilderTab = "build" | "schema" | "html" | "pdf";

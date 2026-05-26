@@ -154,11 +154,13 @@ final class TemplateRenderer
             $rowsHtml .= $this->renderRow($row, $runtimeData, $ctx);
         }
 
+        $pageNumbersHtml = $this->footerPageNumbersHtml($template->config->page, $options);
+
         $class = $options->mode === 'print' && $footer->repeat
             ? 'page-footer page-footer-repeated'
             : 'page-footer page-footer-preview';
 
-        return "<footer class=\"{$class}\" role=\"contentinfo\">{$rowsHtml}</footer>";
+        return "<footer class=\"{$class}\" role=\"contentinfo\">{$rowsHtml}{$pageNumbersHtml}</footer>";
     }
 
     private function emitPositioningCss(RenderContext $ctx, string $id, BlockConfig $config, bool $widthOnCell = false): void
@@ -296,6 +298,8 @@ hr { border: none; border-top: 1px solid #d1d5db; margin: 2.5mm 0; }
 .page-footer .row { margin: 0; }
 .page-footer-repeated { position: running(pageFooter); width: 100%; }
 .page-footer-preview { margin-top: 6mm; padding-top: 2mm; border-top: 1px solid #d1d5db; }
+.page-footer-page-numbers { color: #9ca3af; font-size: 8pt; padding-top: 2mm; text-align: center; }
+.page-footer-page-numbers::after { content: counter(page) " / " counter(pages); }
 CSS;
     }
 
@@ -305,12 +309,10 @@ CSS;
         $css = "@page { size: {$page->format->value}; margin: {$margin}; }";
 
         if ($page->footer->repeat && $page->footer->rows !== []) {
-            $footerPosition = $this->footerMarginBox($page);
-            $footerWidth = $footerPosition === 'bottom-left' ? ' width: 100%;' : '';
-            $css .= " @page { @{$footerPosition} { content: element(pageFooter);{$footerWidth} } }";
+            $css .= ' @page { @bottom-center { content: element(pageFooter); } }';
         }
 
-        if ($page->pageNumbers->enabled) {
+        if ($page->pageNumbers->enabled && ! $this->rendersPageNumbersInsideFooter($page)) {
             $position = $page->pageNumbers->position->value;
             $css .= " @page { @bottom-{$position} { content: counter(page) \" / \" counter(pages); font-size: 8pt; color: #9ca3af; vertical-align: bottom; padding-bottom: 4mm; } }";
         }
@@ -318,13 +320,21 @@ CSS;
         return $css;
     }
 
-    private function footerMarginBox(PageConfig $page): string
+    private function rendersPageNumbersInsideFooter(PageConfig $page): bool
     {
-        if ($page->pageNumbers->enabled && $page->pageNumbers->position->value === 'center') {
-            return 'bottom-left';
+        return $page->footer->repeat
+            && $page->footer->rows !== []
+            && $page->pageNumbers->enabled
+            && $page->pageNumbers->position->value === 'center';
+    }
+
+    private function footerPageNumbersHtml(PageConfig $page, RenderOptions $options): string
+    {
+        if ($options->mode !== 'print' || ! $this->rendersPageNumbersInsideFooter($page)) {
+            return '';
         }
 
-        return 'bottom-center';
+        return '<div class="page-footer-page-numbers" aria-hidden="true"></div>';
     }
 
     /** @return array<string, string> */

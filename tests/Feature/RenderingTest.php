@@ -428,7 +428,7 @@ it('renders repeated footer rows and page numbers through the page margin box in
     expect($html)->toContain('position: running(pageFooter); width: 100%;');
 });
 
-it('keeps repeated footer and centered page numbers in separate page margin boxes', function () {
+it('keeps repeated footer full width when page numbers are centered', function () {
     $template = $this->factory->fromArray([
         'version' => 1,
         'config' => [
@@ -451,10 +451,12 @@ it('keeps repeated footer and centered page numbers in separate page margin boxe
         'footer_note' => ['text' => 'Footer'],
     ], options: new RenderOptions(mode: 'print'));
 
-    expect($html)->toContain('@page { @bottom-left { content: element(pageFooter); width: 100%; } }');
-    expect($html)->toContain('@page { @bottom-center { content: counter(page) " / " counter(pages); font-size: 8pt; color: #9ca3af; vertical-align: bottom; padding-bottom: 4mm; } }');
+    expect($html)->toContain('@page { @bottom-center { content: element(pageFooter); } }');
+    expect($html)->not->toContain('@page { @bottom-center { content: counter(page)');
     expect($html)->toContain('<footer class="page-footer page-footer-repeated" role="contentinfo">');
     expect($html)->toContain('<p>Footer</p>');
+    expect($html)->toContain('<div class="page-footer-page-numbers" aria-hidden="true"></div>');
+    expect($html)->toContain('.page-footer-page-numbers::after { content: counter(page) " / " counter(pages); }');
 });
 
 it('renders footer rows inline in preview mode', function () {

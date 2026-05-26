@@ -76,4 +76,24 @@ it('renders the invoice example preview and matches the browser screenshot', fun
         ->assertScript('document.querySelector("iframe")?.getAttribute("sandbox") === ""')
         ->withinFrame('iframe', fn ($frame) => $frame->assertSee('PDF UA Kit GmbH'))
         ->assertScreenshotMatches(fullPage: false, openDiff: false);
+})->skip(fn (): bool => filter_var(getenv('CI'), FILTER_VALIDATE_BOOLEAN), 'Visual regression baseline is environment-specific; run locally via composer test:browser.');
+
+it('pins the preview footer to the page bottom and shows the page number', function (): void {
+    $page = visit('/')
+        ->click('Invoice')
+        ->click('HTML')
+        ->wait(1)
+        ->assertNoJavaScriptErrors();
+
+    $page->withinFrame('iframe', function ($frame): void {
+        $frame->assertSee('1 / 1');
+
+        $frame->assertScript(
+            '(() => { const b = document.body.getBoundingClientRect(); return Math.round(b.height) >= 1000; })()',
+        );
+
+        $frame->assertScript(
+            '(() => { const f = document.querySelector("footer.page-footer-preview"); const bh = document.body.getBoundingClientRect().height; if (!f) { return false; } const fb = f.getBoundingClientRect().bottom; return fb > bh - 130 && fb <= bh + 1; })()',
+        );
+    });
 });

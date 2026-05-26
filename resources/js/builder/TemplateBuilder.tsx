@@ -354,7 +354,7 @@ export default function TemplateBuilder({
             examples={listExamples(examples)}
             pageConfig={model.config}
             onLoadExample={(entry) => {
-              setModel(() => loadExample(entry));
+              setModel(loadExample(entry));
               setSelectedBlockUid(null);
             }}
             onUpdateTemplateConfig={(config) =>

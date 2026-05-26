@@ -596,3 +596,108 @@ it('rejects a block config that violates a schema constraint', function () {
         'rows' => [['blocks' => [['type' => 'heading', 'id' => 'h', 'config' => ['level' => 7]]]]],
     ]))->toThrow(TemplateValidationException::class);
 });
+
+it('preview body CSS simulates the A4 page height as a flex column', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['format' => 'A4', 'margins' => ['top' => 20, 'right' => 15, 'bottom' => 20, 'left' => 15]]],
+        'rows' => [['blocks' => [['type' => 'text', 'id' => 'x']]]],
+    ]);
+
+    $preview = $this->renderer->render($template, ['x' => ['text' => 'hello']], options: new RenderOptions(mode: 'preview'));
+
+    expect($preview)->toContain('min-height: 297mm')
+        ->and($preview)->toContain('display: flex')
+        ->and($preview)->toContain('flex-direction: column')
+        ->and($preview)->toContain('.page-footer-preview { margin-top: auto;');
+});
+
+it('preview emits a page-number placeholder when page numbers are enabled', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => [
+            'page' => [
+                'format' => 'A4',
+                'pageNumbers' => ['enabled' => true, 'position' => 'center'],
+                'footer' => [
+                    'rows' => [[
+                        'blocks' => [['type' => 'text', 'id' => 'fn']],
+                    ]],
+                ],
+            ],
+        ],
+        'rows' => [['blocks' => [['type' => 'text', 'id' => 'body']]]],
+    ]);
+
+    $preview = $this->renderer->render($template, [
+        'body' => ['text' => 'Body'],
+        'fn' => ['text' => 'Footer'],
+    ], options: new RenderOptions(mode: 'preview'));
+
+    expect($preview)->toContain('<div class="page-number-preview" style="text-align: center;" aria-hidden="true">1 / 1</div>');
+});
+
+it('preview page-number placeholder respects the configured position', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => [
+            'page' => [
+                'format' => 'A4',
+                'pageNumbers' => ['enabled' => true, 'position' => 'right'],
+                'footer' => [
+                    'rows' => [[
+                        'blocks' => [['type' => 'text', 'id' => 'fn']],
+                    ]],
+                ],
+            ],
+        ],
+        'rows' => [['blocks' => [['type' => 'text', 'id' => 'body']]]],
+    ]);
+
+    $preview = $this->renderer->render($template, [
+        'body' => ['text' => 'Body'],
+        'fn' => ['text' => 'Footer'],
+    ], options: new RenderOptions(mode: 'preview'));
+
+    expect($preview)->toContain('<div class="page-number-preview" style="text-align: right;" aria-hidden="true">1 / 1</div>');
+});
+
+it('preview renders a footer with only the page-number placeholder when there are no footer rows', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => [
+            'page' => [
+                'format' => 'A4',
+                'pageNumbers' => ['enabled' => true, 'position' => 'center'],
+            ],
+        ],
+        'rows' => [['blocks' => [['type' => 'text', 'id' => 'body']]]],
+    ]);
+
+    $preview = $this->renderer->render($template, [
+        'body' => ['text' => 'Body'],
+    ], options: new RenderOptions(mode: 'preview'));
+
+    expect($preview)->toContain('<footer class="page-footer page-footer-preview" role="contentinfo">')
+        ->and($preview)->toContain('<div class="page-number-preview" style="text-align: center;" aria-hidden="true">1 / 1</div>');
+});
+
+it('preview does not emit page-number placeholder when page numbers are disabled', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => [
+            'page' => [
+                'format' => 'A4',
+                'pageNumbers' => ['enabled' => false, 'position' => 'center'],
+            ],
+        ],
+        'rows' => [['blocks' => [['type' => 'text', 'id' => 'body']]]],
+    ]);
+
+    $preview = $this->renderer->render($template, [
+        'body' => ['text' => 'Body'],
+    ], options: new RenderOptions(mode: 'preview'));
+
+    expect($preview)->not->toContain('<div class="page-number-preview"')
+        ->and($preview)->not->toContain('1 / 1');
+});

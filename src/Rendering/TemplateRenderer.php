@@ -148,17 +148,20 @@ final class TemplateRenderer
     private function renderFooter(Template $template, array $runtimeData, RenderContext $ctx, RenderOptions $options): string
     {
         $footer = $template->config->page->footer;
+        $pageNumbersHtml = $this->footerPageNumbersHtml($template->config->page, $options);
 
         if ($footer->rows === []) {
-            return '';
+            if ($pageNumbersHtml === '') {
+                return '';
+            }
+
+            return "<footer class=\"page-footer page-footer-preview\" role=\"contentinfo\">{$pageNumbersHtml}</footer>";
         }
 
         $rowsHtml = '';
         foreach ($footer->rows as $row) {
             $rowsHtml .= $this->renderRow($row, $runtimeData, $ctx);
         }
-
-        $pageNumbersHtml = $this->footerPageNumbersHtml($template->config->page, $options);
 
         $class = $options->mode === 'print' && $footer->repeat
             ? 'page-footer page-footer-repeated'
@@ -246,8 +249,10 @@ final class TemplateRenderer
             ? $this->printPageCss($page)
             : '';
 
+        $heightMm = $page->format->heightMm();
+        $margins = $this->marginShorthand($page->margins);
         $bodyPadding = $options->mode === 'preview'
-            ? 'body { padding: '.$this->marginShorthand($page->margins).'; }'
+            ? "body { padding: {$margins}; min-height: {$heightMm}mm; box-sizing: border-box; display: flex; flex-direction: column; }"
             : '';
 
         $bodyTypographyProps = $this->cssRulesFor($template->config->typography)[''] ?? '';
@@ -301,7 +306,8 @@ hr { border: none; border-top: 1px solid #d1d5db; margin: 2.5mm 0; }
 .page-footer { color: #6b7280; font-size: 8pt; line-height: 1.25; }
 .page-footer .row { margin: 0; }
 .page-footer-repeated { position: running(pageFooter); width: 100%; }
-.page-footer-preview { margin-top: 6mm; padding-top: 2mm; border-top: 1px solid #d1d5db; }
+.page-footer-preview { margin-top: auto; padding-top: 2mm; border-top: 1px solid #d1d5db; }
+.page-number-preview { color: #9ca3af; font-size: 8pt; padding-top: 2mm; }
 .page-footer-page-numbers { color: #9ca3af; font-size: 8pt; padding-top: 2mm; text-align: center; }
 .page-footer-page-numbers::after { content: counter(page) " / " counter(pages); }
 CSS;
@@ -334,7 +340,17 @@ CSS;
 
     private function footerPageNumbersHtml(PageConfig $page, RenderOptions $options): string
     {
-        if ($options->mode !== 'print' || ! $this->rendersPageNumbersInsideFooter($page)) {
+        if (! $page->pageNumbers->enabled) {
+            return '';
+        }
+
+        if ($options->mode === 'preview') {
+            $position = $page->pageNumbers->position->value;
+
+            return '<div class="page-number-preview" style="text-align: '.$position.';" aria-hidden="true">1 / 1</div>';
+        }
+
+        if (! $this->rendersPageNumbersInsideFooter($page)) {
             return '';
         }
 

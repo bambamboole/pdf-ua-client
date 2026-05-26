@@ -1,4 +1,4 @@
-import type { DataMap, DataValue, Json, TemplateDataLayers } from "../types";
+import type { DataMap, DataValue, TemplateDataLayers } from "../types";
 
 export interface KeyedField {
   key: string;
@@ -184,16 +184,6 @@ export function rowsToJson(value: unknown): string {
   }
 
   return JSON.stringify(value, null, 2);
-}
-
-export function pickProperties(config: Json, keys: string[]): Json {
-  return Object.fromEntries(
-    keys.map((key) => [key, config[key]]).filter(([, value]) => value !== undefined),
-  );
-}
-
-export function objectValue(value: unknown): Json {
-  return isPlainObject(value) ? value : {};
 }
 
 export const inputClass =

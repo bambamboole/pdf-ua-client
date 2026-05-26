@@ -27,7 +27,7 @@ export default function PageSettingsPanel({ schema, config, onUpdateTemplateConf
           schema={settingsSchema}
           formData={config ?? {}}
           onChange={(nextConfig) =>
-            onUpdateTemplateConfig(preserveFooterRows(config ?? {}, nextConfig))
+            onUpdateTemplateConfig(preserveCanvasPageConfig(config ?? {}, nextConfig))
           }
         />
       </Suspense>
@@ -38,33 +38,34 @@ export default function PageSettingsPanel({ schema, config, onUpdateTemplateConf
 export function pageSettingsSchema(schema: JsonSchema): JsonSchema {
   const next = structuredClone(schema) as JsonSchema;
   const defs = objectValue(next.$defs);
-  const pageFooterConfig = objectValue(defs?.pageFooterConfig);
-  const footerProperties = objectValue(pageFooterConfig?.properties);
+  const pageConfig = objectValue(defs?.pageConfig);
+  const pageProperties = objectValue(pageConfig?.properties);
 
-  if (footerProperties) {
-    delete footerProperties.rows;
+  if (pageProperties) {
+    delete pageProperties.footer;
+    delete pageProperties.pageNumbers;
   }
 
   return getTemplateConfigSchema(next);
 }
 
-export function preserveFooterRows(currentConfig: Json, nextConfig: Json): Json {
+export function preserveCanvasPageConfig(currentConfig: Json, nextConfig: Json): Json {
   const currentPage = objectValue(currentConfig.page);
-  const currentFooter = objectValue(currentPage?.footer);
-  const currentRows = currentFooter?.rows;
+  const currentFooter = currentPage?.footer;
+  const currentPageNumbers = currentPage?.pageNumbers;
 
-  if (!Array.isArray(currentRows)) {
+  if (currentFooter === undefined && currentPageNumbers === undefined) {
     return nextConfig;
   }
 
   const nextPage = objectOrEmpty(nextConfig.page);
-  const nextFooter = { ...objectOrEmpty(nextPage.footer), rows: currentRows };
 
   return {
     ...nextConfig,
     page: {
       ...nextPage,
-      footer: nextFooter,
+      ...(currentFooter !== undefined ? { footer: currentFooter } : {}),
+      ...(currentPageNumbers !== undefined ? { pageNumbers: currentPageNumbers } : {}),
     },
   };
 }

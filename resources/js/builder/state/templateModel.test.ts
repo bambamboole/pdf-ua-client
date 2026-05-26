@@ -41,6 +41,25 @@ describe("fromTemplate", () => {
     expect(m.data.example.title).toEqual({ text: "Hi" });
     expect(m.rows[0].blocks[0].uid).toBeTruthy();
   });
+  it("promotes footer rows into editable footer state", () => {
+    const m = fromTemplate(
+      {
+        ...template,
+        config: {
+          page: {
+            footer: {
+              repeat: true,
+              rows: [{ blocks: [{ type: "text", id: "footer-note" }] }],
+            },
+          },
+        },
+      },
+      { "footer-note": { text: "Footer" } },
+    );
+
+    expect(m.footerRows[0].blocks[0].id).toBe("footer-note");
+    expect(m.footerRows[0].blocks[0].data).toEqual({ text: "Footer" });
+  });
   it("leaves block data empty when the data map lacks an id", () => {
     expect(fromTemplate(template).data.example.title).toBeUndefined();
   });
@@ -67,6 +86,26 @@ describe("toTemplate", () => {
     expect(out.rows[1].blocks[0].config).toEqual({ width: "50%" });
     expect((out.rows[1] as unknown as Record<string, unknown>).columnWidths).toBeUndefined();
     expect(out.data?.example).toEqual(data);
+  });
+  it("serializes editable footer rows back into page footer config", () => {
+    const m = fromTemplate({
+      ...template,
+      config: {
+        page: {
+          footer: {
+            repeat: true,
+            rows: [{ blocks: [{ type: "text", id: "footer-note", config: { width: "100%" } }] }],
+          },
+        },
+      },
+    });
+
+    expect(
+      (
+        ((toTemplate(m).config.page as Record<string, unknown>).footer as Record<string, unknown>)
+          .rows as Template["rows"]
+      )[0].blocks[0],
+    ).toEqual({ type: "text", id: "footer-note", config: { width: "100%" } });
   });
 });
 
@@ -107,10 +146,76 @@ describe("addBlock", () => {
     expect(m.data.example["table-1"]).toBeUndefined();
   });
   it("makes ids unique across the model", () => {
-    let m = addBlock(fromTemplate(template, data), "heading", { rowUid: null });
+    let m = addBlock(
+      fromTemplate({
+        ...template,
+        config: {
+          page: { footer: { rows: [{ blocks: [{ type: "heading", id: "heading-1" }] }] } },
+        },
+      }),
+      "heading",
+      { rowUid: null },
+    );
     m = addBlock(m, "heading", { rowUid: null });
     const ids = m.rows.flatMap((r) => r.blocks.map((b) => b.id));
-    expect(new Set(ids).size).toBe(ids.length);
+    const allIds = [...ids, ...m.footerRows.flatMap((r) => r.blocks.map((b) => b.id))];
+    expect(new Set(allIds).size).toBe(allIds.length);
+  });
+  it("can add blocks to footer rows", () => {
+    const m = addBlock(fromTemplate(template, data), "text", {
+      area: "footer",
+      data: { text: "F" },
+    });
+
+    expect(m.footerRows[0].blocks[0].id).toBe("text-1");
+    expect(m.data.example["text-1"]).toEqual({ text: "F" });
+  });
+});
+
+describe("moveBlock", () => {
+  it("moves body blocks into footer rows", () => {
+    const m = fromTemplate(template, data);
+    const moved = moveBlock(m, m.rows[0].blocks[0].uid, null, null, "footer");
+
+    expect(moved.rows[0].blocks[0].id).toBe("a");
+    expect(moved.footerRows[0].blocks[0].id).toBe("title");
+  });
+
+  it("moves footer blocks back into body rows", () => {
+    const m = fromTemplate({
+      ...template,
+      config: {
+        page: {
+          footer: { rows: [{ blocks: [{ type: "text", id: "footer-note" }] }] },
+        },
+      },
+    });
+    const moved = moveBlock(m, m.footerRows[0].blocks[0].uid, m.rows[0].uid, 0, "body");
+
+    expect(moved.rows[0].blocks[0].id).toBe("footer-note");
+    expect(moved.footerRows).toEqual([]);
+  });
+});
+
+describe("moveRow", () => {
+  it("reorders footer rows independently from body rows", () => {
+    const m = fromTemplate({
+      ...template,
+      config: {
+        page: {
+          footer: {
+            rows: [
+              { blocks: [{ type: "text", id: "footer-a" }] },
+              { blocks: [{ type: "text", id: "footer-b" }] },
+            ],
+          },
+        },
+      },
+    });
+    const moved = moveRow(m, m.footerRows[0].uid, 1, "footer");
+
+    expect(moved.footerRows.map((row) => row.blocks[0].id)).toEqual(["footer-b", "footer-a"]);
+    expect(moved.rows.map((row) => row.blocks[0].id)).toEqual(["title", "a"]);
   });
 });
 

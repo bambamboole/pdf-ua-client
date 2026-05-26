@@ -34,6 +34,7 @@ export interface EditorModel {
   version: number;
   config: Json;
   rows: EditorRow[];
+  footerRows: EditorRow[];
   data: TemplateDataLayers;
 }
 
@@ -44,8 +45,10 @@ export interface TemplateDataLayers {
   constants: DataMap;
 }
 
+export type EditorArea = "body" | "footer";
+
 export type DragData =
   | { source: "palette"; type: string }
-  | { source: "block"; rowUid: string }
-  | { source: "row"; rowUid: string }
-  | { source: "newrow" };
+  | { source: "block"; rowUid: string; area: EditorArea }
+  | { source: "row"; rowUid: string; area: EditorArea }
+  | { source: "newrow"; area: EditorArea };

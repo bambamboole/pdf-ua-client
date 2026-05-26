@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pageSettingsSchema, preserveFooterRows } from "./PageSettingsPanel";
+import { pageSettingsSchema, preserveCanvasPageConfig } from "./PageSettingsPanel";
 import type { JsonSchema } from "./types";
 
 const schema: JsonSchema = {
@@ -13,7 +13,16 @@ const schema: JsonSchema = {
     pageConfig: {
       type: "object",
       properties: {
+        format: { type: "string" },
+        pageNumbers: { $ref: "#/$defs/pageNumbersConfig" },
         footer: { $ref: "#/$defs/pageFooterConfig" },
+      },
+    },
+    pageNumbersConfig: {
+      type: "object",
+      properties: {
+        enabled: { type: "boolean" },
+        position: { type: "string", enum: ["left", "center", "right"] },
       },
     },
     pageFooterConfig: {
@@ -27,20 +36,21 @@ const schema: JsonSchema = {
 };
 
 describe("pageSettingsSchema", () => {
-  it("removes footer rows from the sidebar page settings schema", () => {
+  it("removes footer and page numbers from the sidebar page settings schema", () => {
     const result = pageSettingsSchema(schema);
     const defs = result.$defs as Record<string, JsonSchema>;
-    const footer = defs.pageFooterConfig as { properties: Record<string, unknown> };
+    const page = defs.pageConfig as { properties: Record<string, unknown> };
 
-    expect(footer.properties).toHaveProperty("repeat");
-    expect(footer.properties).not.toHaveProperty("rows");
+    expect(page.properties).toHaveProperty("format");
+    expect(page.properties).not.toHaveProperty("footer");
+    expect(page.properties).not.toHaveProperty("pageNumbers");
   });
 });
 
-describe("preserveFooterRows", () => {
-  it("keeps existing footer rows when page settings change", () => {
+describe("preserveCanvasPageConfig", () => {
+  it("keeps existing footer and page numbers when page settings change", () => {
     expect(
-      preserveFooterRows(
+      preserveCanvasPageConfig(
         {
           page: {
             format: "A4",
@@ -48,14 +58,15 @@ describe("preserveFooterRows", () => {
               repeat: true,
               rows: [{ blocks: [{ type: "text", id: "footer" }] }],
             },
+            pageNumbers: {
+              enabled: true,
+              position: "right",
+            },
           },
         },
         {
           page: {
             format: "A5",
-            footer: {
-              repeat: false,
-            },
           },
         },
       ),
@@ -63,8 +74,12 @@ describe("preserveFooterRows", () => {
       page: {
         format: "A5",
         footer: {
-          repeat: false,
+          repeat: true,
           rows: [{ blocks: [{ type: "text", id: "footer" }] }],
+        },
+        pageNumbers: {
+          enabled: true,
+          position: "right",
         },
       },
     });

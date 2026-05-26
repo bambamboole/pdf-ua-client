@@ -10,13 +10,14 @@ import { CSS } from "@dnd-kit/utilities";
 import { gridTemplateForWidths } from "./lib/columns";
 import { pageSizeForFormat } from "./lib/pageSizes";
 import { mmToScaledPx } from "./lib/displayScale";
-import { getBlockTitle } from "./lib/schema";
+import { getBlockTitle, listBlockTypes } from "./lib/schema";
 import BlockDataSummary from "./BlockDataSummary";
 import ColumnResizer from "./ColumnResizer";
 import InlineBlockEditor from "./InlineBlockEditor";
 import type {
   DragData,
   EditorBlock,
+  EditorArea,
   EditorRow,
   Json,
   JsonSchema,
@@ -24,7 +25,7 @@ import type {
 } from "./types";
 
 interface Props {
-  model: { rows: EditorRow[]; data: TemplateDataLayers };
+  model: { rows: EditorRow[]; footerRows: EditorRow[]; data: TemplateDataLayers; config: Json };
   schema: JsonSchema;
   format: string;
   scale: number;
@@ -32,6 +33,9 @@ interface Props {
   onSelectBlock: (uid: string) => void;
   onRemoveBlock: (uid: string) => void;
   onRemoveRow: (uid: string) => void;
+  onAddFooterBlock: (type: string) => void;
+  onUpdateFooterRepeat: (repeat: boolean) => void;
+  onUpdatePageNumbers: (position: "disabled" | "left" | "center" | "right") => void;
   onSetRowWidths: (rowUid: string, widths: string[]) => void;
   onUpdateBlockId: (uid: string, id: string) => void;
   onUpdateBlockConfig: (uid: string, config: Json) => void;
@@ -46,6 +50,7 @@ interface Props {
 interface BlockBoxProps {
   block: EditorBlock;
   rowUid: string;
+  area: EditorArea;
   selected: boolean;
   initiallyOpen: boolean;
   style?: CSSProperties;
@@ -66,6 +71,7 @@ interface BlockBoxProps {
 function BlockBox({
   block,
   rowUid,
+  area,
   selected,
   initiallyOpen,
   style: layoutStyle,
@@ -80,7 +86,7 @@ function BlockBox({
   const [settingsOpen, setSettingsOpen] = useState(initiallyOpen);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: block.uid,
-    data: { source: "block", rowUid } satisfies DragData,
+    data: { source: "block", rowUid, area } satisfies DragData,
   });
   const style = { transform: CSS.Transform.toString(transform), transition, ...layoutStyle };
 
@@ -162,6 +168,7 @@ function BlockBox({
 interface RowProps {
   row: EditorRow;
   rowIndex: number;
+  area: EditorArea;
   schema: JsonSchema;
   data: TemplateDataLayers;
   selectedBlockUid: string | null;
@@ -182,6 +189,7 @@ interface RowProps {
 function Row({
   row,
   rowIndex,
+  area,
   schema,
   data,
   selectedBlockUid,
@@ -195,11 +203,11 @@ function Row({
 }: RowProps) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: `row-${row.uid}`,
-    data: { source: "row", rowUid: row.uid } satisfies DragData,
+    data: { source: "row", rowUid: row.uid, area } satisfies DragData,
   });
   const { setNodeRef: setDropRef } = useDroppable({
     id: `rowdrop-${row.uid}`,
-    data: { source: "row", rowUid: row.uid } satisfies DragData,
+    data: { source: "row", rowUid: row.uid, area } satisfies DragData,
   });
   const style = { transform: CSS.Transform.toString(transform), transition };
   const containerRef = useRef<HTMLDivElement>(null);
@@ -245,6 +253,7 @@ function Row({
               <BlockBox
                 block={block}
                 rowUid={row.uid}
+                area={area}
                 selected={block.uid === selectedBlockUid}
                 initiallyOpen={rowIndex === 0 && i === 0}
                 style={widths ? { minWidth: 0 } : undefined}
@@ -274,18 +283,159 @@ function Row({
   );
 }
 
-function NewRowZone() {
+function NewRowZone({ area = "body" }: { area?: EditorArea }) {
   const { setNodeRef, isOver } = useDroppable({
-    id: "new-row",
-    data: { source: "newrow" } satisfies DragData,
+    id: area === "footer" ? "footer-new-row" : "new-row",
+    data: { source: "newrow", area } satisfies DragData,
   });
   return (
     <div
       ref={setNodeRef}
       className={`rounded-[var(--builder-radius)] border-2 border-dashed px-3 py-6 text-center text-sm font-medium transition ${isOver ? "border-[var(--builder-accent)] bg-[var(--builder-accent-soft)] text-[var(--builder-accent)]" : "border-[var(--builder-stroke-strong)] text-[var(--builder-muted)]"}`}
     >
-      Drop a block here to add a new row
+      Drop a block here to add a new {area === "footer" ? "footer " : ""}row
     </div>
+  );
+}
+
+function FooterCanvas({
+  model,
+  schema,
+  selectedBlockUid,
+  onSelectBlock,
+  onRemoveBlock,
+  onRemoveRow,
+  onSetRowWidths,
+  onUpdateBlockId,
+  onUpdateBlockConfig,
+  onUpdateDataField,
+  onAddFooterBlock,
+  onUpdateFooterRepeat,
+  onUpdatePageNumbers,
+}: {
+  model: Props["model"];
+  schema: JsonSchema;
+  selectedBlockUid: string | null;
+  onSelectBlock: (uid: string) => void;
+  onRemoveBlock: (uid: string) => void;
+  onRemoveRow: (uid: string) => void;
+  onSetRowWidths: (rowUid: string, widths: string[]) => void;
+  onUpdateBlockId: (uid: string, id: string) => void;
+  onUpdateBlockConfig: (uid: string, config: Json) => void;
+  onUpdateDataField: (
+    blockId: string,
+    field: string,
+    value: unknown,
+    options: { example: boolean; locked: boolean },
+  ) => void;
+  onAddFooterBlock: (type: string) => void;
+  onUpdateFooterRepeat: (repeat: boolean) => void;
+  onUpdatePageNumbers: (position: "disabled" | "left" | "center" | "right") => void;
+}) {
+  const types = listBlockTypes(schema);
+  const [type, setType] = useState(types[0] ?? "text");
+  const page = model.config.page as Record<string, unknown> | undefined;
+  const footer = page?.footer as Record<string, unknown> | undefined;
+  const pageNumbers = page?.pageNumbers as Record<string, unknown> | undefined;
+  const pageNumberPosition =
+    pageNumbers?.enabled === true ? String(pageNumbers.position ?? "center") : "disabled";
+
+  return (
+    <section
+      data-footer-canvas
+      className="border-t border-dashed border-[var(--builder-stroke-strong)] pt-3"
+    >
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-[var(--builder-muted)]">
+            Footer
+          </div>
+          <div className="text-[10px] text-[var(--builder-muted)]">
+            Repeated content rendered in the page footer area.
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <label className="inline-flex items-center gap-1.5 text-[var(--builder-muted-strong)]">
+            <input
+              type="checkbox"
+              checked={footer?.repeat !== false}
+              onChange={(event) => onUpdateFooterRepeat(event.currentTarget.checked)}
+            />
+            Repeat
+          </label>
+          <label className="inline-flex items-center gap-1.5 text-[var(--builder-muted-strong)]">
+            Page numbers
+            <select
+              className="rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-field)] px-2 py-1 text-xs text-[var(--builder-field-ink)]"
+              value={pageNumberPosition}
+              onChange={(event) =>
+                onUpdatePageNumbers(
+                  event.currentTarget.value as "disabled" | "left" | "center" | "right",
+                )
+              }
+            >
+              <option value="disabled">Disabled</option>
+              <option value="left">Left</option>
+              <option value="center">Center</option>
+              <option value="right">Right</option>
+            </select>
+          </label>
+          <label className="inline-flex items-center gap-1.5 text-[var(--builder-muted-strong)]">
+            Block
+            <select
+              className="rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-field)] px-2 py-1 text-xs text-[var(--builder-field-ink)]"
+              value={type}
+              onChange={(event) => setType(event.currentTarget.value)}
+            >
+              {types.map((candidate) => (
+                <option key={candidate} value={candidate}>
+                  {getBlockTitle(schema, candidate)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="button"
+            className="rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-surface)] px-2 py-1 font-medium text-[var(--builder-muted-strong)] transition hover:border-[var(--builder-accent)]"
+            onClick={() => onAddFooterBlock(type)}
+          >
+            Add
+          </button>
+        </div>
+      </div>
+      <div className="space-y-2 rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-surface)] p-2">
+        {model.footerRows.length === 0 ? (
+          <div className="rounded-[var(--builder-radius)] border border-dashed border-[var(--builder-stroke-strong)] px-3 py-4 text-center text-xs font-medium text-[var(--builder-muted)]">
+            Add a footer block to configure repeated footer content.
+          </div>
+        ) : (
+          <SortableContext
+            items={model.footerRows.map((candidate) => `row-${candidate.uid}`)}
+            strategy={verticalListSortingStrategy}
+          >
+            {model.footerRows.map((row, rowIndex) => (
+              <Row
+                key={row.uid}
+                row={row}
+                rowIndex={rowIndex}
+                area="footer"
+                schema={schema}
+                data={model.data}
+                selectedBlockUid={selectedBlockUid}
+                onSelectBlock={onSelectBlock}
+                onRemoveBlock={onRemoveBlock}
+                onRemoveRow={onRemoveRow}
+                onSetRowWidths={onSetRowWidths}
+                onUpdateBlockId={onUpdateBlockId}
+                onUpdateBlockConfig={onUpdateBlockConfig}
+                onUpdateDataField={onUpdateDataField}
+              />
+            ))}
+          </SortableContext>
+        )}
+        <NewRowZone area="footer" />
+      </div>
+    </section>
   );
 }
 
@@ -298,6 +448,9 @@ export default function EditCanvas({
   onSelectBlock,
   onRemoveBlock,
   onRemoveRow,
+  onAddFooterBlock,
+  onUpdateFooterRepeat,
+  onUpdatePageNumbers,
   onSetRowWidths,
   onUpdateBlockId,
   onUpdateBlockConfig,
@@ -321,6 +474,7 @@ export default function EditCanvas({
             key={row.uid}
             row={row}
             rowIndex={rowIndex}
+            area="body"
             schema={schema}
             data={model.data}
             selectedBlockUid={selectedBlockUid}
@@ -335,6 +489,21 @@ export default function EditCanvas({
         ))}
       </SortableContext>
       <NewRowZone />
+      <FooterCanvas
+        model={model}
+        schema={schema}
+        selectedBlockUid={selectedBlockUid}
+        onSelectBlock={onSelectBlock}
+        onRemoveBlock={onRemoveBlock}
+        onRemoveRow={onRemoveRow}
+        onSetRowWidths={onSetRowWidths}
+        onUpdateBlockId={onUpdateBlockId}
+        onUpdateBlockConfig={onUpdateBlockConfig}
+        onUpdateDataField={onUpdateDataField}
+        onAddFooterBlock={onAddFooterBlock}
+        onUpdateFooterRepeat={onUpdateFooterRepeat}
+        onUpdatePageNumbers={onUpdatePageNumbers}
+      />
     </div>
   );
 }

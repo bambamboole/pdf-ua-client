@@ -33,7 +33,15 @@ import {
 import { exampleFromSchema } from "./lib/exampleFromSchema";
 import { estimatedPhysicalScale } from "./lib/displayScale";
 import { useLatest } from "./useLatest";
-import type { DataMap, DragData, EditorModel, Json, JsonSchema, Template } from "./types";
+import type {
+  DataMap,
+  DragData,
+  EditorArea,
+  EditorModel,
+  Json,
+  JsonSchema,
+  Template,
+} from "./types";
 import CanvasZoomControls from "./CanvasZoomControls";
 
 const PageCanvas = lazy(() => import("./PageCanvas"));
@@ -67,9 +75,10 @@ function errorMessage(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause);
 }
 
-function rowIndexById(model: EditorModel, rowSortableId: string): number {
+function rowIndexById(model: EditorModel, rowSortableId: string, area: EditorArea): number {
   const uid = rowSortableId.replace(/^row-/, "");
-  return model.rows.findIndex((r) => r.uid === uid);
+  const rows = area === "footer" ? model.footerRows : model.rows;
+  return rows.findIndex((r) => r.uid === uid);
 }
 
 export default function TemplateBuilder({
@@ -229,38 +238,49 @@ export default function TemplateBuilder({
 
       if (a.source === "palette") {
         if (o.source === "newrow") {
-          setModel((m) => addBlock(m, a.type, { rowUid: null, data: blockData(a.type) }));
+          setModel((m) =>
+            addBlock(m, a.type, { rowUid: null, area: o.area, data: blockData(a.type) }),
+          );
         } else if (o.source === "block") {
           setModel((m) => {
             const found = findBlock(m, String(over.id));
             return addBlock(m, a.type, {
               rowUid: o.rowUid,
+              area: o.area,
               index: found ? found.blockIndex : null,
               data: blockData(a.type),
             });
           });
         } else if (o.source === "row") {
-          setModel((m) => addBlock(m, a.type, { rowUid: o.rowUid, data: blockData(a.type) }));
+          setModel((m) =>
+            addBlock(m, a.type, { rowUid: o.rowUid, area: o.area, data: blockData(a.type) }),
+          );
         }
         return;
       }
 
       if (a.source === "block") {
         if (o.source === "newrow") {
-          setModel((m) => moveBlock(m, String(active.id), null, null));
+          setModel((m) => moveBlock(m, String(active.id), null, null, o.area));
         } else if (o.source === "block") {
           setModel((m) => {
             const found = findBlock(m, String(over.id));
-            return moveBlock(m, String(active.id), o.rowUid, found ? found.blockIndex : null);
+            return moveBlock(
+              m,
+              String(active.id),
+              o.rowUid,
+              found ? found.blockIndex : null,
+              o.area,
+            );
           });
         } else if (o.source === "row") {
-          setModel((m) => moveBlock(m, String(active.id), o.rowUid, null));
+          setModel((m) => moveBlock(m, String(active.id), o.rowUid, null, o.area));
         }
         return;
       }
 
-      if (a.source === "row" && o.source === "row" && active.id !== over.id) {
-        setModel((m) => moveRow(m, a.rowUid, rowIndexById(m, String(over.id))));
+      if (a.source === "row" && o.source === "row" && active.id !== over.id && a.area === o.area) {
+        setModel((m) => moveRow(m, a.rowUid, rowIndexById(m, String(over.id), o.area), o.area));
       }
     },
     [blockData],
@@ -348,6 +368,13 @@ export default function TemplateBuilder({
                   onSelectBlock={selectBlock}
                   onRemoveBlock={(uid) => setModel((m) => removeBlock(m, uid))}
                   onRemoveRow={(uid) => setModel((m) => removeRow(m, uid))}
+                  onAddFooterBlock={(type) =>
+                    setModel((m) => addBlock(m, type, { area: "footer", data: blockData(type) }))
+                  }
+                  onUpdateFooterRepeat={(repeat) => setModel((m) => updateFooterRepeat(m, repeat))}
+                  onUpdatePageNumbers={(position) =>
+                    setModel((m) => updatePageNumbers(m, position))
+                  }
                   onSetRowWidths={(rowUid, widths) =>
                     setModel((m) => setRowWidths(m, rowUid, widths))
                   }
@@ -419,4 +446,50 @@ export default function TemplateBuilder({
 
 function clampZoom(scale: number): number {
   return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Number(scale.toFixed(2))));
+}
+
+function updateFooterRepeat(model: EditorModel, repeat: boolean): EditorModel {
+  const page = objectOrEmpty(model.config.page);
+  const footer = objectOrEmpty(page.footer);
+
+  return {
+    ...model,
+    config: {
+      ...model.config,
+      page: {
+        ...page,
+        footer: {
+          ...footer,
+          repeat,
+        },
+      },
+    },
+  };
+}
+
+function updatePageNumbers(
+  model: EditorModel,
+  position: "disabled" | "left" | "center" | "right",
+): EditorModel {
+  const page = objectOrEmpty(model.config.page);
+
+  return {
+    ...model,
+    config: {
+      ...model.config,
+      page: {
+        ...page,
+        pageNumbers:
+          position === "disabled"
+            ? { ...objectOrEmpty(page.pageNumbers), enabled: false }
+            : { ...objectOrEmpty(page.pageNumbers), enabled: true, position },
+      },
+    },
+  };
+}
+
+function objectOrEmpty(value: unknown): Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
 }

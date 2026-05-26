@@ -672,6 +672,27 @@
                 }
             ]
         },
+        "pageFooterConfig": {
+            "type": "object",
+            "properties": {
+                "repeat": {
+                    "type": "boolean",
+                    "title": "Repeat",
+                    "description": "Repeat the footer on every rendered page.",
+                    "default": true
+                },
+                "rows": {
+                    "type": "array",
+                    "title": "Rows",
+                    "description": "Footer rows rendered after the page body.",
+                    "items": {
+                        "$ref": "#/$defs/row"
+                    },
+                    "default": []
+                }
+            },
+            "additionalProperties": false
+        },
         "pageNumbersConfig": {
             "type": "object",
             "properties": {
@@ -691,32 +712,6 @@
                     "title": "Position",
                     "description": "Footer position used for page numbers.",
                     "default": "center"
-                }
-            },
-            "additionalProperties": false
-        },
-        "pageFooterConfig": {
-            "type": "object",
-            "properties": {
-                "repeat": {
-                    "type": "boolean",
-                    "title": "Repeat",
-                    "description": "Repeat the footer on every rendered page.",
-                    "default": true
-                },
-                "rows": {
-                    "type": "array",
-                    "title": "Rows",
-                    "description": "Footer rows rendered after the page body.",
-                    "items": {
-                        "$ref": "#/$defs/row"
-                    },
-                    "default": []
-                },
-                "pageNumbers": {
-                    "$ref": "#/$defs/pageNumbersConfig",
-                    "title": "Pagination",
-                    "description": "Page number display settings for this footer."
                 }
             },
             "additionalProperties": false

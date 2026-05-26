@@ -12,7 +12,7 @@ final readonly class TestFixture
     public function __construct(
         public array $spec,
         public array $data,
-        public string $html,
+        public ?string $html,
         public ?string $pdf = null,
     ) {}
 }

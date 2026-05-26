@@ -98,11 +98,7 @@ it('exposes templateConfig via a $defs entry with shared $refs', function () {
         'type' => 'array',
         'items' => ['$ref' => '#/$defs/row'],
     ]);
-    expect($schema['$defs']['pageFooterConfig']['properties']['pageNumbers'])->toMatchArray([
-        '$ref' => '#/$defs/pageNumbersConfig',
-        'title' => 'Pagination',
-        'description' => 'Page number display settings for this footer.',
-    ]);
+    expect($schema['$defs']['pageFooterConfig']['properties'])->not->toHaveKey('pageNumbers');
 });
 
 it('emits titles and descriptions for shared config properties', function () {

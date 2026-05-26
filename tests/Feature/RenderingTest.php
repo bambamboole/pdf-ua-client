@@ -361,16 +361,16 @@ it('emits @page page-number rule only when page numbers are enabled', function (
     expect($this->renderer->render($with, ['x' => ['text' => 'x']]))->toContain('@bottom-right');
 });
 
-it('renders repeated footer rows and page numbers in print mode', function () {
+it('renders repeated footer rows and page numbers through the page margin box in print mode', function () {
     $template = $this->factory->fromArray([
         'version' => 1,
         'config' => [
             'page' => [
                 'format' => 'A4',
                 'margins' => ['top' => 25, 'right' => 20, 'bottom' => 20, 'left' => 25],
+                'pageNumbers' => ['enabled' => true, 'position' => 'right'],
                 'footer' => [
                     'repeat' => true,
-                    'pageNumbers' => ['enabled' => true, 'position' => 'right'],
                     'rows' => [[
                         'blocks' => [
                             ['type' => 'text', 'id' => 'footer_note', 'config' => ['width' => '70%']],
@@ -392,6 +392,7 @@ it('renders repeated footer rows and page numbers in print mode', function () {
     expect($html)->toContain('@page { size: A4; margin: 25mm 20mm 28mm 25mm; }');
     expect($html)->toContain('@page { @bottom-center { content: element(pageFooter); } }');
     expect($html)->toContain('@page { @bottom-right { content: counter(page) " / " counter(pages); font-size: 8pt; color: #9ca3af; vertical-align: bottom; padding-bottom: 4mm; } }');
+    expect($html)->not->toContain('.page-footer-repeated::after');
     expect($html)->toContain('<footer class="page-footer page-footer-repeated" role="contentinfo">');
     expect($html)->toContain('<p>Confidential</p>');
     expect($html)->toContain('position: running(pageFooter); width: 100%;');

@@ -288,14 +288,12 @@ CSS;
         $margin = $this->printMarginShorthand($page);
         $css = "@page { size: {$page->format->value}; margin: {$margin}; }";
 
-        $pageNumbers = $page->footer->pageNumbers->enabled ? $page->footer->pageNumbers : $page->pageNumbers;
-
         if ($page->footer->repeat && $page->footer->rows !== []) {
             $css .= ' @page { @bottom-center { content: element(pageFooter); } }';
         }
 
-        if ($pageNumbers->enabled) {
-            $position = $pageNumbers->position->value;
+        if ($page->pageNumbers->enabled) {
+            $position = $page->pageNumbers->position->value;
             $css .= " @page { @bottom-{$position} { content: counter(page) \" / \" counter(pages); font-size: 8pt; color: #9ca3af; vertical-align: bottom; padding-bottom: 4mm; } }";
         }
 

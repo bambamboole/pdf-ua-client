@@ -428,6 +428,35 @@ it('renders repeated footer rows and page numbers through the page margin box in
     expect($html)->toContain('position: running(pageFooter); width: 100%;');
 });
 
+it('keeps repeated footer and centered page numbers in separate page margin boxes', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => [
+            'page' => [
+                'format' => 'A4',
+                'pageNumbers' => ['enabled' => true, 'position' => 'center'],
+                'footer' => [
+                    'repeat' => true,
+                    'rows' => [[
+                        'blocks' => [['type' => 'text', 'id' => 'footer_note']],
+                    ]],
+                ],
+            ],
+        ],
+        'rows' => [['blocks' => [['type' => 'text', 'id' => 'body']]]],
+    ]);
+
+    $html = $this->renderer->render($template, [
+        'body' => ['text' => 'Body'],
+        'footer_note' => ['text' => 'Footer'],
+    ], options: new RenderOptions(mode: 'print'));
+
+    expect($html)->toContain('@page { @bottom-left { content: element(pageFooter); width: 100%; } }');
+    expect($html)->toContain('@page { @bottom-center { content: counter(page) " / " counter(pages); font-size: 8pt; color: #9ca3af; vertical-align: bottom; padding-bottom: 4mm; } }');
+    expect($html)->toContain('<footer class="page-footer page-footer-repeated" role="contentinfo">');
+    expect($html)->toContain('<p>Footer</p>');
+});
+
 it('renders footer rows inline in preview mode', function () {
     $template = $this->factory->fromArray([
         'version' => 1,

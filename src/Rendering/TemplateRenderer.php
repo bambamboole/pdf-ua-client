@@ -305,7 +305,9 @@ CSS;
         $css = "@page { size: {$page->format->value}; margin: {$margin}; }";
 
         if ($page->footer->repeat && $page->footer->rows !== []) {
-            $css .= ' @page { @bottom-center { content: element(pageFooter); } }';
+            $footerPosition = $this->footerMarginBox($page);
+            $footerWidth = $footerPosition === 'bottom-left' ? ' width: 100%;' : '';
+            $css .= " @page { @{$footerPosition} { content: element(pageFooter);{$footerWidth} } }";
         }
 
         if ($page->pageNumbers->enabled) {
@@ -314,6 +316,15 @@ CSS;
         }
 
         return $css;
+    }
+
+    private function footerMarginBox(PageConfig $page): string
+    {
+        if ($page->pageNumbers->enabled && $page->pageNumbers->position->value === 'center') {
+            return 'bottom-left';
+        }
+
+        return 'bottom-center';
     }
 
     /** @return array<string, string> */

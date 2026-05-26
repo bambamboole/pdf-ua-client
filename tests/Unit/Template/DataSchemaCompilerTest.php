@@ -155,7 +155,9 @@ it('emits flat key value schemas from configured fields', function (): void {
     $schema = $this->compiler->compile($template);
 
     expect($schema['properties']['invoice-meta']['properties'])->toHaveKeys(['invoiceNumber', 'issueDate'])
+        ->and($schema['properties']['invoice-meta']['properties']['invoiceNumber']['type'])->toBe(['string', 'null'])
         ->and($schema['properties']['invoice-meta']['properties']['invoiceNumber']['default'])->toBe('RE-2026-001234')
+        ->and($schema['properties']['invoice-meta']['properties']['issueDate']['type'])->toBe('string')
         ->and($schema['properties']['invoice-meta']['properties'])->not->toHaveKey('currency')
         ->and($schema['properties']['invoice-meta']['required'])->toBe(['issueDate'])
         ->and($schema['required'])->toBe(['invoice-meta']);

@@ -111,7 +111,7 @@ describe("dataSchemaForTemplate", () => {
       "hero-title": {
         type: "object",
         properties: {
-          text: { type: "string", default: "Fallback title" },
+          text: { type: ["string", "null"], default: "Fallback title" },
         },
       },
     });
@@ -150,10 +150,11 @@ describe("dataSchemaForTemplate", () => {
 
     expect(invoiceMeta.properties).toMatchObject({
       invoiceNumber: {
+        type: ["string", "null"],
         default: "RE-2026-001234",
       },
       issueDate: {
-        type: ["string", "number", "integer", "boolean", "null"],
+        type: "string",
       },
     });
     expect(invoiceMeta.properties).not.toHaveProperty("entries");

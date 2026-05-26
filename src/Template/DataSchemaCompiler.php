@@ -98,7 +98,7 @@ final readonly class DataSchemaCompiler
             }
 
             $properties[$key] = [
-                'type' => ['string', 'number', 'integer', 'boolean', 'null'],
+                'type' => 'string',
             ];
             $required[] = $key;
         }
@@ -156,6 +156,25 @@ final readonly class DataSchemaCompiler
 
         if ($schema['properties'] === []) {
             $schema['properties'] = new stdClass;
+        } else {
+            $schema = $this->withNullableOptionalStrings($schema);
+        }
+
+        return $schema;
+    }
+
+    /** @param array<string, mixed> $schema */
+    private function withNullableOptionalStrings(array $schema): array
+    {
+        $required = $schema['required'] ?? [];
+        $required = is_array($required) ? array_flip($required) : [];
+
+        foreach ($schema['properties'] as $key => $property) {
+            if (! is_string($key) || isset($required[$key]) || ! is_array($property) || ($property['type'] ?? null) !== 'string') {
+                continue;
+            }
+
+            $schema['properties'][$key]['type'] = ['string', 'null'];
         }
 
         return $schema;

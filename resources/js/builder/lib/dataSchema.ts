@@ -95,7 +95,7 @@ function withDataLayerAnnotations(schema: JsonSchema, defaults: Json, constants:
 
   return {
     ...schemaWithoutRequired,
-    properties: nextProperties,
+    properties: withNullableOptionalStrings(nextProperties, required),
     ...(required.length > 0 ? { required } : {}),
   };
 }
@@ -126,7 +126,7 @@ function keyValueDataSchema(fields: unknown): JsonSchema {
       }
 
       properties[field.key] = {
-        type: ["string", "number", "integer", "boolean", "null"],
+        type: "string",
       };
       required.push(field.key);
     }
@@ -138,4 +138,20 @@ function keyValueDataSchema(fields: unknown): JsonSchema {
     ...(required.length > 0 ? { required } : {}),
     additionalProperties: false,
   };
+}
+
+function withNullableOptionalStrings(
+  properties: Record<string, unknown>,
+  required: string[],
+): Record<string, unknown> {
+  const requiredSet = new Set(required);
+
+  return Object.fromEntries(
+    Object.entries(properties).map(([key, property]) => [
+      key,
+      !requiredSet.has(key) && isPlainObject(property) && property.type === "string"
+        ? { ...property, type: ["string", "null"] }
+        : property,
+    ]),
+  );
 }

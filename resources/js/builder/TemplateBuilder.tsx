@@ -15,7 +15,6 @@ import PageCanvas from "./PageCanvas";
 import PdfCanvas from "./PdfCanvas";
 import { getPageFormat, getBlockTitle, getBlockSubschemas } from "./lib/schema";
 import { listExamples, loadExample } from "./lib/examples";
-import { dataSchemaForTemplate } from "./lib/dataSchema";
 import {
   fromTemplate,
   toTemplate,
@@ -68,6 +67,7 @@ export interface TemplateBuilderProps {
   initialData?: DataMap;
   renderTemplate: (template: Template, data: DataMap) => Promise<string>;
   renderPdf: (template: Template, data: DataMap) => Promise<Blob>;
+  fetchSchema: (template: Template) => Promise<JsonSchema>;
   onChange?: (template: Template) => void;
 }
 
@@ -88,6 +88,7 @@ export default function TemplateBuilder({
   initialData,
   renderTemplate,
   renderPdf,
+  fetchSchema,
   onChange,
 }: TemplateBuilderProps) {
   const [model, setModel] = useState(() => fromTemplate(initialTemplate, initialData));
@@ -99,6 +100,8 @@ export default function TemplateBuilder({
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const [dataSchema, setDataSchema] = useState<JsonSchema>({});
+  const [schemaError, setSchemaError] = useState<string | null>(null);
   const defaultCanvasScale = useMemo(() => estimatedPhysicalScale(), []);
   const [canvasScale, setCanvasScale] = useState(defaultCanvasScale);
   const sensors = useSensors(
@@ -107,13 +110,14 @@ export default function TemplateBuilder({
   );
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pdfDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const schemaDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pdfUrlRef = useRef<string | null>(null);
   const renderTemplateRef = useLatest(renderTemplate);
   const renderPdfRef = useLatest(renderPdf);
+  const fetchSchemaRef = useLatest(fetchSchema);
   const onChangeRef = useLatest(onChange);
   const template = useMemo(() => toTemplate(model), [model]);
   const data = useMemo(() => toDataMap(model), [model]);
-  const dataSchema = useMemo(() => dataSchemaForTemplate(schema, template), [schema, template]);
 
   const replacePdfUrl = useCallback((blob: Blob) => {
     if (pdfUrlRef.current) {
@@ -162,6 +166,40 @@ export default function TemplateBuilder({
       }
     };
   }, [tab, template, data, renderTemplateRef]);
+
+  useEffect(() => {
+    if (tab !== "schema") {
+      return;
+    }
+
+    let cancelled = false;
+    if (schemaDebounceRef.current) {
+      clearTimeout(schemaDebounceRef.current);
+    }
+
+    schemaDebounceRef.current = setTimeout(() => {
+      fetchSchemaRef
+        .current(template)
+        .then((result) => {
+          if (!cancelled) {
+            setDataSchema(result);
+            setSchemaError(null);
+          }
+        })
+        .catch((cause: unknown) => {
+          if (!cancelled) {
+            setSchemaError(errorMessage(cause));
+          }
+        });
+    }, 300);
+
+    return () => {
+      cancelled = true;
+      if (schemaDebounceRef.current) {
+        clearTimeout(schemaDebounceRef.current);
+      }
+    };
+  }, [tab, template, fetchSchemaRef]);
 
   useEffect(
     () => () => {
@@ -383,6 +421,10 @@ export default function TemplateBuilder({
                     setModel((m) => updateDataField(m, blockId, field, value, options))
                   }
                 />
+              </div>
+            ) : tab === "schema" && schemaError ? (
+              <div className="rounded-[var(--builder-radius)] border border-red-200 bg-red-50 p-4 text-red-700">
+                {schemaError}
               </div>
             ) : tab === "schema" ? (
               <Suspense

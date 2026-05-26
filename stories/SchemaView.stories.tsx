@@ -1,9 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import SchemaView from "@builder/SchemaView";
-import { dataSchemaForTemplate } from "@builder/lib/dataSchema";
 import { listExamples } from "@builder/lib/examples";
 import type { JsonSchema, Template } from "@builder/types";
-import schema from "./data/schema.json";
 import examples from "./data/examples.json";
 
 const template = (listExamples(examples)[0]?.template ?? {
@@ -11,7 +9,7 @@ const template = (listExamples(examples)[0]?.template ?? {
   config: {},
   rows: [],
 }) as unknown as Template;
-const dataSchema = dataSchemaForTemplate(schema as unknown as JsonSchema, template);
+const dataSchema: JsonSchema = {};
 
 const meta: Meta<typeof SchemaView> = {
   title: "Builder/Schema View",

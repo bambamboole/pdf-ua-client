@@ -14,7 +14,6 @@ final readonly class TemplateSchemaCompiler
 {
     public function __construct(
         private PropsReflector $reflector,
-        private ExampleRegistry $examples,
     ) {}
 
     /** @return array<string, mixed> */
@@ -102,11 +101,6 @@ final readonly class TemplateSchemaCompiler
             ],
             '$defs' => $allDefs === [] ? new stdClass : $allDefs,
         ];
-
-        $examples = array_map(static fn (array $entry): array => $entry['template'], $this->examples->all());
-        if ($examples !== []) {
-            $schema['examples'] = $examples;
-        }
 
         return $schema;
     }

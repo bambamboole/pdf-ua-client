@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Bambamboole\PdfUaClient\Examples\InvoiceExample;
 use Illuminate\Support\Facades\File;
 
 it('writes a standalone data schema for a given template file', function (): void {
@@ -10,7 +9,7 @@ it('writes a standalone data schema for a given template file', function (): voi
     File::ensureDirectoryExists($dir);
     $templatePath = $dir.'/template.json';
     $outPath = $dir.'/data.schema.json';
-    File::put($templatePath, (string) json_encode(InvoiceExample::document()));
+    File::copy(__DIR__.'/../../Fixtures/examples/invoice/template.json', $templatePath);
 
     $this->artisan('pdf-ua-client:data-schema-export', ['template' => $templatePath, 'path' => $outPath])
         ->assertSuccessful();

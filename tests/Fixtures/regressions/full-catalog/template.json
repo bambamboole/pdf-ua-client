@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "config": {
+    "page": {
+      "format": "A4"
+    }
+  },
+  "rows": [
+    {
+      "blocks": [
+        {
+          "type": "heading",
+          "id": "h1",
+          "config": {
+            "level": 2
+          }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "text",
+          "id": "t1"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "html",
+          "id": "raw1"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "image",
+          "id": "img1"
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "spacer",
+          "config": {
+            "height": 8
+          }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "divider",
+          "config": {
+            "thickness": 2,
+            "lineColor": "#475569",
+            "style": "dashed"
+          }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "key-value",
+          "id": "kv1",
+          "config": {
+            "typography": {
+              "size": 11,
+              "color": "#374151"
+            },
+            "fields": [
+              {
+                "key": "status",
+                "label": "Status"
+              },
+              {
+                "key": "owner",
+                "label": "Owner"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "table",
+          "id": "tbl1",
+          "config": {
+            "style": "bordered",
+            "spacing": {
+              "bottom": 4
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

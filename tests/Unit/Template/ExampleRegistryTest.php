@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Bambamboole\PdfUaClient\Template\ExampleRegistry;
+use Workbench\App\Support\ExampleRegistry;
 
 it('registers titled template+data entries, lists, and flushes', function (): void {
     $registry = new ExampleRegistry;

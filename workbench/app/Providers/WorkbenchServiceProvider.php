@@ -8,9 +8,12 @@ use Laravel\Boost\Install\GuidelineComposer;
 use Laravel\Boost\Install\SkillComposer;
 use Laravel\Boost\Support\Config;
 use Laravel\Roster\Roster;
+use Workbench\App\Console\ExportExamplesCommand;
 use Workbench\App\Support\BoostConfig;
 use Workbench\App\Support\BoostGuidelineComposer;
 use Workbench\App\Support\BoostSkillComposer;
+use Workbench\App\Support\ExampleRegistry;
+use Workbench\App\Support\TemplateFixtureRepository;
 
 use function Orchestra\Testbench\package_path;
 
@@ -19,10 +22,12 @@ class WorkbenchServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->readBoostConfigFromPackageRoot();
+        $this->registerTemplateExamples();
     }
 
     public function boot(): void
     {
+        $this->commands([ExportExamplesCommand::class]);
         $this->pointBoostAtPackageRoot();
         $this->redirectBoostSkillsToPackageRoot();
     }
@@ -39,6 +44,24 @@ class WorkbenchServiceProvider extends ServiceProvider
         $this->app->singleton(Config::class, fn (): Config => new BoostConfig);
         $this->app->bind(GuidelineComposer::class, BoostGuidelineComposer::class);
         $this->app->bind(SkillComposer::class, BoostSkillComposer::class);
+    }
+
+    private function registerTemplateExamples(): void
+    {
+        $this->app->singleton(
+            TemplateFixtureRepository::class,
+            fn (): TemplateFixtureRepository => new TemplateFixtureRepository(package_path('tests/Fixtures')),
+        );
+
+        $this->app->singleton(ExampleRegistry::class, function (): ExampleRegistry {
+            $registry = new ExampleRegistry;
+
+            foreach ($this->app->make(TemplateFixtureRepository::class)->examples() as $fixture) {
+                $registry->register($fixture->title, $fixture->template, $fixture->data);
+            }
+
+            return $registry;
+        });
     }
 
     // Boost binds Roster against base_path() in its own register(), so this must

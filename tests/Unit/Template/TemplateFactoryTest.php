@@ -8,7 +8,6 @@ use Bambamboole\PdfUaClient\Enums\Align;
 use Bambamboole\PdfUaClient\Enums\PageFormat;
 use Bambamboole\PdfUaClient\Enums\PageNumberPosition;
 use Bambamboole\PdfUaClient\Exceptions\TemplateValidationException;
-use Bambamboole\PdfUaClient\Template\ExampleRegistry;
 use Bambamboole\PdfUaClient\Template\Template;
 use Bambamboole\PdfUaClient\Template\TemplateFactory;
 use Bambamboole\PdfUaClient\Template\TemplateSchemaCompiler;
@@ -19,7 +18,7 @@ beforeEach(function () {
     $registry->register(TestFixtureBlock::class);
     $this->factory = new TemplateFactory(
         $registry,
-        new TemplateSchemaCompiler(new PropsReflector, new ExampleRegistry),
+        new TemplateSchemaCompiler(new PropsReflector),
     );
 });
 

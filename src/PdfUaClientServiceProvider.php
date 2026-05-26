@@ -15,14 +15,11 @@ use Bambamboole\PdfUaClient\Blocks\SpacerBlock;
 use Bambamboole\PdfUaClient\Blocks\TableBlock;
 use Bambamboole\PdfUaClient\Blocks\TextBlock;
 use Bambamboole\PdfUaClient\Console\ExportDataSchemaCommand;
-use Bambamboole\PdfUaClient\Console\ExportExamplesCommand;
 use Bambamboole\PdfUaClient\Console\ExportSchemaCommand;
-use Bambamboole\PdfUaClient\Examples\InvoiceExample;
 use Bambamboole\PdfUaClient\Fonts\FontRegistry;
 use Bambamboole\PdfUaClient\Http\PdfApiClient;
 use Bambamboole\PdfUaClient\Rendering\TemplateRenderer;
 use Bambamboole\PdfUaClient\Template\DataSchemaCompiler;
-use Bambamboole\PdfUaClient\Template\ExampleRegistry;
 use Bambamboole\PdfUaClient\Template\TemplateFactory;
 use Bambamboole\PdfUaClient\Template\TemplateSchemaCompiler;
 use Illuminate\Contracts\Container\Container;
@@ -42,8 +39,7 @@ final class PdfUaClientServiceProvider extends PackageServiceProvider
             ->hasViews('pdf-ua-client')
             ->hasTranslations()
             ->hasCommand(ExportSchemaCommand::class)
-            ->hasCommand(ExportDataSchemaCommand::class)
-            ->hasCommand(ExportExamplesCommand::class);
+            ->hasCommand(ExportDataSchemaCommand::class);
     }
 
     public function packageRegistered(): void
@@ -80,11 +76,8 @@ final class PdfUaClientServiceProvider extends PackageServiceProvider
             $app->make(BlockRegistry::class),
         ));
 
-        $this->app->singleton(ExampleRegistry::class, fn (): ExampleRegistry => (new ExampleRegistry)->register('Invoice', InvoiceExample::document(), InvoiceExample::data()));
-
         $this->app->singleton(TemplateSchemaCompiler::class, fn (Container $app): TemplateSchemaCompiler => new TemplateSchemaCompiler(
             $app->make(PropsReflector::class),
-            $app->make(ExampleRegistry::class),
         ));
 
         $this->app->singleton(TemplateFactory::class, fn (Container $app): TemplateFactory => new TemplateFactory(

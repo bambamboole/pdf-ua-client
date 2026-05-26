@@ -11,7 +11,6 @@ use Bambamboole\PdfUaClient\Http\PdfApiClient;
 use Bambamboole\PdfUaClient\Rendering\RenderOptions;
 use Bambamboole\PdfUaClient\Rendering\TemplateRenderer;
 use Bambamboole\PdfUaClient\Template\DataSchemaCompiler;
-use Bambamboole\PdfUaClient\Template\ExampleRegistry;
 use Bambamboole\PdfUaClient\Template\Template;
 use Bambamboole\PdfUaClient\Template\TemplateFactory;
 use Bambamboole\PdfUaClient\Template\TemplateSchemaCompiler;
@@ -19,13 +18,17 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Workbench\App\Support\ExampleRegistry;
 
 final class TemplateBuilderController
 {
     public function index(TemplateSchemaCompiler $compiler, BlockRegistry $registry, ExampleRegistry $examples): Response
     {
+        $schema = $compiler->compile($registry);
+        $schema['examples'] = array_map(static fn (array $entry): array => $entry['template'], $examples->all());
+
         return Inertia::render('Builder', [
-            'schema' => $compiler->compile($registry),
+            'schema' => $schema,
             'examples' => $examples->all(),
         ]);
     }
@@ -40,6 +43,11 @@ final class TemplateBuilderController
         }
 
         return response()->json(['html' => $html]);
+    }
+
+    public function examples(ExampleRegistry $examples): JsonResponse
+    {
+        return response()->json(['examples' => $examples->all()]);
     }
 
     public function schema(Request $request, TemplateFactory $factory, DataSchemaCompiler $compiler): JsonResponse

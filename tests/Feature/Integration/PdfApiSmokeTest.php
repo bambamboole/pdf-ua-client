@@ -5,8 +5,9 @@ declare(strict_types=1);
 use Bambamboole\PdfUaClient\Http\PdfApiClient;
 use Bambamboole\PdfUaClient\Rendering\TemplateRenderer;
 use Bambamboole\PdfUaClient\Template\TemplateFactory;
-use Bambamboole\PdfUaClient\Tests\Fixtures\TestFixture;
 use Illuminate\Support\Facades\Http;
+use Workbench\App\Support\TemplateFixture;
+use Workbench\App\Support\TemplateFixtureRepository;
 
 beforeEach(function () {
     $baseUrl = (string) (getenv('PDF_UA_API_URL') ?: '');
@@ -38,10 +39,21 @@ beforeEach(function () {
 });
 
 it('renders the invoice fixture and converts it to a real PDF via pdf-ua-api', function () {
-    /** @var TestFixture $fixture */
-    $fixture = require __DIR__.'/../../Fixtures/render/invoice-realistic.php';
+    $fixtures = new TemplateFixtureRepository(__DIR__.'/../../Fixtures');
+    $fixture = null;
 
-    $template = $this->factory->fromArray($fixture->spec);
+    foreach ($fixtures->regressions() as $candidate) {
+        if ($candidate->slug === 'invoice-realistic') {
+            $fixture = $candidate;
+            break;
+        }
+    }
+
+    if (! $fixture instanceof TemplateFixture) {
+        $this->fail('Missing invoice-realistic regression fixture.');
+    }
+
+    $template = $this->factory->fromArray($fixture->template);
     $html = $this->renderer->render($template, $fixture->data);
 
     $pdf = $this->client->convert($html);

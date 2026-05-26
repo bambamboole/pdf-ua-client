@@ -6,14 +6,13 @@ use Bambamboole\PdfUaClient\Block\BlockRegistry;
 use Bambamboole\PdfUaClient\Block\PropsReflector;
 use Bambamboole\PdfUaClient\Blocks\TableBlock;
 use Bambamboole\PdfUaClient\Fonts\FontRegistry;
-use Bambamboole\PdfUaClient\Template\ExampleRegistry;
 use Bambamboole\PdfUaClient\Template\TemplateSchemaCompiler;
 use Bambamboole\PdfUaClient\Tests\Fixtures\TestFixtureBlock;
 
 beforeEach(function () {
     $this->registry = new BlockRegistry;
     $this->registry->register(TestFixtureBlock::class);
-    $this->compiler = new TemplateSchemaCompiler(new PropsReflector, new ExampleRegistry);
+    $this->compiler = new TemplateSchemaCompiler(new PropsReflector);
 });
 
 it('compiles a root schema referencing config, $defs/row, $defs/block', function () {
@@ -173,7 +172,7 @@ it('emits registered fonts as select options for typography family', function ()
         family: 'Inter',
         url: 'https://example.test/inter.woff2',
     );
-    $compiler = new TemplateSchemaCompiler(new PropsReflector($fonts), new ExampleRegistry);
+    $compiler = new TemplateSchemaCompiler(new PropsReflector($fonts));
 
     $schema = $compiler->compile($this->registry);
 

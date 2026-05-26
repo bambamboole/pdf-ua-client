@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "config": {
+    "page": {
+      "format": "A4",
+      "pageNumbers": {
+        "enabled": true,
+        "position": "left"
+      }
+    }
+  },
+  "rows": [
+    {
+      "blocks": [
+        {
+          "type": "heading",
+          "id": "title",
+          "config": {
+            "level": 1
+          }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "table",
+          "id": "items",
+          "config": {
+            "style": "striped",
+            "columnAlignments": ["left", "left", "right"]
+          }
+        }
+      ]
+    }
+  ]
+}

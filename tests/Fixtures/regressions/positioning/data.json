@@ -1,0 +1,17 @@
+{
+  "h1": {
+    "text": "Right-aligned narrow heading"
+  },
+  "h2": {
+    "text": "Centered medium heading"
+  },
+  "t1": {
+    "text": "A constrained-width paragraph with default left positioning."
+  },
+  "t2": {
+    "text": "Centered, half-width inside its cell."
+  },
+  "t3": {
+    "text": "Spans the full cell."
+  }
+}

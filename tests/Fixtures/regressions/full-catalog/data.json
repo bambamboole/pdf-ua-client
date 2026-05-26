@@ -1,0 +1,26 @@
+{
+  "h1": {
+    "text": "Catalog overview"
+  },
+  "t1": {
+    "text": "A paragraph of text."
+  },
+  "raw1": {
+    "html": "<em>Raw HTML</em>"
+  },
+  "img1": {
+    "src": "logo.png",
+    "alt": "Logo"
+  },
+  "kv1": {
+    "status": "Active",
+    "owner": "Acme GmbH"
+  },
+  "tbl1": {
+    "headers": ["Item", "Qty"],
+    "rows": [
+      ["Widget A", "3"],
+      ["Widget B", "7"]
+    ]
+  }
+}

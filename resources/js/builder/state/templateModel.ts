@@ -310,30 +310,39 @@ export function updateBlockId(model: EditorModel, blockUid: string, rawId: strin
   };
 }
 
-export function updateDataLayer(
+export function updateDataField(
   model: EditorModel,
-  layer: keyof TemplateDataLayers,
   blockId: string,
-  data: Json,
+  field: string,
+  value: unknown,
+  options: { example: boolean; locked: boolean },
 ): EditorModel {
-  const nextLayer = { ...model.data[layer] };
-  if (Object.keys(data).length === 0) {
-    delete nextLayer[blockId];
-  } else {
-    nextLayer[blockId] = data;
+  let data = removeDataField(model.data, blockId, field);
+
+  if (options.locked) {
+    data = writeDataField(data, "constants", blockId, field, value);
   }
 
-  const rows =
-    layer === "example"
-      ? model.rows.map((row) => ({
-          ...row,
-          blocks: row.blocks.map((block) =>
-            block.id === blockId ? { ...block, data: data ?? {} } : block,
-          ),
-        }))
-      : model.rows;
+  if (options.example) {
+    data = writeDataField(data, "example", blockId, field, value);
+  }
 
-  return { ...model, rows, data: { ...model.data, [layer]: nextLayer } };
+  if (!options.example && !options.locked) {
+    data = writeDataField(data, "defaults", blockId, field, value);
+  }
+
+  const previewData = mergeDataMaps(data.defaults, data.example, data.constants);
+
+  return {
+    ...model,
+    data,
+    rows: model.rows.map((row) => ({
+      ...row,
+      blocks: row.blocks.map((block) =>
+        block.id === blockId ? { ...block, data: previewData[blockId] ?? {} } : block,
+      ),
+    })),
+  };
 }
 
 function renameDataId(layers: TemplateDataLayers, from: string, to: string): TemplateDataLayers {
@@ -372,6 +381,52 @@ function omitDataId(data: DataMap, id: string): DataMap {
   delete next[id];
 
   return next;
+}
+
+function removeDataField(
+  layers: TemplateDataLayers,
+  blockId: string,
+  field: string,
+): TemplateDataLayers {
+  return {
+    example: omitDataField(layers.example, blockId, field),
+    defaults: omitDataField(layers.defaults, blockId, field),
+    constants: omitDataField(layers.constants, blockId, field),
+  };
+}
+
+function omitDataField(data: DataMap, blockId: string, field: string): DataMap {
+  const blockData = data[blockId];
+  if (!blockData || !(field in blockData)) {
+    return data;
+  }
+
+  const nextBlockData = { ...blockData };
+  delete nextBlockData[field];
+
+  if (Object.keys(nextBlockData).length === 0) {
+    return omitDataId(data, blockId);
+  }
+
+  return { ...data, [blockId]: nextBlockData };
+}
+
+function writeDataField(
+  layers: TemplateDataLayers,
+  layer: keyof TemplateDataLayers,
+  blockId: string,
+  field: string,
+  value: unknown,
+): TemplateDataLayers {
+  const blockData = { ...layers[layer][blockId], [field]: value };
+
+  return {
+    ...layers,
+    [layer]: {
+      ...layers[layer],
+      [blockId]: blockData,
+    },
+  };
 }
 
 export function updateTemplateConfig(model: EditorModel, config: Json): EditorModel {

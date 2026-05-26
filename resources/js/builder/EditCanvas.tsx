@@ -13,10 +13,17 @@ import { getBlockTitle } from "./lib/schema";
 import BlockDataSummary from "./BlockDataSummary";
 import ColumnResizer from "./ColumnResizer";
 import InlineBlockEditor from "./InlineBlockEditor";
-import type { DragData, EditorBlock, EditorRow, Json, JsonSchema } from "./types";
+import type {
+  DragData,
+  EditorBlock,
+  EditorRow,
+  Json,
+  JsonSchema,
+  TemplateDataLayers,
+} from "./types";
 
 interface Props {
-  model: { rows: EditorRow[] };
+  model: { rows: EditorRow[]; data: TemplateDataLayers };
   schema: JsonSchema;
   format: string;
   selectedBlockUid: string | null;
@@ -26,6 +33,12 @@ interface Props {
   onSetRowWidths: (rowUid: string, widths: string[]) => void;
   onUpdateBlockId: (uid: string, id: string) => void;
   onUpdateBlockConfig: (uid: string, config: Json) => void;
+  onUpdateDataField: (
+    blockId: string,
+    field: string,
+    value: unknown,
+    options: { example: boolean; locked: boolean },
+  ) => void;
 }
 
 interface BlockBoxProps {
@@ -37,8 +50,15 @@ interface BlockBoxProps {
   onSelect: (uid: string) => void;
   onRemove: (uid: string) => void;
   schema: JsonSchema;
+  data: TemplateDataLayers;
   onUpdateBlockId: (uid: string, id: string) => void;
   onUpdateBlockConfig: (uid: string, config: Json) => void;
+  onUpdateDataField: (
+    blockId: string,
+    field: string,
+    value: unknown,
+    options: { example: boolean; locked: boolean },
+  ) => void;
 }
 
 function BlockBox({
@@ -50,8 +70,10 @@ function BlockBox({
   onSelect,
   onRemove,
   schema,
+  data,
   onUpdateBlockId,
   onUpdateBlockConfig,
+  onUpdateDataField,
 }: BlockBoxProps) {
   const [settingsOpen, setSettingsOpen] = useState(initiallyOpen);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -123,8 +145,11 @@ function BlockBox({
         <InlineBlockEditor
           block={block}
           schema={schema}
+          data={data}
+          detailsOpen={settingsOpen}
           onUpdateBlockId={onUpdateBlockId}
           onUpdateBlockConfig={onUpdateBlockConfig}
+          onUpdateDataField={onUpdateDataField}
         />
       </details>
     </div>
@@ -135,6 +160,7 @@ interface RowProps {
   row: EditorRow;
   rowIndex: number;
   schema: JsonSchema;
+  data: TemplateDataLayers;
   selectedBlockUid: string | null;
   onSelectBlock: (uid: string) => void;
   onRemoveBlock: (uid: string) => void;
@@ -142,12 +168,19 @@ interface RowProps {
   onSetRowWidths: (rowUid: string, widths: string[]) => void;
   onUpdateBlockId: (uid: string, id: string) => void;
   onUpdateBlockConfig: (uid: string, config: Json) => void;
+  onUpdateDataField: (
+    blockId: string,
+    field: string,
+    value: unknown,
+    options: { example: boolean; locked: boolean },
+  ) => void;
 }
 
 function Row({
   row,
   rowIndex,
   schema,
+  data,
   selectedBlockUid,
   onSelectBlock,
   onRemoveBlock,
@@ -155,6 +188,7 @@ function Row({
   onSetRowWidths,
   onUpdateBlockId,
   onUpdateBlockConfig,
+  onUpdateDataField,
 }: RowProps) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: `row-${row.uid}`,
@@ -214,8 +248,10 @@ function Row({
                 onSelect={onSelectBlock}
                 onRemove={onRemoveBlock}
                 schema={schema}
+                data={data}
                 onUpdateBlockId={onUpdateBlockId}
                 onUpdateBlockConfig={onUpdateBlockConfig}
+                onUpdateDataField={onUpdateDataField}
               />
               {i < row.blocks.length - 1 ? (
                 <ColumnResizer
@@ -261,6 +297,7 @@ export default function EditCanvas({
   onSetRowWidths,
   onUpdateBlockId,
   onUpdateBlockConfig,
+  onUpdateDataField,
 }: Props) {
   const [width] = pageSizeForFormat(format);
 
@@ -280,6 +317,7 @@ export default function EditCanvas({
             row={row}
             rowIndex={rowIndex}
             schema={schema}
+            data={model.data}
             selectedBlockUid={selectedBlockUid}
             onSelectBlock={onSelectBlock}
             onRemoveBlock={onRemoveBlock}
@@ -287,6 +325,7 @@ export default function EditCanvas({
             onSetRowWidths={onSetRowWidths}
             onUpdateBlockId={onUpdateBlockId}
             onUpdateBlockConfig={onUpdateBlockConfig}
+            onUpdateDataField={onUpdateDataField}
           />
         ))}
       </SortableContext>

@@ -23,8 +23,6 @@ it('opens block settings inline on the selected block', function (): void {
     $page
         ->assertSee('Data')
         ->assertSee('Example')
-        ->assertSee('Fallback')
-        ->assertSee('Locked')
         ->assertSee('Settings')
         ->assertSee('Config')
         ->assertSee('More')
@@ -33,6 +31,15 @@ it('opens block settings inline on the selected block', function (): void {
         ->assertScript('document.querySelector("aside.border-l") === null')
         ->assertScript('[...document.querySelectorAll("[data-builder-tabs] button")].every((button) => button.textContent.trim() !== "Example Data")')
         ->assertScript('document.querySelector("main [data-inline-block-details][open] [data-inline-block-editor]") !== null');
+
+    $page
+        ->assertScript('document.querySelector("main [data-inline-block-details][open] [data-inline-editor-tab=\"data\"]") !== null')
+        ->wait(0.5);
+
+    $page
+        ->assertSee('Lock')
+        ->assertScript('document.querySelector("main [data-inline-data-fields]") !== null')
+        ->assertScript('document.querySelector("main [data-inline-data-fields] input[type=checkbox]") !== null');
 });
 
 it('sizes the build canvas to the selected page format', function (): void {

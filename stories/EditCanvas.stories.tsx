@@ -35,7 +35,7 @@ type Story = StoryObj<typeof EditCanvas>;
 
 export const Invoice: Story = {
   args: {
-    model: { rows: model.rows },
+    model: { rows: model.rows, data: model.data },
     schema: typedSchema,
     format: getPageFormat(typedSchema),
     selectedBlockUid: null,
@@ -45,5 +45,6 @@ export const Invoice: Story = {
     onSetRowWidths: () => {},
     onUpdateBlockId: () => {},
     onUpdateBlockConfig: () => {},
+    onUpdateDataField: () => {},
   },
 };

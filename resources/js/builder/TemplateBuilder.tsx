@@ -28,39 +28,23 @@ import {
   updateBlockId,
   updateTemplateConfig,
   setRowWidths,
-  updateDataLayer,
+  updateDataField,
 } from "./state/templateModel";
 import { exampleFromSchema } from "./lib/exampleFromSchema";
 import { useLatest } from "./useLatest";
-import type {
-  DataMap,
-  DragData,
-  EditorModel,
-  Json,
-  JsonSchema,
-  Template,
-  TemplateDataLayers,
-} from "./types";
+import type { DataMap, DragData, EditorModel, Json, JsonSchema, Template } from "./types";
 
 const PageCanvas = lazy(() => import("./PageCanvas"));
 const PdfCanvas = lazy(() => import("./PdfCanvas"));
 const SchemaView = lazy(() => import("./SchemaView"));
-const SettingsForm = lazy(() => import("./SettingsForm"));
 
 type BuilderTab = "build" | "schema" | "html" | "pdf";
-type DataLayer = keyof TemplateDataLayers;
 
 const tabs: Array<{ key: BuilderTab; label: string }> = [
   { key: "build", label: "Build" },
   { key: "schema", label: "Schema" },
   { key: "html", label: "HTML" },
   { key: "pdf", label: "PDF" },
-];
-
-const dataLayers: Array<{ key: DataLayer; label: string; note: string }> = [
-  { key: "example", label: "Example", note: "Builder preview data" },
-  { key: "defaults", label: "Fallback", note: "Used when runtime data omits a value" },
-  { key: "constants", label: "Locked", note: "Always applied after runtime data" },
 ];
 
 export interface TemplateBuilderProps {
@@ -80,99 +64,6 @@ function errorMessage(cause: unknown): string {
 function rowIndexById(model: EditorModel, rowSortableId: string): number {
   const uid = rowSortableId.replace(/^row-/, "");
   return model.rows.findIndex((r) => r.uid === uid);
-}
-
-function modelBlocks(model: EditorModel) {
-  return model.rows.flatMap((row) => row.blocks);
-}
-
-function DataLayerEditor({
-  model,
-  schema,
-  onChange,
-}: {
-  model: EditorModel;
-  schema: JsonSchema;
-  onChange: (layer: DataLayer, blockId: string, data: Json) => void;
-}) {
-  const [layer, setLayer] = useState<DataLayer>("example");
-  const blocks = modelBlocks(model).filter((block) => {
-    const props = getBlockSubschemas(schema, block.type).props;
-    const properties = props.properties;
-
-    return (
-      typeof properties === "object" &&
-      properties !== null &&
-      !Array.isArray(properties) &&
-      Object.keys(properties).length > 0
-    );
-  });
-
-  return (
-    <section className="sticky top-0 min-w-0 rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-panel)] p-3 shadow-[var(--builder-shadow)]">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <div>
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--builder-muted)]">
-            Data
-          </h2>
-          <p className="text-xs text-[var(--builder-muted)]">
-            Example, fallback, and locked block values.
-          </p>
-        </div>
-      </div>
-      <div className="mb-3 grid grid-cols-3 gap-1 rounded-[var(--builder-radius)] bg-[var(--builder-surface)] p-1">
-        {dataLayers.map((item) => (
-          <button
-            key={item.key}
-            type="button"
-            aria-pressed={layer === item.key}
-            onClick={() => setLayer(item.key)}
-            className={`rounded-[calc(var(--builder-radius)-2px)] px-2 py-1 text-xs font-medium transition ${layer === item.key ? "bg-[var(--builder-panel)] text-[var(--builder-ink)] shadow-sm" : "text-[var(--builder-muted-strong)] hover:text-[var(--builder-ink)]"}`}
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
-      <p className="mb-3 text-xs text-[var(--builder-muted)]">
-        {dataLayers.find((item) => item.key === layer)?.note}
-      </p>
-      <div className="max-h-[calc(100vh-14rem)] space-y-3 overflow-auto pr-1">
-        {blocks.length > 0 ? (
-          blocks.map((block) => (
-            <section
-              key={`${layer}-${block.uid}`}
-              className="rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-surface)] p-3"
-            >
-              <div className="mb-2 flex items-center justify-between gap-3">
-                <div>
-                  <h3 className="text-sm font-semibold text-[var(--builder-ink)]">
-                    {getBlockTitle(schema, block.type)}
-                  </h3>
-                  <p className="text-[0.6875rem] text-[var(--builder-muted)]">{block.id}</p>
-                </div>
-                <span className="text-[0.6875rem] text-[var(--builder-muted)]">{block.type}</span>
-              </div>
-              <Suspense
-                fallback={
-                  <div className="h-20 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-panel)]" />
-                }
-              >
-                <SettingsForm
-                  schema={getBlockSubschemas(schema, block.type).props}
-                  formData={model.data[layer][block.id] ?? {}}
-                  onChange={(data) => onChange(layer, block.id, data)}
-                />
-              </Suspense>
-            </section>
-          ))
-        ) : (
-          <div className="rounded-[var(--builder-radius)] border border-dashed border-[var(--builder-stroke)] p-4 text-sm text-[var(--builder-muted)]">
-            Add a content block to edit data.
-          </div>
-        )}
-      </div>
-    </section>
-  );
 }
 
 export default function TemplateBuilder({
@@ -434,7 +325,7 @@ export default function TemplateBuilder({
           </div>
           <div className="flex-1 overflow-auto bg-[var(--builder-bg)] p-5">
             {tab === "build" ? (
-              <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
+              <div className="grid items-start gap-5">
                 <EditCanvas
                   model={model}
                   schema={schema}
@@ -450,12 +341,8 @@ export default function TemplateBuilder({
                   onUpdateBlockConfig={(uid, config) =>
                     setModel((m) => updateBlockConfig(m, uid, config as Json))
                   }
-                />
-                <DataLayerEditor
-                  model={model}
-                  schema={schema}
-                  onChange={(layer, blockId, nextData) =>
-                    setModel((m) => updateDataLayer(m, layer, blockId, nextData))
+                  onUpdateDataField={(blockId, field, value, options) =>
+                    setModel((m) => updateDataField(m, blockId, field, value, options))
                   }
                 />
               </div>

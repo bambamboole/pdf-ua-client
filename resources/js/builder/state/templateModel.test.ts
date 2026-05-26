@@ -14,6 +14,7 @@ import {
   updateBlockConfig,
   updateTemplateConfig,
   updateBlockId,
+  updateDataField,
 } from "./templateModel";
 import type { Template, DataMap } from "../types";
 
@@ -157,6 +158,42 @@ describe("previewDataMap", () => {
     expect(previewDataMap(m)).toEqual({
       title: { text: "Locked", subtitle: "Fallback subtitle" },
     });
+  });
+});
+
+describe("updateDataField", () => {
+  it("writes unchecked values to fallback defaults", () => {
+    const m = updateDataField(fromTemplate(template), "title", "text", "Fallback", {
+      example: false,
+      locked: false,
+    });
+
+    expect(m.data.defaults.title).toEqual({ text: "Fallback" });
+    expect(m.data.example.title).toBeUndefined();
+    expect(m.data.constants.title).toBeUndefined();
+  });
+
+  it("moves checked values to example data", () => {
+    const m = updateDataField(fromTemplate(template), "title", "text", "Example", {
+      example: true,
+      locked: false,
+    });
+
+    expect(m.data.example.title).toEqual({ text: "Example" });
+    expect(m.data.defaults.title).toBeUndefined();
+    expect(m.data.constants.title).toBeUndefined();
+  });
+
+  it("moves locked values to constants and updates block summary data", () => {
+    const m = updateDataField(fromTemplate(template), "title", "text", "Locked", {
+      example: true,
+      locked: true,
+    });
+
+    expect(m.data.example.title).toEqual({ text: "Locked" });
+    expect(m.data.constants.title).toEqual({ text: "Locked" });
+    expect(m.rows[0].blocks[0].data).toEqual({ text: "Locked" });
+    expect(previewDataMap(m)).toEqual({ title: { text: "Locked" } });
   });
 });
 

@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use Bambamboole\PdfUaClient\Examples\InvoiceExample;
 use Illuminate\Support\Facades\Http;
+use Workbench\App\Support\TemplateFixtureRepository;
 
 use function Pest\Laravel\postJson;
 
@@ -71,9 +71,11 @@ it('returns 422 when posted data violates the template data contract', function 
 });
 
 it('renders the registered invoice example payload', function (): void {
+    $fixture = app(TemplateFixtureRepository::class)->examples()[0];
+
     $response = postJson('/html', [
-        'template' => InvoiceExample::document(),
-        'data' => InvoiceExample::data(),
+        'template' => $fixture->template,
+        'data' => $fixture->data,
     ]);
 
     $response->assertSuccessful();

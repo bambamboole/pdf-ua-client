@@ -13,6 +13,7 @@ it('renders the builder page with the compiled schema prop', function (): void {
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('Builder')
+            ->where('schema.examples.0.title', 'Invoice')
             ->where('schema.$defs.block.oneOf', [
                 ['$ref' => '#/$defs/headingBlock'],
                 ['$ref' => '#/$defs/textBlock'],
@@ -24,4 +25,19 @@ it('renders the builder page with the compiled schema prop', function (): void {
                 ['$ref' => '#/$defs/tableBlock'],
             ])
         );
+});
+
+it('returns user-facing examples from the workbench endpoint', function (): void {
+    get('/examples')
+        ->assertOk()
+        ->assertJsonPath('examples.0.title', 'Invoice')
+        ->assertJsonStructure([
+            'examples' => [
+                [
+                    'title',
+                    'template',
+                    'data',
+                ],
+            ],
+        ]);
 });

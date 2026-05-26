@@ -5,10 +5,11 @@ declare(strict_types=1);
 use Bambamboole\PdfUaClient\Http\PdfApiClient;
 use Bambamboole\PdfUaClient\Rendering\TemplateRenderer;
 use Bambamboole\PdfUaClient\Template\TemplateFactory;
-use Bambamboole\PdfUaClient\Tests\Fixtures\TestFixture;
 use Bambamboole\PdfUaClient\Tests\Support\ComparisonResult;
 use Bambamboole\PdfUaClient\Tests\Support\PdfPageComparator;
 use Illuminate\Support\Facades\Http;
+use Workbench\App\Support\TemplateFixture;
+use Workbench\App\Support\TemplateFixtureRepository;
 
 function pdfUaExtractBody(string $html): string
 {
@@ -19,27 +20,9 @@ function pdfUaExtractBody(string $html): string
     return trim($matches[1]);
 }
 
-function pdfUaWriteFixtureHtml(string $path, string $body): void
+function pdfUaWriteFixtureHtml(TemplateFixture $fixture, string $body): void
 {
-    $source = file_get_contents($path);
-    if ($source === false) {
-        throw new RuntimeException("Unable to read fixture {$path}");
-    }
-
-    $exported = var_export($body, true);
-    $replaced = preg_replace(
-        '/html:\s*(?:\'(?:\\\\.|[^\'\\\\])*\'|"(?:\\\\.|[^"\\\\])*")/s',
-        'html: '.addcslashes($exported, '\\$'),
-        $source,
-        1,
-        $count,
-    );
-
-    if ($replaced === null || $count !== 1) {
-        throw new RuntimeException("Failed to substitute html value in fixture {$path}");
-    }
-
-    file_put_contents($path, $replaced);
+    file_put_contents($fixture->htmlPath ?? $fixture->path.'/expected.html', $body);
 }
 
 function pdfUaReachableApiBaseUrl(): ?string
@@ -81,63 +64,57 @@ function pdfUaWriteDiffArtifacts(string $name, string $actualPdf, ComparisonResu
 }
 
 dataset('renderFixtures', function () {
-    $files = glob(__DIR__.'/../Fixtures/render/*.php') ?: [];
-    sort($files);
+    $fixtures = (new TemplateFixtureRepository(__DIR__.'/../Fixtures'))->all();
 
-    return array_map(
-        fn (string $file): array => [basename($file), $file],
-        $files,
+    return array_reduce(
+        $fixtures,
+        function (array $cases, TemplateFixture $fixture): array {
+            $cases[$fixture->group.'/'.$fixture->slug] = [$fixture->group.'/'.$fixture->slug, $fixture];
+
+            return $cases;
+        },
+        [],
     );
 });
 
 dataset('pdfFixtures', function () {
-    $files = glob(__DIR__.'/../Fixtures/render/*.php') ?: [];
-    sort($files);
-
     $cases = [];
-    foreach ($files as $file) {
-        $fixture = require $file;
-        if ($fixture instanceof TestFixture && $fixture->pdf !== null) {
-            $cases[basename($file)] = [basename($file), $file];
+    foreach ((new TemplateFixtureRepository(__DIR__.'/../Fixtures'))->all() as $fixture) {
+        if ($fixture->pdfPath !== null) {
+            $cases[$fixture->group.'/'.$fixture->slug] = [$fixture->group.'/'.$fixture->slug, $fixture];
         }
     }
 
     return $cases;
 });
 
-it('renders fixture to expected body HTML', function (string $name, string $path) {
-    $fixture = require $path;
-    expect($fixture)->toBeInstanceOf(TestFixture::class);
+it('renders fixture to expected body HTML', function (string $name, TemplateFixture $fixture) {
+    $factory = app(TemplateFactory::class);
+    $renderer = app(TemplateRenderer::class);
+
+    $template = $factory->fromArray($fixture->template);
+    $html = $renderer->render($template, $fixture->data);
+    $body = pdfUaExtractBody($html);
+
+    if (getenv('UPDATE_FIXTURES') === '1') {
+        pdfUaWriteFixtureHtml($fixture, $body);
+        $this->markTestSkipped("Updated fixture: {$name}");
+    }
 
     if ($fixture->html === null) {
         $this->markTestSkipped("Fixture {$name} has no expected body HTML.");
     }
 
-    $factory = app(TemplateFactory::class);
-    $renderer = app(TemplateRenderer::class);
-
-    $template = $factory->fromArray($fixture->spec);
-    $html = $renderer->render($template, $fixture->data);
-    $body = pdfUaExtractBody($html);
-
-    if (getenv('UPDATE_FIXTURES') === '1') {
-        pdfUaWriteFixtureHtml($path, $body);
-        $this->markTestSkipped("Updated fixture: {$name}");
-    }
-
     expect($body)->toBe($fixture->html);
 })->with('renderFixtures');
 
-it('matches the committed golden PDF', function (string $name, string $path) {
-    /** @var TestFixture $fixture */
-    $fixture = require $path;
-    $goldenPath = __DIR__.'/../Fixtures/render/pdf/'.$fixture->pdf;
-
+it('matches the committed golden PDF', function (string $name, TemplateFixture $fixture) {
+    $goldenPath = $fixture->pdfPath ?? $fixture->path.'/expected.pdf';
     $baseUrl = pdfUaReachableApiBaseUrl();
 
     $factory = app(TemplateFactory::class);
     $renderer = app(TemplateRenderer::class);
-    $html = $renderer->render($factory->fromArray($fixture->spec), $fixture->data);
+    $html = $renderer->render($factory->fromArray($fixture->template), $fixture->data);
 
     if (getenv('UPDATE_PDF_FIXTURES') === '1') {
         if ($baseUrl === null) {
@@ -150,7 +127,7 @@ it('matches the committed golden PDF', function (string $name, string $path) {
         }
         file_put_contents($goldenPath, app(PdfApiClient::class)->convert($html));
 
-        $this->markTestSkipped("Updated golden PDF: {$fixture->pdf}");
+        $this->markTestSkipped("Updated golden PDF: {$name}");
     }
 
     if (! PdfPageComparator::isSupported()) {
@@ -162,7 +139,7 @@ it('matches the committed golden PDF', function (string $name, string $path) {
     }
 
     if (! is_file($goldenPath)) {
-        $this->markTestSkipped("Golden PDF {$fixture->pdf} is missing — run UPDATE_PDF_FIXTURES=1 to generate it.");
+        $this->markTestSkipped("Golden PDF for {$name} is missing — run UPDATE_PDF_FIXTURES=1 to generate it.");
     }
 
     config()->set('pdf-ua-client.base_url', $baseUrl);

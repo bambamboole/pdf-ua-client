@@ -9,7 +9,6 @@ use Bambamboole\PdfUaClient\Blocks\HeadingBlock;
 use Bambamboole\PdfUaClient\Blocks\KeyValueBlock;
 use Bambamboole\PdfUaClient\Blocks\TableBlock;
 use Bambamboole\PdfUaClient\Template\DataSchemaCompiler;
-use Bambamboole\PdfUaClient\Template\ExampleRegistry;
 use Bambamboole\PdfUaClient\Template\TemplateFactory;
 use Bambamboole\PdfUaClient\Template\TemplateSchemaCompiler;
 
@@ -20,7 +19,7 @@ beforeEach(function (): void {
     $registry->register(TableBlock::class);
     $registry->register(DividerBlock::class);
     $reflector = new PropsReflector;
-    $this->factory = new TemplateFactory($registry, new TemplateSchemaCompiler($reflector, new ExampleRegistry));
+    $this->factory = new TemplateFactory($registry, new TemplateSchemaCompiler($reflector));
     $this->compiler = new DataSchemaCompiler($reflector, $registry, $this->factory);
 });
 

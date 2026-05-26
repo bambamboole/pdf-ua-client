@@ -1,0 +1,18 @@
+{
+  "invoice-title": {
+    "text": "Invoice 2026-042"
+  },
+  "customer-meta": {
+    "customer": "Globex AG",
+    "invoiceNumber": "RE-2026-000042",
+    "dueDate": "2026-06-21"
+  },
+  "line-items": {
+    "headers": ["Description", "Amount"],
+    "rows": [
+      ["Consulting (May)", "2.400,00 €"],
+      ["Implementation (May)", "5.600,00 €"],
+      ["Travel reimbursement", "312,40 €"]
+    ]
+  }
+}

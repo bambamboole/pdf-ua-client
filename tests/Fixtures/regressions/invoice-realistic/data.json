@@ -1,0 +1,34 @@
+{
+  "logo": {
+    "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNjAiIGhlaWdodD0iNzIiIHZpZXdCb3g9IjAgMCAyNjAgNzIiPjx0ZXh0IHg9IjAiIHk9IjQyIiBmaWxsPSIjMTExODI3IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI3MDAiPlBERiBVQSBLaXQ8L3RleHQ+PC9zdmc+",
+    "alt": "PDF UA Kit GmbH logo"
+  },
+  "addr": {
+    "text": "Muster GmbH\n\nBeispielstraße 1\n\n10115 Berlin"
+  },
+  "intro": {
+    "text": "Invoice 2026-001"
+  },
+  "meta": {
+    "invoiceNumber": "RE-2026-001234",
+    "issueDate": "2026-02-17",
+    "dueDate": "2026-03-19"
+  },
+  "items": {
+    "headers": ["Description", "Qty", "Unit price", "Total"],
+    "rows": [
+      ["Web development", "40", "95,00 €", "3.800,00 €"],
+      ["UI/UX design", "16", "85,00 €", "1.360,00 €"],
+      ["Project management", "8", "90,00 €", "720,00 €"],
+      ["Hosting (annual)", "1", "240,00 €", "240,00 €"]
+    ]
+  },
+  "totals": {
+    "netAmount": "6.120,00 €",
+    "vatAmount": "1.162,80 €",
+    "grandTotal": "7.282,80 €"
+  },
+  "footer": {
+    "text": "Please transfer the total amount within 30 days to the bank account stated above. Thank you for your business."
+  }
+}

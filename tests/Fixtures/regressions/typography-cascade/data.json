@@ -1,0 +1,14 @@
+{
+  "h1": {
+    "text": "Inherits template typography"
+  },
+  "h2": {
+    "text": "Overrides size and weight"
+  },
+  "h3": {
+    "text": "Centered danger heading"
+  },
+  "t1": {
+    "text": "Body copy rendered in Georgia for contrast."
+  }
+}

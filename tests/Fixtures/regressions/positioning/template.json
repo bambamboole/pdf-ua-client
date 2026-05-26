@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "config": {
+    "page": {
+      "format": "A4"
+    }
+  },
+  "rows": [
+    {
+      "blocks": [
+        {
+          "type": "heading",
+          "id": "h1",
+          "config": {
+            "level": 2,
+            "width": "60%",
+            "align": "right"
+          }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "heading",
+          "id": "h2",
+          "config": {
+            "level": 3,
+            "width": "50%",
+            "align": "center"
+          }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "text",
+          "id": "t1",
+          "config": {
+            "width": "80%"
+          }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "text",
+          "id": "t2",
+          "config": {
+            "width": "50%",
+            "align": "center"
+          }
+        },
+        {
+          "type": "text",
+          "id": "t3",
+          "config": {
+            "width": "50%"
+          }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "spacer",
+          "config": {
+            "height": 10
+          }
+        }
+      ]
+    }
+  ]
+}

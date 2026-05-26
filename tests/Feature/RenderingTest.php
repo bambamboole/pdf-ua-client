@@ -19,7 +19,6 @@ use Bambamboole\PdfUaClient\Fonts\FontRegistry;
 use Bambamboole\PdfUaClient\Rendering\RenderOptions;
 use Bambamboole\PdfUaClient\Rendering\TemplateRenderer;
 use Bambamboole\PdfUaClient\Template\DataSchemaCompiler;
-use Bambamboole\PdfUaClient\Template\ExampleRegistry;
 use Bambamboole\PdfUaClient\Template\TemplateFactory;
 use Bambamboole\PdfUaClient\Template\TemplateSchemaCompiler;
 
@@ -39,7 +38,7 @@ beforeEach(function () {
     }
 
     $reflector = new PropsReflector;
-    $this->factory = new TemplateFactory($registry, new TemplateSchemaCompiler($reflector, new ExampleRegistry));
+    $this->factory = new TemplateFactory($registry, new TemplateSchemaCompiler($reflector));
     $this->fonts = new FontRegistry;
     $this->renderer = new TemplateRenderer(
         new BlockHydrator($registry),

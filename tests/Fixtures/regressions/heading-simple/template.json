@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "config": {
+    "page": {
+      "format": "A4"
+    }
+  },
+  "rows": [
+    {
+      "blocks": [
+        {
+          "type": "heading",
+          "id": "h",
+          "config": {
+            "level": 1
+          }
+        }
+      ]
+    }
+  ]
+}

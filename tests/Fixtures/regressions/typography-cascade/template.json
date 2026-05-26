@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "config": {
+    "page": {
+      "format": "A4"
+    },
+    "typography": {
+      "family": "Inter",
+      "size": 10
+    }
+  },
+  "rows": [
+    {
+      "blocks": [
+        {
+          "type": "heading",
+          "id": "h1",
+          "config": {
+            "level": 2
+          }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "heading",
+          "id": "h2",
+          "config": {
+            "level": 2,
+            "typography": {
+              "size": 24,
+              "weight": 700
+            }
+          }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "heading",
+          "id": "h3",
+          "config": {
+            "level": 2,
+            "typography": {
+              "align": "center",
+              "color": "#dc2626"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "text",
+          "id": "t1",
+          "config": {
+            "typography": {
+              "family": "Georgia"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

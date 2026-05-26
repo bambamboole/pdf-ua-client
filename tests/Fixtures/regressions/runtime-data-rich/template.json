@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "config": {
+    "page": {
+      "format": "A4"
+    }
+  },
+  "rows": [
+    {
+      "blocks": [
+        {
+          "type": "heading",
+          "id": "invoice-title",
+          "config": {
+            "level": 1
+          }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "key-value",
+          "id": "customer-meta",
+          "config": {
+            "fields": [
+              {
+                "key": "customer",
+                "label": "Customer"
+              },
+              {
+                "key": "invoiceNumber",
+                "label": "Invoice number"
+              },
+              {
+                "key": "dueDate",
+                "label": "Due date"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "table",
+          "id": "line-items",
+          "config": {
+            "style": "striped"
+          }
+        }
+      ]
+    }
+  ]
+}

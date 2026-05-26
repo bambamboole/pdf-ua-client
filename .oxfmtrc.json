@@ -7,6 +7,8 @@
     "storage/**",
     "viewer/**",
     "workbench/**",
+    "tests/Fixtures/examples/**",
+    "tests/Fixtures/regressions/**",
     "tests/Fixtures/json-schema-2020-12/**",
     "stories/data/**",
     "template.schema.json",

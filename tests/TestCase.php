@@ -7,6 +7,7 @@ use Bambamboole\PdfUaClient\PdfUaClientServiceProvider;
 use Inertia\ServiceProvider as InertiaServiceProvider;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as BaseTestCase;
+use Workbench\App\Providers\WorkbenchServiceProvider;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -26,6 +27,7 @@ abstract class TestCase extends BaseTestCase
         return [
             InertiaServiceProvider::class,
             PdfUaClientServiceProvider::class,
+            WorkbenchServiceProvider::class,
         ];
     }
 

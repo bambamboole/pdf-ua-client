@@ -117,6 +117,25 @@ it('parses nested per-block config', function () {
     ]);
 });
 
+it('builds template data layers from the top-level data object', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => [],
+        'rows' => [
+            ['blocks' => [['type' => 'test-fixture', 'id' => 'title']]],
+        ],
+        'data' => [
+            'example' => ['title' => ['text' => 'Example title']],
+            'defaults' => ['title' => ['text' => 'Fallback title']],
+            'constants' => ['title' => ['badge' => 'Locked']],
+        ],
+    ]);
+
+    expect($template->data->example)->toBe(['title' => ['text' => 'Example title']])
+        ->and($template->data->defaults)->toBe(['title' => ['text' => 'Fallback title']])
+        ->and($template->data->constants)->toBe(['title' => ['badge' => 'Locked']]);
+});
+
 it('throws TemplateValidationException for missing required keys', function () {
     expect(fn () => $this->factory->fromArray([
         'config' => ['page' => ['format' => 'A4']],

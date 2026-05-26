@@ -90,6 +90,15 @@ final readonly class TemplateSchemaCompiler
                     'type' => 'array',
                     'items' => ['$ref' => '#/$defs/row'],
                 ],
+                'data' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'example' => $this->dataLayerSchema(),
+                        'defaults' => $this->dataLayerSchema(),
+                        'constants' => $this->dataLayerSchema(),
+                    ],
+                    'additionalProperties' => false,
+                ],
             ],
             '$defs' => $allDefs === [] ? new stdClass : $allDefs,
         ];
@@ -100,6 +109,15 @@ final readonly class TemplateSchemaCompiler
         }
 
         return $schema;
+    }
+
+    /** @return array<string, mixed> */
+    private function dataLayerSchema(): array
+    {
+        return [
+            'type' => 'object',
+            'additionalProperties' => true,
+        ];
     }
 
     private function registerPageFooterConfig(SchemaRegistry $defs): void

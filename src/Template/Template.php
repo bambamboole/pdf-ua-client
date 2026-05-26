@@ -12,5 +12,6 @@ final readonly class Template
         public int $version,
         public TemplateConfig $config,
         public array $rows,
+        public TemplateData $data = new TemplateData,
     ) {}
 }

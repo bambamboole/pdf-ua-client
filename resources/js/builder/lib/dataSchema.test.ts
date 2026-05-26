@@ -73,4 +73,29 @@ describe("dataSchemaForTemplate", () => {
       additionalProperties: false,
     });
   });
+
+  it("adds defaults and constants from template data layers", () => {
+    const template: Template = {
+      version: 1,
+      config: {},
+      rows: [{ blocks: [{ type: "heading", id: "hero-title" }] }],
+      data: {
+        defaults: { "hero-title": { text: "Fallback title" } },
+        constants: { "hero-title": { text: "Locked title" } },
+      },
+    };
+
+    const out = dataSchemaForTemplate(schema, template);
+
+    expect(out.properties).toEqual({
+      "hero-title": {
+        type: "object",
+        required: ["text"],
+        properties: {
+          text: { type: "string", default: "Fallback title", const: "Locked title" },
+        },
+      },
+    });
+    expect(out.required).toBeUndefined();
+  });
 });

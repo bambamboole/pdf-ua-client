@@ -19,6 +19,7 @@ use Bambamboole\PdfUaClient\Template\BlockInstance;
 use Bambamboole\PdfUaClient\Template\DataSchemaCompiler;
 use Bambamboole\PdfUaClient\Template\Row;
 use Bambamboole\PdfUaClient\Template\Template;
+use Bambamboole\PdfUaClient\Template\TemplateDataMerger;
 use Opis\JsonSchema\Validator;
 
 final class TemplateRenderer
@@ -34,6 +35,7 @@ final class TemplateRenderer
         private readonly BlockHydrator $hydrator,
         private readonly DataSchemaCompiler $dataSchemaCompiler,
         private readonly ?FontRegistry $fonts = null,
+        private readonly TemplateDataMerger $dataMerger = new TemplateDataMerger,
     ) {}
 
     /**
@@ -47,6 +49,7 @@ final class TemplateRenderer
         $this->blockCounter = 0;
         $this->usedFontKeys = [];
 
+        $runtimeData = $this->dataMerger->runtimeData($template, $runtimeData);
         $this->validateData($template, $runtimeData);
 
         $ctx = new RenderContext;

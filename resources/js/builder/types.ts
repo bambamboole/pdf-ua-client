@@ -15,6 +15,7 @@ export interface Template {
   version: number;
   config: Json;
   rows: TemplateRow[];
+  data?: Partial<TemplateDataLayers>;
 }
 
 export interface EditorBlock {
@@ -33,9 +34,15 @@ export interface EditorModel {
   version: number;
   config: Json;
   rows: EditorRow[];
+  data: TemplateDataLayers;
 }
 
 export type DataMap = Record<string, Json>;
+export interface TemplateDataLayers {
+  example: DataMap;
+  defaults: DataMap;
+  constants: DataMap;
+}
 
 export type DragData =
   | { source: "palette"; type: string }

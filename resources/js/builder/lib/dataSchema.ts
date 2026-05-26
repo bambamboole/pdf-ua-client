@@ -1,4 +1,4 @@
-import type { JsonSchema, Template } from "../types";
+import type { Json, JsonSchema, Template } from "../types";
 import { getBlockSubschemas } from "./schema";
 
 const dataSchemaId = "https://pdfuakit.com/schemas/pdf-ua-client-template-data-v1.json";
@@ -24,7 +24,7 @@ export function dataSchemaForTemplate(schema: JsonSchema, template: Template): J
   const properties: Record<string, JsonSchema> = {};
   const required: string[] = [];
 
-  for (const row of template.rows) {
+  for (const row of dataRows(template)) {
     for (const block of row.blocks) {
       if (!block.id) {
         continue;
@@ -35,9 +35,18 @@ export function dataSchemaForTemplate(schema: JsonSchema, template: Template): J
         continue;
       }
 
-      properties[block.id] = standaloneSchema(blockSchema);
+      const defaults = template.data?.defaults?.[block.id] ?? {};
+      const constants = template.data?.constants?.[block.id] ?? {};
+      properties[block.id] = withDataLayerAnnotations(
+        standaloneSchema(blockSchema),
+        defaults,
+        constants,
+      );
 
-      if (Array.isArray(blockSchema.required) && blockSchema.required.length > 0) {
+      if (
+        Array.isArray(blockSchema.required) &&
+        uncoveredRequired(blockSchema, defaults, constants).length > 0
+      ) {
         required.push(block.id);
       }
     }
@@ -51,4 +60,47 @@ export function dataSchemaForTemplate(schema: JsonSchema, template: Template): J
     ...(required.length > 0 ? { required: [...new Set(required)] } : {}),
     additionalProperties: false,
   };
+}
+
+function dataRows(template: Template): Template["rows"] {
+  const footerRows = ((template.config as { page?: { footer?: { rows?: Template["rows"] } } }).page
+    ?.footer?.rows ?? []) as Template["rows"];
+
+  return [...template.rows, ...footerRows];
+}
+
+function withDataLayerAnnotations(schema: JsonSchema, defaults: Json, constants: Json): JsonSchema {
+  const properties = schema.properties;
+  if (!isPlainObject(properties)) {
+    return schema;
+  }
+
+  const nextProperties: Record<string, unknown> = { ...properties };
+  for (const [key, value] of Object.entries(defaults)) {
+    if (isPlainObject(nextProperties[key])) {
+      nextProperties[key] = { ...nextProperties[key], default: value };
+    }
+  }
+  for (const [key, value] of Object.entries(constants)) {
+    if (isPlainObject(nextProperties[key])) {
+      nextProperties[key] = { ...nextProperties[key], const: value };
+    }
+  }
+
+  return { ...schema, properties: nextProperties };
+}
+
+function uncoveredRequired(schema: JsonSchema, defaults: Json, constants: Json): string[] {
+  if (!Array.isArray(schema.required)) {
+    return [];
+  }
+
+  return schema.required.filter(
+    (field): field is string =>
+      typeof field === "string" && !(field in defaults) && !(field in constants),
+  );
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

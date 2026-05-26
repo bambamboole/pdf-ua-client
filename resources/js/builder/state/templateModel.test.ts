@@ -3,6 +3,7 @@ import {
   fromTemplate,
   toTemplate,
   toDataMap,
+  previewDataMap,
   findBlock,
   addBlock,
   removeBlock,
@@ -36,11 +37,25 @@ describe("fromTemplate", () => {
     const m = fromTemplate(template, data);
     expect(m.rows[0].blocks[0].id).toBe("title");
     expect(m.rows[0].blocks[0].config).toEqual({ level: 1 });
-    expect(m.rows[0].blocks[0].data).toEqual({ text: "Hi" });
+    expect(m.data.example.title).toEqual({ text: "Hi" });
     expect(m.rows[0].blocks[0].uid).toBeTruthy();
   });
   it("leaves block data empty when the data map lacks an id", () => {
-    expect(fromTemplate(template).rows[0].blocks[0].data).toEqual({});
+    expect(fromTemplate(template).data.example.title).toBeUndefined();
+  });
+  it("loads template-level data layers", () => {
+    const m = fromTemplate({
+      ...template,
+      data: {
+        example: { title: { text: "Example" } },
+        defaults: { title: { text: "Fallback" } },
+        constants: { title: { locked: true } },
+      },
+    });
+
+    expect(m.data.example.title).toEqual({ text: "Example" });
+    expect(m.data.defaults.title).toEqual({ text: "Fallback" });
+    expect(m.data.constants.title).toEqual({ locked: true });
   });
 });
 
@@ -50,8 +65,7 @@ describe("toTemplate", () => {
     expect(out.rows[0].blocks[0]).toEqual({ type: "heading", id: "title", config: { level: 1 } });
     expect(out.rows[1].blocks[0].config).toEqual({ width: "50%" });
     expect((out.rows[1] as unknown as Record<string, unknown>).columnWidths).toBeUndefined();
-    // No injected data content (e.g. "Hi"/"A"/"B") leaks into the exported template.
-    expect(JSON.stringify(out)).not.toContain('"Hi"');
+    expect(out.data?.example).toEqual(data);
   });
 });
 
@@ -83,13 +97,13 @@ describe("addBlock", () => {
     const added = m.rows[m.rows.length - 1].blocks[0];
     expect(added.type).toBe("table");
     expect(added.id).toBe("table-1");
-    expect(added.data).toEqual({ headers: ["X"], rows: [["1"]] });
+    expect(m.data.example["table-1"]).toEqual({ headers: ["X"], rows: [["1"]] });
   });
   it("defaults to empty data when none is provided", () => {
     const m = addBlock(fromTemplate(template, data), "table", { rowUid: null });
     const added = m.rows[m.rows.length - 1].blocks[0];
     expect(added.id).toBe("table-1");
-    expect(added.data).toEqual({});
+    expect(m.data.example["table-1"]).toBeUndefined();
   });
   it("makes ids unique across the model", () => {
     let m = addBlock(fromTemplate(template, data), "heading", { rowUid: null });
@@ -109,6 +123,40 @@ describe("updateBlockId", () => {
   it("suffixes a colliding id", () => {
     const m = fromTemplate(template, data); // ids: title, a, b
     expect(updateBlockId(m, m.rows[0].blocks[0].uid, "a").rows[0].blocks[0].id).toBe("a-2");
+  });
+  it("renames all data layers with the block id", () => {
+    const m = fromTemplate({
+      ...template,
+      data: {
+        example: { title: { text: "Example" } },
+        defaults: { title: { text: "Fallback" } },
+        constants: { title: { text: "Locked" } },
+      },
+    });
+
+    const out = updateBlockId(m, m.rows[0].blocks[0].uid, "headline");
+
+    expect(out.data.example.headline).toEqual({ text: "Example" });
+    expect(out.data.defaults.headline).toEqual({ text: "Fallback" });
+    expect(out.data.constants.headline).toEqual({ text: "Locked" });
+    expect(out.data.example.title).toBeUndefined();
+  });
+});
+
+describe("previewDataMap", () => {
+  it("merges fallback, example, and locked data in preview order", () => {
+    const m = fromTemplate({
+      ...template,
+      data: {
+        example: { title: { text: "Example" } },
+        defaults: { title: { text: "Fallback", subtitle: "Fallback subtitle" } },
+        constants: { title: { text: "Locked" } },
+      },
+    });
+
+    expect(previewDataMap(m)).toEqual({
+      title: { text: "Locked", subtitle: "Fallback subtitle" },
+    });
   });
 });
 
@@ -147,7 +195,9 @@ describe("config / moves / remove", () => {
   });
   it("removeRow removes by uid", () => {
     const m = fromTemplate(template, data);
-    expect(removeRow(m, m.rows[0].uid).rows).toHaveLength(1);
+    const out = removeRow(m, m.rows[0].uid);
+    expect(out.rows).toHaveLength(1);
+    expect(out.data.example.title).toBeUndefined();
   });
   it("updateTemplateConfig replaces config", () => {
     expect(

@@ -21,7 +21,10 @@ it('opens block settings inline on the selected block', function (): void {
         ->assertNoJavaScriptErrors();
 
     $page
-        ->assertSee('Example data')
+        ->assertSee('Data')
+        ->assertSee('Example')
+        ->assertSee('Fallback')
+        ->assertSee('Locked')
         ->assertSee('Settings')
         ->assertSee('Config')
         ->assertSee('More')

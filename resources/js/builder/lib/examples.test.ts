@@ -31,4 +31,23 @@ describe("loadExample", () => {
     const out = toTemplate(model);
     expect(out.rows[0].blocks[0]).toEqual({ type: "heading", id: "title", config: { level: 1 } });
   });
+
+  it("keeps data layers embedded in example templates", () => {
+    const model = loadExample({
+      template: {
+        ...entry.template,
+        data: {
+          example: { title: { text: "Example" } },
+          defaults: { title: { text: "Fallback" } },
+          constants: { title: { badge: "Locked" } },
+        },
+      },
+    });
+
+    expect(toTemplate(model).data).toEqual({
+      example: { title: { text: "Example" } },
+      defaults: { title: { text: "Fallback" } },
+      constants: { title: { badge: "Locked" } },
+    });
+  });
 });

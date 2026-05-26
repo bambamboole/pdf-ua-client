@@ -41,9 +41,11 @@ final readonly class DataSchemaCompiler
                 }
 
                 $id = (string) $block->id;
-                $properties[$id] = $dataSchema;
+                $defaults = $template->data->defaults[$id] ?? [];
+                $constants = $template->data->constants[$id] ?? [];
+                $properties[$id] = $this->withDataLayerAnnotations($dataSchema, $defaults, $constants);
 
-                if (isset($dataSchema['required']) && $dataSchema['required'] !== []) {
+                if (isset($dataSchema['required']) && $this->uncoveredRequired($dataSchema, $defaults, $constants) !== []) {
                     $required[] = $id;
                 }
             }
@@ -62,6 +64,56 @@ final readonly class DataSchemaCompiler
         }
 
         return $schema;
+    }
+
+    /**
+     * @param  array<string, mixed>  $schema
+     * @param  array<string, mixed>  $defaults
+     * @param  array<string, mixed>  $constants
+     * @return array<string, mixed>
+     */
+    private function withDataLayerAnnotations(array $schema, array $defaults, array $constants): array
+    {
+        if (! isset($schema['properties']) || ! is_array($schema['properties'])) {
+            return $schema;
+        }
+
+        foreach ($defaults as $key => $value) {
+            if (! isset($schema['properties'][$key]) || ! is_array($schema['properties'][$key])) {
+                continue;
+            }
+
+            $schema['properties'][$key]['default'] = $value;
+        }
+
+        foreach ($constants as $key => $value) {
+            if (! isset($schema['properties'][$key]) || ! is_array($schema['properties'][$key])) {
+                continue;
+            }
+
+            $schema['properties'][$key]['const'] = $value;
+        }
+
+        return $schema;
+    }
+
+    /**
+     * @param  array<string, mixed>  $schema
+     * @param  array<string, mixed>  $defaults
+     * @param  array<string, mixed>  $constants
+     * @return list<string>
+     */
+    private function uncoveredRequired(array $schema, array $defaults, array $constants): array
+    {
+        $required = $schema['required'] ?? [];
+        if (! is_array($required)) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            $required,
+            static fn (mixed $field): bool => is_string($field) && ! array_key_exists($field, $defaults) && ! array_key_exists($field, $constants),
+        ));
     }
 
     /** @return list<Row> */

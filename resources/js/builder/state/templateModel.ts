@@ -1,4 +1,12 @@
-import type { DataMap, EditorBlock, EditorModel, EditorRow, Json, Template } from "../types";
+import type {
+  DataMap,
+  EditorBlock,
+  EditorModel,
+  EditorRow,
+  Json,
+  Template,
+  TemplateDataLayers,
+} from "../types";
 
 function uid(): string {
   return crypto.randomUUID();
@@ -33,9 +41,12 @@ export function uniqueBlockId(model: EditorModel, type: string): string {
 }
 
 export function fromTemplate(template: Template, data: DataMap = {}): EditorModel {
+  const layers = normalizeDataLayers(template.data, data);
+
   return {
     version: template.version,
     config: template.config ?? {},
+    data: layers,
     rows: (template.rows ?? []).map(
       (row): EditorRow => ({
         uid: uid(),
@@ -47,7 +58,7 @@ export function fromTemplate(template: Template, data: DataMap = {}): EditorMode
             id,
             type: block.type,
             config: (block.config ?? {}) as Json,
-            data: (data[id] ?? {}) as Json,
+            data: (layers.example[id] ?? {}) as Json,
           };
         }),
       }),
@@ -56,6 +67,8 @@ export function fromTemplate(template: Template, data: DataMap = {}): EditorMode
 }
 
 export function toTemplate(model: EditorModel): Template {
+  const data = compactDataLayers(model.data);
+
   return {
     version: model.version,
     config: model.config ?? {},
@@ -70,21 +83,76 @@ export function toTemplate(model: EditorModel): Template {
         }
         return out;
       }),
+    ...(Object.keys(data).length > 0 ? { data } : {}),
   };
 }
 
 export function toDataMap(model: EditorModel): DataMap {
-  const map: DataMap = {};
-  for (const row of model.rows) {
-    for (const block of row.blocks) {
-      if (Object.keys(block.data ?? {}).length === 0) {
-        continue;
-      }
+  return previewDataMap(model);
+}
 
-      map[block.id] = block.data ?? {};
+export function previewDataMap(model: EditorModel): DataMap {
+  return mergeDataMaps(model.data.defaults, model.data.example, model.data.constants);
+}
+
+function normalizeDataLayers(
+  layers: Partial<TemplateDataLayers> | undefined,
+  legacyExampleData: DataMap,
+): TemplateDataLayers {
+  return {
+    example: cleanDataMap({ ...layers?.example, ...legacyExampleData }),
+    defaults: cleanDataMap(layers?.defaults ?? {}),
+    constants: cleanDataMap(layers?.constants ?? {}),
+  };
+}
+
+function cleanDataMap(data: DataMap): DataMap {
+  const map: DataMap = {};
+
+  for (const [id, value] of Object.entries(data)) {
+    if (Object.keys(value ?? {}).length > 0) {
+      map[id] = value;
     }
   }
+
   return map;
+}
+
+function compactDataLayers(layers: TemplateDataLayers): Partial<TemplateDataLayers> {
+  return Object.fromEntries(
+    Object.entries(layers)
+      .map(([key, value]) => [key, cleanDataMap(value)])
+      .filter(([, value]) => Object.keys(value as DataMap).length > 0),
+  ) as Partial<TemplateDataLayers>;
+}
+
+function mergeDataMaps(...maps: DataMap[]): DataMap {
+  const merged: DataMap = {};
+
+  for (const map of maps) {
+    for (const [id, value] of Object.entries(map)) {
+      merged[id] = mergeJson(merged[id] ?? {}, value) as Json;
+    }
+  }
+
+  return cleanDataMap(merged);
+}
+
+function mergeJson(base: unknown, override: unknown): unknown {
+  if (!isPlainObject(base) || !isPlainObject(override)) {
+    return override;
+  }
+
+  const merged: Record<string, unknown> = { ...base };
+  for (const [key, value] of Object.entries(override)) {
+    merged[key] = mergeJson(merged[key], value);
+  }
+
+  return merged;
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function newRow(block: EditorBlock): EditorRow {
@@ -104,11 +172,17 @@ export function addBlock(
     config: {},
     data,
   };
+  const dataLayers =
+    Object.keys(data).length > 0
+      ? { ...model.data, example: { ...model.data.example, [block.id]: data } }
+      : model.data;
+
   if (rowUid === null) {
-    return { ...model, rows: [...model.rows, newRow(block)] };
+    return { ...model, data: dataLayers, rows: [...model.rows, newRow(block)] };
   }
   return {
     ...model,
+    data: dataLayers,
     rows: model.rows.map((row) => {
       if (row.uid !== rowUid) {
         return row;
@@ -122,8 +196,11 @@ export function addBlock(
 }
 
 export function removeBlock(model: EditorModel, blockUid: string): EditorModel {
+  const block = findBlock(model, blockUid)?.block;
+
   return {
     ...model,
+    data: block ? removeDataForId(model.data, block.id) : model.data,
     rows: model.rows
       .map((row) => ({ ...row, blocks: row.blocks.filter((b) => b.uid !== blockUid) }))
       .filter((row) => row.blocks.length > 0),
@@ -131,7 +208,12 @@ export function removeBlock(model: EditorModel, blockUid: string): EditorModel {
 }
 
 export function removeRow(model: EditorModel, rowUid: string): EditorModel {
-  return { ...model, rows: model.rows.filter((row) => row.uid !== rowUid) };
+  const removedRow = model.rows.find((candidate) => candidate.uid === rowUid);
+  const data = removedRow
+    ? removedRow.blocks.reduce((layers, block) => removeDataForId(layers, block.id), model.data)
+    : model.data;
+
+  return { ...model, data, rows: model.rows.filter((candidate) => candidate.uid !== rowUid) };
 }
 
 export function moveBlock(
@@ -220,7 +302,76 @@ export function updateBlockId(model: EditorModel, blockUid: string, rawId: strin
     model.rows.flatMap((r) => r.blocks.filter((b) => b.uid !== blockUid).map((b) => b.id)),
   );
   const id = makeUnique(slugify(rawId) || "block", taken);
-  return mapBlock(model, blockUid, (b) => ({ ...b, id }));
+  const block = findBlock(model, blockUid)?.block;
+
+  return {
+    ...mapBlock(model, blockUid, (b) => ({ ...b, id })),
+    data: block ? renameDataId(model.data, block.id, id) : model.data,
+  };
+}
+
+export function updateDataLayer(
+  model: EditorModel,
+  layer: keyof TemplateDataLayers,
+  blockId: string,
+  data: Json,
+): EditorModel {
+  const nextLayer = { ...model.data[layer] };
+  if (Object.keys(data).length === 0) {
+    delete nextLayer[blockId];
+  } else {
+    nextLayer[blockId] = data;
+  }
+
+  const rows =
+    layer === "example"
+      ? model.rows.map((row) => ({
+          ...row,
+          blocks: row.blocks.map((block) =>
+            block.id === blockId ? { ...block, data: data ?? {} } : block,
+          ),
+        }))
+      : model.rows;
+
+  return { ...model, rows, data: { ...model.data, [layer]: nextLayer } };
+}
+
+function renameDataId(layers: TemplateDataLayers, from: string, to: string): TemplateDataLayers {
+  return {
+    example: renameInDataMap(layers.example, from, to),
+    defaults: renameInDataMap(layers.defaults, from, to),
+    constants: renameInDataMap(layers.constants, from, to),
+  };
+}
+
+function renameInDataMap(data: DataMap, from: string, to: string): DataMap {
+  if (!(from in data)) {
+    return data;
+  }
+
+  const next = { ...data, [to]: data[from] };
+  delete next[from];
+
+  return next;
+}
+
+function removeDataForId(layers: TemplateDataLayers, id: string): TemplateDataLayers {
+  return {
+    example: omitDataId(layers.example, id),
+    defaults: omitDataId(layers.defaults, id),
+    constants: omitDataId(layers.constants, id),
+  };
+}
+
+function omitDataId(data: DataMap, id: string): DataMap {
+  if (!(id in data)) {
+    return data;
+  }
+
+  const next = { ...data };
+  delete next[id];
+
+  return next;
 }
 
 export function updateTemplateConfig(model: EditorModel, config: Json): EditorModel {

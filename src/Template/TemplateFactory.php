@@ -45,7 +45,37 @@ final readonly class TemplateFactory
             version: (int) $data['version'],
             config: $this->buildTemplateConfig((array) ($data['config'] ?? [])),
             rows: $this->buildRows($data['rows']),
+            data: $this->buildTemplateData((array) ($data['data'] ?? [])),
         );
+    }
+
+    /** @param array<string, mixed> $data */
+    private function buildTemplateData(array $data): TemplateData
+    {
+        return new TemplateData(
+            example: $this->blockDataMap((array) ($data['example'] ?? [])),
+            defaults: $this->blockDataMap((array) ($data['defaults'] ?? [])),
+            constants: $this->blockDataMap((array) ($data['constants'] ?? [])),
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, array<string, mixed>>
+     */
+    private function blockDataMap(array $data): array
+    {
+        $map = [];
+
+        foreach ($data as $id => $values) {
+            if (! is_array($values)) {
+                continue;
+            }
+
+            $map[(string) $id] = $values;
+        }
+
+        return $map;
     }
 
     /** @param array<string, mixed> $data */

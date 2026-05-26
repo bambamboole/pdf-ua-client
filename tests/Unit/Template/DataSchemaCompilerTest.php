@@ -88,3 +88,23 @@ it('includes footer blocks in the data schema', function (): void {
     expect($schema['properties'])->toHaveKeys(['body_heading', 'footer_heading']);
     expect($schema['required'])->toBe(['body_heading', 'footer_heading']);
 });
+
+it('annotates block schemas with fallback defaults and locked constants', function (): void {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => [],
+        'rows' => [
+            ['blocks' => [['type' => 'heading', 'id' => 'title', 'config' => ['level' => 1]]]],
+        ],
+        'data' => [
+            'defaults' => ['title' => ['text' => 'Fallback title']],
+            'constants' => ['title' => ['text' => 'Locked title']],
+        ],
+    ]);
+
+    $schema = $this->compiler->compile($template);
+
+    expect($schema['properties']['title']['properties']['text']['default'])->toBe('Fallback title')
+        ->and($schema['properties']['title']['properties']['text']['const'])->toBe('Locked title')
+        ->and($schema)->not->toHaveKey('required');
+});

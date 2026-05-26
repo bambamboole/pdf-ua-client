@@ -9,7 +9,7 @@ use Bambamboole\PdfUaClient\Template\TemplateFactory;
 use Bambamboole\PdfUaClient\Template\TemplateSchemaCompiler;
 use Opis\JsonSchema\Validator;
 
-it('attaches structure-only example documents to the compiled schema root', function (): void {
+it('attaches example documents without inline block props to the compiled schema root', function (): void {
     $schema = app(TemplateSchemaCompiler::class)->compile(app(BlockRegistry::class));
 
     expect($schema['examples'])->toBeArray()
@@ -20,6 +20,8 @@ it('attaches structure-only example documents to the compiled schema root', func
             expect($block)->not->toHaveKey('props');
         }
     }
+
+    expect($schema['examples'][0]['data']['example'])->toBeArray();
 });
 
 it('the invoice structure validates against schema #1 and its data against schema #2', function (): void {

@@ -435,6 +435,55 @@ it('rejects a data payload that violates the template data contract', function (
         ->toThrow(DataValidationException::class);
 });
 
+it('renders fallback data when runtime data omits a block', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['format' => 'A4']],
+        'rows' => [['blocks' => [['type' => 'heading', 'id' => 'h', 'config' => ['level' => 1]]]]],
+        'data' => [
+            'defaults' => ['h' => ['text' => 'Fallback title']],
+        ],
+    ]);
+
+    $html = $this->renderer->render($template);
+
+    expect($html)->toContain('<h1>Fallback title</h1>');
+});
+
+it('lets runtime data override fallback data', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['format' => 'A4']],
+        'rows' => [['blocks' => [['type' => 'heading', 'id' => 'h', 'config' => ['level' => 1]]]]],
+        'data' => [
+            'defaults' => ['h' => ['text' => 'Fallback title']],
+        ],
+    ]);
+
+    $html = $this->renderer->render($template, ['h' => ['text' => 'Runtime title']]);
+
+    expect($html)->toContain('<h1>Runtime title</h1>')
+        ->and($html)->not->toContain('Fallback title');
+});
+
+it('keeps locked constants from being overwritten by runtime data', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['format' => 'A4']],
+        'rows' => [['blocks' => [['type' => 'heading', 'id' => 'h', 'config' => ['level' => 1]]]]],
+        'data' => [
+            'defaults' => ['h' => ['text' => 'Fallback title']],
+            'constants' => ['h' => ['text' => 'Locked title']],
+        ],
+    ]);
+
+    $html = $this->renderer->render($template, ['h' => ['text' => 'Runtime title']]);
+
+    expect($html)->toContain('<h1>Locked title</h1>')
+        ->and($html)->not->toContain('Runtime title')
+        ->and($html)->not->toContain('Fallback title');
+});
+
 it('rejects a block config that violates a schema constraint', function () {
     expect(fn () => $this->factory->fromArray([
         'version' => 1, 'config' => ['page' => ['format' => 'A4']],

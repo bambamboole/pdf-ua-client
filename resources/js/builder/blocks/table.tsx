@@ -7,10 +7,8 @@ import {
   currentBlockValue,
   inputClass,
   isPlainObject,
-  keyedFieldKeys,
   keyedFields,
   previewBlockValue,
-  pruneDataRowsForId,
   rowsToJson,
   stringValue,
 } from "./shared";
@@ -199,10 +197,7 @@ function TableConfigEditor({
 
 export const tableBlock: BlockDefinition = {
   type: "table",
-  managedConfigKeys: ["columns", "numberRows", "style"],
   DataEditor: TableDataEditor,
   Summary: TableSummary,
   ConfigEditor: TableConfigEditor,
-  pruneDataForConfig: (layers, blockId, config) =>
-    pruneDataRowsForId(layers, blockId, keyedFieldKeys(config.columns)),
 };

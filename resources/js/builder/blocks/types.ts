@@ -47,13 +47,7 @@ export interface BlockConfigEditorProps {
 
 export interface BlockDefinition {
   type: string;
-  managedConfigKeys?: string[];
   DataEditor?: ComponentType<BlockDataEditorProps>;
   Summary?: ComponentType<BlockSummaryProps>;
   ConfigEditor?: ComponentType<BlockConfigEditorProps>;
-  pruneDataForConfig?: (
-    layers: TemplateDataLayers,
-    blockId: string,
-    config: Json,
-  ) => TemplateDataLayers;
 }

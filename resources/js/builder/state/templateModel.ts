@@ -9,7 +9,7 @@ import type {
   Template,
   TemplateDataLayers,
 } from "../types";
-import { pruneDataForBlockConfig } from "../blocks/model";
+import { blockMeta } from "../blocks/meta";
 
 function uid(): string {
   return crypto.randomUUID();
@@ -337,7 +337,7 @@ export function updateBlockConfig(model: EditorModel, blockUid: string, config: 
   const updated = mapBlock(model, blockUid, (b) => ({ ...b, config }));
 
   return block
-    ? { ...updated, data: pruneDataForBlockConfig(block.type, updated.data, block.id, config) }
+    ? { ...updated, data: blockMeta(block.type).pruneDataForConfig(updated.data, block.id, config) }
     : updated;
 }
 

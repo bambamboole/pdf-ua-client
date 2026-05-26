@@ -1,5 +1,5 @@
 import type { JsonSchema } from "../types";
-import { managedConfigKeys } from "../blocks/config";
+import { blockMeta } from "../blocks/meta";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -114,7 +114,7 @@ export function getBlockConfigSchema(schema: JsonSchema, type: string): JsonSche
 }
 
 export function getBlockConfigGroupSchema(schema: JsonSchema, type: string): JsonSchema {
-  const omitted = new Set(["typography", "spacing", ...managedConfigKeys(type)]);
+  const omitted = new Set(["typography", "spacing", ...blockMeta(type).managedConfigKeys]);
 
   return objectSchema(
     Object.fromEntries(

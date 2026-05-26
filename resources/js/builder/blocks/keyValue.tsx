@@ -5,10 +5,8 @@ import {
   currentFieldValue,
   inputClass,
   isPlainObject,
-  keyedFieldKeys,
   keyedFields,
   previewBlockValue,
-  pruneDataFieldsForId,
   stringValue,
 } from "./shared";
 import type {
@@ -119,10 +117,7 @@ function KeyValueConfigEditor({
 
 export const keyValueBlock: BlockDefinition = {
   type: "key-value",
-  managedConfigKeys: ["fields"],
   DataEditor: KeyValueDataEditor,
   Summary: KeyValueSummary,
   ConfigEditor: KeyValueConfigEditor,
-  pruneDataForConfig: (layers, blockId, config) =>
-    pruneDataFieldsForId(layers, blockId, keyedFieldKeys(config.fields)),
 };

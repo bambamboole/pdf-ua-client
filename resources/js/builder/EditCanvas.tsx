@@ -290,9 +290,10 @@ function NewRowZone({ area = "body" }: { area?: EditorArea }) {
   return (
     <div
       ref={setNodeRef}
+      data-new-row-zone={area}
       className={`rounded-[var(--builder-radius)] border-2 border-dashed px-3 py-6 text-center text-sm font-medium transition ${isOver ? "border-[var(--builder-accent)] bg-[var(--builder-accent-soft)] text-[var(--builder-accent)]" : "border-[var(--builder-stroke-strong)] text-[var(--builder-muted)]"}`}
     >
-      Drop a block here to add a new {area === "footer" ? "footer " : ""}row
+      Drop a block here to add a new row
     </div>
   );
 }
@@ -336,11 +337,8 @@ function FooterCanvas({
     pageNumbers?.enabled === true ? String(pageNumbers.position ?? "center") : "disabled";
 
   return (
-    <section
-      data-footer-canvas
-      className="border-t border-dashed border-[var(--builder-stroke-strong)] pt-3"
-    >
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+    <section className="-mx-3 -mb-3 space-y-2 bg-[var(--builder-bg)] px-3 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <div className="text-xs font-semibold uppercase tracking-wide text-[var(--builder-muted)]">
             Footer
@@ -360,12 +358,11 @@ function FooterCanvas({
           </label>
         </div>
       </div>
-      <div className="space-y-2 rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-surface)] p-2">
-        {model.footerRows.length === 0 ? (
-          <div className="rounded-[var(--builder-radius)] border border-dashed border-[var(--builder-stroke-strong)] px-3 py-4 text-center text-xs font-medium text-[var(--builder-muted)]">
-            Add a footer block to configure repeated footer content.
-          </div>
-        ) : (
+      <div
+        data-footer-canvas
+        className="space-y-2 rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-panel)] p-2 shadow-[var(--builder-shadow)]"
+      >
+        {model.footerRows.length > 0 ? (
           <SortableContext
             items={model.footerRows.map((candidate) => `row-${candidate.uid}`)}
             strategy={verticalListSortingStrategy}
@@ -389,10 +386,10 @@ function FooterCanvas({
               />
             ))}
           </SortableContext>
-        )}
+        ) : null}
         <NewRowZone area="footer" />
       </div>
-      <div className="mt-2 flex justify-center border-t border-dashed border-[var(--builder-stroke)] pt-2">
+      <div className="flex justify-center">
         <label className="inline-flex items-center gap-1.5 text-xs text-[var(--builder-muted-strong)]">
           Page numbers
           <select

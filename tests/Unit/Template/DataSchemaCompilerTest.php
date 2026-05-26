@@ -6,6 +6,7 @@ use Bambamboole\PdfUaClient\Block\BlockRegistry;
 use Bambamboole\PdfUaClient\Block\PropsReflector;
 use Bambamboole\PdfUaClient\Blocks\DividerBlock;
 use Bambamboole\PdfUaClient\Blocks\HeadingBlock;
+use Bambamboole\PdfUaClient\Blocks\KeyValueBlock;
 use Bambamboole\PdfUaClient\Blocks\TableBlock;
 use Bambamboole\PdfUaClient\Template\DataSchemaCompiler;
 use Bambamboole\PdfUaClient\Template\ExampleRegistry;
@@ -15,6 +16,7 @@ use Bambamboole\PdfUaClient\Template\TemplateSchemaCompiler;
 beforeEach(function (): void {
     $registry = new BlockRegistry;
     $registry->register(HeadingBlock::class);
+    $registry->register(KeyValueBlock::class);
     $registry->register(TableBlock::class);
     $registry->register(DividerBlock::class);
     $reflector = new PropsReflector;
@@ -106,5 +108,36 @@ it('annotates block schemas with fallback defaults and locked constants', functi
 
     expect($schema['properties']['title']['properties']['text']['default'])->toBe('Fallback title')
         ->and($schema['properties']['title']['properties']['text']['const'])->toBe('Locked title')
+        ->and($schema)->not->toHaveKey('required');
+});
+
+it('emits flat key value schemas from configured fields', function (): void {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => [],
+        'rows' => [[
+            'blocks' => [[
+                'type' => 'key-value',
+                'id' => 'invoice-meta',
+                'config' => [
+                    'fields' => [
+                        ['key' => 'invoiceNumber', 'label' => 'Invoice number'],
+                        ['key' => 'currency', 'label' => 'Currency'],
+                    ],
+                ],
+            ]],
+        ]],
+        'data' => [
+            'defaults' => ['invoice-meta' => ['invoiceNumber' => 'RE-2026-001234']],
+            'constants' => ['invoice-meta' => ['currency' => 'EUR']],
+        ],
+    ]);
+
+    $schema = $this->compiler->compile($template);
+
+    expect($schema['properties']['invoice-meta']['properties'])->toHaveKeys(['invoiceNumber', 'currency'])
+        ->and($schema['properties']['invoice-meta']['properties']['invoiceNumber']['title'])->toBe('Invoice number')
+        ->and($schema['properties']['invoice-meta']['properties']['invoiceNumber']['default'])->toBe('RE-2026-001234')
+        ->and($schema['properties']['invoice-meta']['properties']['currency']['const'])->toBe('EUR')
         ->and($schema)->not->toHaveKey('required');
 });

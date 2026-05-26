@@ -8,24 +8,46 @@ function stringValue(value: unknown): string {
   return value == null ? "" : String(value);
 }
 
-function keyValueEntries(data: Record<string, unknown>): Array<{ label: string; value: string }> {
-  if (!Array.isArray(data.entries)) {
-    return [];
+function keyValueEntries(
+  data: Record<string, unknown>,
+  fields: unknown,
+): Array<{ label: string; value: string }> {
+  if (Array.isArray(fields)) {
+    return fields
+      .map((field) => {
+        if (!field || typeof field !== "object") {
+          return null;
+        }
+
+        const record = field as Record<string, unknown>;
+        const key = stringValue(record.key);
+        if (key === "") {
+          return null;
+        }
+
+        return {
+          label: stringValue(record.label) || key,
+          value: stringValue(data[key]),
+        };
+      })
+      .filter((entry): entry is { label: string; value: string } => entry !== null);
   }
 
-  return data.entries
-    .map((entry) => {
-      if (!entry || typeof entry !== "object") {
-        return null;
-      }
+  return Array.isArray(data.entries)
+    ? data.entries
+        .map((entry) => {
+          if (!entry || typeof entry !== "object") {
+            return null;
+          }
 
-      const pair = entry as Record<string, unknown>;
-      return {
-        label: stringValue(pair.label),
-        value: stringValue(pair.value),
-      };
-    })
-    .filter((entry): entry is { label: string; value: string } => entry !== null);
+          const pair = entry as Record<string, unknown>;
+          return {
+            label: stringValue(pair.label),
+            value: stringValue(pair.value),
+          };
+        })
+        .filter((entry): entry is { label: string; value: string } => entry !== null)
+    : [];
 }
 
 function stringList(value: unknown): string[] {
@@ -117,7 +139,7 @@ export default function BlockDataSummary({ block }: { block: EditorBlock }) {
       summary = String(d.alt ?? "image");
       break;
     case "key-value": {
-      const entries = keyValueEntries(d);
+      const entries = keyValueEntries(d, block.config.fields);
       return entries.length > 0 ? (
         <KeyValuePreview entries={entries} />
       ) : (

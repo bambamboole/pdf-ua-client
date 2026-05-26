@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import type { EditorBlock, Json, JsonSchema, TemplateDataLayers } from "./types";
 import { getBlockConfigSchema, getBlockSubschemas } from "./lib/schema";
+import BlockDataEditor from "./BlockDataEditor";
 
 const SettingsForm = lazy(() => import("./SettingsForm"));
 
@@ -91,9 +92,9 @@ export default function InlineBlockEditor({
           />
         </div>
       ) : tab === "data" && hasDataProperties ? (
-        <DataFields
-          blockId={block.id}
-          schema={blockDataSchema}
+        <BlockDataEditor
+          block={block}
+          schema={schema}
           data={data}
           onUpdateDataField={onUpdateDataField}
         />
@@ -112,106 +113,4 @@ export default function InlineBlockEditor({
       )}
     </div>
   );
-}
-
-function DataFields({
-  blockId,
-  schema,
-  data,
-  onUpdateDataField,
-}: {
-  blockId: string;
-  schema: JsonSchema;
-  data: TemplateDataLayers;
-  onUpdateDataField: (
-    blockId: string,
-    field: string,
-    value: unknown,
-    options: { example: boolean; locked: boolean },
-  ) => void;
-}) {
-  const properties = schema.properties as Record<string, JsonSchema>;
-
-  return (
-    <div data-inline-data-fields className="space-y-3">
-      {Object.entries(properties).map(([field, fieldSchema]) => {
-        const example = Object.hasOwn(data.example[blockId] ?? {}, field);
-        const locked = Object.hasOwn(data.constants[blockId] ?? {}, field);
-        const value = currentFieldValue(data, blockId, field);
-
-        return (
-          <section
-            key={field}
-            className="rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-surface)] p-3"
-          >
-            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-              <span className="font-mono text-xs font-medium text-[var(--builder-muted-strong)]">
-                {field}
-              </span>
-              <span className="flex items-center gap-3 text-xs text-[var(--builder-muted-strong)]">
-                <label className="inline-flex items-center gap-1.5">
-                  <input
-                    type="checkbox"
-                    checked={example}
-                    onChange={(event) =>
-                      onUpdateDataField(blockId, field, value, {
-                        example: event.currentTarget.checked,
-                        locked,
-                      })
-                    }
-                  />
-                  Example
-                </label>
-                <label className="inline-flex items-center gap-1.5">
-                  <input
-                    type="checkbox"
-                    checked={locked}
-                    onChange={(event) =>
-                      onUpdateDataField(blockId, field, value, {
-                        example,
-                        locked: event.currentTarget.checked,
-                      })
-                    }
-                  />
-                  Lock
-                </label>
-              </span>
-            </div>
-            <Suspense
-              fallback={
-                <div className="h-16 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-panel)]" />
-              }
-            >
-              <SettingsForm
-                schema={{
-                  type: "object",
-                  properties: { [field]: fieldSchema },
-                }}
-                formData={{ [field]: value } as Json}
-                onChange={(formData) =>
-                  onUpdateDataField(blockId, field, formData[field], { example, locked })
-                }
-              />
-            </Suspense>
-          </section>
-        );
-      })}
-    </div>
-  );
-}
-
-function currentFieldValue(data: TemplateDataLayers, blockId: string, field: string): unknown {
-  if (Object.hasOwn(data.constants[blockId] ?? {}, field)) {
-    return data.constants[blockId][field];
-  }
-
-  if (Object.hasOwn(data.example[blockId] ?? {}, field)) {
-    return data.example[blockId][field];
-  }
-
-  if (Object.hasOwn(data.defaults[blockId] ?? {}, field)) {
-    return data.defaults[blockId][field];
-  }
-
-  return undefined;
 }

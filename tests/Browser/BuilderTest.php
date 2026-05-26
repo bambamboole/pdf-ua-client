@@ -38,6 +38,7 @@ it('opens block settings inline on the selected block', function (): void {
 
     $page
         ->assertSee('Lock')
+        ->assertSee('Upload')
         ->assertScript('document.querySelector("main [data-inline-data-fields]") !== null')
         ->assertScript('document.querySelector("main [data-inline-data-fields] input[type=checkbox]") !== null');
 });

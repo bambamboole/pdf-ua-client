@@ -37,6 +37,10 @@ it('models a complete realistic invoice document structure', function () {
         'style' => 'striped',
         'columnAlignments' => ['center', 'left', 'right', 'right', 'right', 'right'],
     ]);
+    expect($blocks->get('invoice-meta')['config']['fields'])->toContain(
+        ['key' => 'invoiceNumber', 'label' => 'Invoice number'],
+        ['key' => 'currency', 'label' => 'Currency'],
+    );
 });
 
 it('provides realistic seller, buyer, line items, totals, and payment data', function () {
@@ -44,24 +48,24 @@ it('provides realistic seller, buyer, line items, totals, and payment data', fun
 
     expect($data['logo']['src'])->toStartWith('data:image/');
     expect($data['logo']['alt'])->toBe('PDF UA Kit GmbH logo');
-    expect($data['seller']['entries'])->toContain(
-        ['label' => 'Seller', 'value' => 'PDF UA Kit GmbH'],
-        ['label' => 'VAT ID', 'value' => 'DE123456789'],
-    );
-    expect($data['buyer']['entries'])->toContain(
-        ['label' => 'Buyer', 'value' => 'Musterkunde AG'],
-        ['label' => 'Buyer reference', 'value' => '04011000-12345-67'],
-    );
+    expect($data['seller'])->toMatchArray([
+        'name' => 'PDF UA Kit GmbH',
+        'vatId' => 'DE123456789',
+    ]);
+    expect($data['buyer'])->toMatchArray([
+        'name' => 'Musterkunde AG',
+        'reference' => '04011000-12345-67',
+    ]);
     expect($data['items']['headers'])->toBe(['#', 'Description', 'Qty', 'Unit price', 'VAT', 'Total']);
     expect($data['items']['rows'])->toHaveCount(4);
     expect($data['vat-breakdown']['headers'])->toBe(['VAT category', 'Rate', 'Taxable amount', 'VAT amount']);
-    expect($data['totals']['entries'])->toContain(
-        ['label' => 'Net amount', 'value' => '6.120,00 €'],
-        ['label' => 'Amount due', 'value' => '7.282,80 €'],
-    );
-    expect($data['payment']['entries'])->toContain(
-        ['label' => 'IBAN', 'value' => 'DE89370400440532013000'],
-        ['label' => 'Payment reference', 'value' => 'RE-2026-001234'],
-    );
+    expect($data['totals'])->toMatchArray([
+        'netAmount' => '6.120,00 €',
+        'amountDue' => '7.282,80 €',
+    ]);
+    expect($data['payment'])->toMatchArray([
+        'iban' => 'DE89370400440532013000',
+        'reference' => 'RE-2026-001234',
+    ]);
     expect($data['footer']['text'])->toContain('PDF UA Kit GmbH');
 });

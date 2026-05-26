@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { imageFileError, imageFileToDataUrl, imageUploadUiSchema } from "./imageUpload";
+import { imageFileError, imageFileToDataUrl } from "./imageUpload";
 
 describe("image upload helpers", () => {
   it("accepts image files at or below 200 KB", () => {
@@ -26,22 +26,5 @@ describe("image upload helpers", () => {
     const file = new File(["logo"], "logo.svg", { type: "image/svg+xml" });
 
     await expect(imageFileToDataUrl(file)).resolves.toBe("data:image/svg+xml;base64,bG9nbw==");
-  });
-
-  it("marks image src fields with the custom upload widget", () => {
-    expect(
-      imageUploadUiSchema({
-        type: "object",
-        properties: {
-          src: { type: "string" },
-          alt: { type: "string" },
-        },
-      }),
-    ).toMatchObject({
-      src: {
-        "ui:widget": "ImageUploadWidget",
-        "ui:options": { accept: "image/*,.svg" },
-      },
-    });
   });
 });

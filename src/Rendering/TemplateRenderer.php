@@ -96,7 +96,7 @@ final class TemplateRenderer
     {
         $resolvedInstance = new BlockInstance(
             type: $instance->type,
-            props: $runtimeData[$instance->id] ?? [],
+            props: $this->blockProps($instance, $runtimeData[$instance->id] ?? []),
             id: $instance->id,
             config: $instance->config,
         );
@@ -123,6 +123,19 @@ final class TemplateRenderer
         }
 
         return "<div class=\"{$id}\">{$body}</div>";
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function blockProps(BlockInstance $instance, array $data): array
+    {
+        if ($instance->type === 'key-value' && isset($instance->config['fields'])) {
+            return ['values' => $data];
+        }
+
+        return $data;
     }
 
     /**

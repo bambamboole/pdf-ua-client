@@ -1,15 +1,12 @@
 import type { ChangeEvent, FocusEvent } from "react";
-import { useState } from "react";
 import {
   type BaseInputTemplateProps,
   type DescriptionFieldProps,
-  type ErrorSchema,
   type FieldTemplateProps,
   type ObjectFieldTemplateProps,
   type WidgetProps,
   getInputProps,
 } from "@rjsf/utils";
-import { IMAGE_ACCEPT, imageFileError, imageFileToDataUrl } from "../lib/imageUpload";
 
 export function BaseInputTemplate(props: BaseInputTemplateProps) {
   const {
@@ -154,98 +151,10 @@ export function SelectWidget(props: WidgetProps) {
   );
 }
 
-export function ImageUploadWidget(props: WidgetProps) {
-  const {
-    id,
-    value,
-    required,
-    disabled,
-    readonly,
-    autofocus,
-    onChange,
-    onBlur,
-    onFocus,
-    options,
-    rawErrors,
-  } = props;
-  const [message, setMessage] = useState<string | null>(null);
-  const accept = typeof options.accept === "string" ? options.accept : IMAGE_ACCEPT;
-
-  function changeValue(nextValue: string, error?: string): void {
-    const errorSchema = error ? ({ __errors: [error] } as ErrorSchema) : undefined;
-    onChange(nextValue, errorSchema as Parameters<typeof onChange>[1], id);
-  }
-
-  async function handleFileChange(event: ChangeEvent<HTMLInputElement>): Promise<void> {
-    const file = event.target.files?.[0];
-    if (!file) {
-      return;
-    }
-
-    const error = imageFileError(file);
-    if (error) {
-      setMessage(error);
-      changeValue(String(value ?? ""), error);
-      event.target.value = "";
-      return;
-    }
-
-    const dataUrl = await imageFileToDataUrl(file);
-    setMessage(`${file.name} uploaded`);
-    changeValue(dataUrl);
-    event.target.value = "";
-  }
-
-  const errors = rawErrors ?? [];
-
-  return (
-    <div className="grid gap-2">
-      <input
-        id={id}
-        className="block w-full rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-field)] px-2 py-1 text-sm text-[var(--builder-field-ink)] focus:border-[var(--builder-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--builder-accent-soft)] disabled:bg-[var(--builder-surface)]"
-        type="url"
-        value={value ?? ""}
-        required={required}
-        disabled={disabled}
-        readOnly={readonly}
-        autoFocus={autofocus}
-        placeholder="https://example.com/logo.png or uploaded data URL"
-        onChange={(e) => {
-          setMessage(null);
-          changeValue(e.target.value);
-        }}
-        onBlur={(e) => onBlur(id, e.target.value)}
-        onFocus={(e) => onFocus(id, e.target.value)}
-      />
-      <label className="inline-flex cursor-pointer items-center justify-center rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-surface)] px-2 py-1 text-xs font-medium text-[var(--builder-muted-strong)] hover:border-[var(--builder-accent)]">
-        <span>Upload image</span>
-        <input
-          className="sr-only"
-          type="file"
-          accept={accept}
-          disabled={disabled || readonly}
-          onChange={(event) => {
-            void handleFileChange(event);
-          }}
-        />
-      </label>
-      <p className="text-[10px] leading-snug text-[var(--builder-muted)]">
-        PNG, JPEG, WebP, GIF, or SVG. 200 KB max.
-      </p>
-      {message ? (
-        <p className="text-[10px] leading-snug text-[var(--builder-muted-strong)]">{message}</p>
-      ) : null}
-      {errors.length > 0 ? (
-        <p className="text-[10px] leading-snug text-[var(--builder-danger)]">{errors[0]}</p>
-      ) : null}
-    </div>
-  );
-}
-
 export const rjsfTemplates = {
   BaseInputTemplate,
   DescriptionFieldTemplate,
   FieldTemplate,
   ObjectFieldTemplate,
 };
-export const rjsfWidgets = { ImageUploadWidget, SelectWidget };
+export const rjsfWidgets = { SelectWidget };

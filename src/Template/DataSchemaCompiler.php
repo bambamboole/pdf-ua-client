@@ -34,7 +34,7 @@ final readonly class DataSchemaCompiler
 
         foreach ($this->dataRows($template) as $row) {
             foreach ($row->blocks as $block) {
-                $dataSchema = $this->reflector->reflectBlock($this->registry->resolve($block->type))['data'];
+                $dataSchema = $this->dataSchemaForBlock($block);
 
                 if ($this->hasNoProperties($dataSchema)) {
                     continue;
@@ -61,6 +61,51 @@ final readonly class DataSchemaCompiler
 
         if ($required !== []) {
             $schema['required'] = array_values(array_unique($required));
+        }
+
+        return $schema;
+    }
+
+    /** @return array<string, mixed> */
+    private function dataSchemaForBlock(BlockInstance $block): array
+    {
+        if ($block->type === 'key-value' && isset($block->config['fields']) && is_array($block->config['fields'])) {
+            return $this->keyValueDataSchema($block->config['fields']);
+        }
+
+        return $this->reflector->reflectBlock($this->registry->resolve($block->type))['data'];
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $fields
+     * @return array<string, mixed>
+     */
+    private function keyValueDataSchema(array $fields): array
+    {
+        $properties = [];
+        $required = [];
+
+        foreach ($fields as $field) {
+            $key = (string) ($field['key'] ?? '');
+            if ($key === '') {
+                continue;
+            }
+
+            $properties[$key] = [
+                'type' => ['string', 'number', 'integer', 'boolean', 'null'],
+                'title' => (string) ($field['label'] ?? $key),
+            ];
+            $required[] = $key;
+        }
+
+        $schema = [
+            'type' => 'object',
+            'properties' => $properties === [] ? new stdClass : $properties,
+            'additionalProperties' => false,
+        ];
+
+        if ($required !== []) {
+            $schema['required'] = $required;
         }
 
         return $schema;

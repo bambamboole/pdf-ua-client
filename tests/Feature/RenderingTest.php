@@ -116,6 +116,36 @@ it('supplies block content via runtime data by block id', function () {
     expect($html)->toContain('Runtime title');
 });
 
+it('supplies key value block content from flat runtime data keyed by configured fields', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['format' => 'A4']],
+        'rows' => [[
+            'blocks' => [[
+                'type' => 'key-value',
+                'id' => 'invoice-meta',
+                'config' => [
+                    'fields' => [
+                        ['key' => 'invoiceNumber', 'label' => 'Invoice number'],
+                        ['key' => 'issueDate', 'label' => 'Issue date'],
+                    ],
+                ],
+            ]],
+        ]],
+    ]);
+
+    $html = $this->renderer->render($template, runtimeData: [
+        'invoice-meta' => [
+            'invoiceNumber' => 'RE-2026-001234',
+            'issueDate' => '2026-02-17',
+        ],
+    ]);
+
+    expect($html)->toContain('<td>Invoice number</td><td>RE-2026-001234</td>')
+        ->and($html)->toContain('<td>Issue date</td><td>2026-02-17</td>')
+        ->and($html)->not->toContain('entries');
+});
+
 it('emits per-block typography as a wrapper-class-scoped CSS rule', function () {
     $template = $this->factory->fromArray([
         'version' => 1,

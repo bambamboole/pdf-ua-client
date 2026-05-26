@@ -17,12 +17,18 @@ describe("BlockDataSummary", () => {
   it("renders key-value data as a compact table preview", () => {
     const html = renderToStaticMarkup(
       <BlockDataSummary
-        block={block("key-value", {
-          entries: [
-            { label: "Seller", value: "PDF UA Kit GmbH" },
-            { label: "VAT ID", value: "DE123456789" },
-          ],
-        })}
+        block={{
+          ...block("key-value", {
+            seller: "PDF UA Kit GmbH",
+            vatId: "DE123456789",
+          }),
+          config: {
+            fields: [
+              { key: "seller", label: "Seller" },
+              { key: "vatId", label: "VAT ID" },
+            ],
+          },
+        }}
       />,
     );
 

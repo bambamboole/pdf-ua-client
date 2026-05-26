@@ -487,6 +487,29 @@
                     "title": "Label width",
                     "description": "CSS width for the first column containing labels.",
                     "default": "30mm"
+                },
+                "fields": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "key": {
+                                "type": "string",
+                                "title": "Key",
+                                "description": "Runtime data key used for this row value.",
+                                "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+                            },
+                            "label": {
+                                "type": "string",
+                                "title": "Label",
+                                "description": "Label rendered in the first column."
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "title": "Fields",
+                    "description": "Fixed key/label rows rendered by this block. Values come from runtime data by key.",
+                    "default": []
                 }
             },
             "unevaluatedProperties": false
@@ -526,6 +549,10 @@
                             }
                         ]
                     ],
+                    "default": []
+                },
+                "values": {
+                    "type": "array",
                     "default": []
                 }
             },
@@ -830,7 +857,25 @@
                             "id": "invoice-meta",
                             "config": {
                                 "width": "42%",
-                                "align": "right"
+                                "align": "right",
+                                "fields": [
+                                    {
+                                        "key": "invoiceNumber",
+                                        "label": "Invoice number"
+                                    },
+                                    {
+                                        "key": "issueDate",
+                                        "label": "Issue date"
+                                    },
+                                    {
+                                        "key": "dueDate",
+                                        "label": "Due date"
+                                    },
+                                    {
+                                        "key": "currency",
+                                        "label": "Currency"
+                                    }
+                                ]
                             }
                         }
                     ]
@@ -841,14 +886,54 @@
                             "type": "key-value",
                             "id": "seller",
                             "config": {
-                                "width": "50%"
+                                "width": "50%",
+                                "fields": [
+                                    {
+                                        "key": "name",
+                                        "label": "Seller"
+                                    },
+                                    {
+                                        "key": "address",
+                                        "label": "Address"
+                                    },
+                                    {
+                                        "key": "contact",
+                                        "label": "Contact"
+                                    },
+                                    {
+                                        "key": "email",
+                                        "label": "Email"
+                                    },
+                                    {
+                                        "key": "vatId",
+                                        "label": "VAT ID"
+                                    }
+                                ]
                             }
                         },
                         {
                             "type": "key-value",
                             "id": "buyer",
                             "config": {
-                                "width": "50%"
+                                "width": "50%",
+                                "fields": [
+                                    {
+                                        "key": "name",
+                                        "label": "Buyer"
+                                    },
+                                    {
+                                        "key": "address",
+                                        "label": "Address"
+                                    },
+                                    {
+                                        "key": "email",
+                                        "label": "Email"
+                                    },
+                                    {
+                                        "key": "reference",
+                                        "label": "Buyer reference"
+                                    }
+                                ]
                             }
                         }
                     ]
@@ -909,7 +994,25 @@
                             "id": "totals",
                             "config": {
                                 "width": "46%",
-                                "align": "right"
+                                "align": "right",
+                                "fields": [
+                                    {
+                                        "key": "netAmount",
+                                        "label": "Net amount"
+                                    },
+                                    {
+                                        "key": "vatAmount",
+                                        "label": "VAT 19%"
+                                    },
+                                    {
+                                        "key": "grandTotal",
+                                        "label": "Grand total"
+                                    },
+                                    {
+                                        "key": "amountDue",
+                                        "label": "Amount due"
+                                    }
+                                ]
                             }
                         }
                     ]
@@ -931,7 +1034,25 @@
                             "id": "payment",
                             "config": {
                                 "width": "46%",
-                                "align": "right"
+                                "align": "right",
+                                "fields": [
+                                    {
+                                        "key": "bank",
+                                        "label": "Bank"
+                                    },
+                                    {
+                                        "key": "iban",
+                                        "label": "IBAN"
+                                    },
+                                    {
+                                        "key": "bic",
+                                        "label": "BIC"
+                                    },
+                                    {
+                                        "key": "reference",
+                                        "label": "Payment reference"
+                                    }
+                                ]
                             }
                         }
                     ]
@@ -960,68 +1081,23 @@
                         "alt": "PDF UA Kit GmbH logo"
                     },
                     "invoice-meta": {
-                        "entries": [
-                            {
-                                "label": "Invoice number",
-                                "value": "RE-2026-001234"
-                            },
-                            {
-                                "label": "Issue date",
-                                "value": "2026-02-17"
-                            },
-                            {
-                                "label": "Due date",
-                                "value": "2026-03-19"
-                            },
-                            {
-                                "label": "Currency",
-                                "value": "EUR"
-                            }
-                        ]
+                        "invoiceNumber": "RE-2026-001234",
+                        "issueDate": "2026-02-17",
+                        "dueDate": "2026-03-19",
+                        "currency": "EUR"
                     },
                     "seller": {
-                        "entries": [
-                            {
-                                "label": "Seller",
-                                "value": "PDF UA Kit GmbH"
-                            },
-                            {
-                                "label": "Address",
-                                "value": "Musterstra\u00dfe 1, 10115 Berlin, DE"
-                            },
-                            {
-                                "label": "Contact",
-                                "value": "Max Mustermann"
-                            },
-                            {
-                                "label": "Email",
-                                "value": "billing@pdfua-kit.example"
-                            },
-                            {
-                                "label": "VAT ID",
-                                "value": "DE123456789"
-                            }
-                        ]
+                        "name": "PDF UA Kit GmbH",
+                        "address": "Musterstra\u00dfe 1, 10115 Berlin, DE",
+                        "contact": "Max Mustermann",
+                        "email": "billing@pdfua-kit.example",
+                        "vatId": "DE123456789"
                     },
                     "buyer": {
-                        "entries": [
-                            {
-                                "label": "Buyer",
-                                "value": "Musterkunde AG"
-                            },
-                            {
-                                "label": "Address",
-                                "value": "K\u00e4uferweg 2, 80331 M\u00fcnchen, DE"
-                            },
-                            {
-                                "label": "Email",
-                                "value": "invoice@musterkunde.example"
-                            },
-                            {
-                                "label": "Buyer reference",
-                                "value": "04011000-12345-67"
-                            }
-                        ]
+                        "name": "Musterkunde AG",
+                        "address": "K\u00e4uferweg 2, 80331 M\u00fcnchen, DE",
+                        "email": "invoice@musterkunde.example",
+                        "reference": "04011000-12345-67"
                     },
                     "items": {
                         "headers": [
@@ -1084,47 +1160,19 @@
                         ]
                     },
                     "totals": {
-                        "entries": [
-                            {
-                                "label": "Net amount",
-                                "value": "6.120,00 \u20ac"
-                            },
-                            {
-                                "label": "VAT 19%",
-                                "value": "1.162,80 \u20ac"
-                            },
-                            {
-                                "label": "Grand total",
-                                "value": "7.282,80 \u20ac"
-                            },
-                            {
-                                "label": "Amount due",
-                                "value": "7.282,80 \u20ac"
-                            }
-                        ]
+                        "netAmount": "6.120,00 \u20ac",
+                        "vatAmount": "1.162,80 \u20ac",
+                        "grandTotal": "7.282,80 \u20ac",
+                        "amountDue": "7.282,80 \u20ac"
                     },
                     "notice": {
                         "text": "Please transfer the amount due within 30 days. Include the invoice number as the payment reference."
                     },
                     "payment": {
-                        "entries": [
-                            {
-                                "label": "Bank",
-                                "value": "Musterbank Berlin"
-                            },
-                            {
-                                "label": "IBAN",
-                                "value": "DE89370400440532013000"
-                            },
-                            {
-                                "label": "BIC",
-                                "value": "COBADEFFXXX"
-                            },
-                            {
-                                "label": "Payment reference",
-                                "value": "RE-2026-001234"
-                            }
-                        ]
+                        "bank": "Musterbank Berlin",
+                        "iban": "DE89370400440532013000",
+                        "bic": "COBADEFFXXX",
+                        "reference": "RE-2026-001234"
                     },
                     "footer": {
                         "text": "PDF UA Kit GmbH \u00b7 Musterstra\u00dfe 1 \u00b7 10115 Berlin \u00b7 Germany \u00b7 VAT ID DE123456789 \u00b7 Invoice was created electronically and is valid without signature."

@@ -368,9 +368,6 @@ export default function TemplateBuilder({
                   onSelectBlock={selectBlock}
                   onRemoveBlock={(uid) => setModel((m) => removeBlock(m, uid))}
                   onRemoveRow={(uid) => setModel((m) => removeRow(m, uid))}
-                  onAddFooterBlock={(type) =>
-                    setModel((m) => addBlock(m, type, { area: "footer", data: blockData(type) }))
-                  }
                   onUpdateFooterRepeat={(repeat) => setModel((m) => updateFooterRepeat(m, repeat))}
                   onUpdatePageNumbers={(position) =>
                     setModel((m) => updatePageNumbers(m, position))

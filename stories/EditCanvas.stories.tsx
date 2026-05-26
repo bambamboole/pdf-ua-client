@@ -48,7 +48,6 @@ export const Invoice: Story = {
     onSelectBlock: () => {},
     onRemoveBlock: () => {},
     onRemoveRow: () => {},
-    onAddFooterBlock: () => {},
     onUpdateFooterRepeat: () => {},
     onUpdatePageNumbers: () => {},
     onSetRowWidths: () => {},

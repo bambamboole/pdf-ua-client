@@ -10,7 +10,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { gridTemplateForWidths } from "./lib/columns";
 import { pageSizeForFormat } from "./lib/pageSizes";
 import { mmToScaledPx } from "./lib/displayScale";
-import { getBlockTitle, listBlockTypes } from "./lib/schema";
+import { getBlockTitle } from "./lib/schema";
 import BlockDataSummary from "./BlockDataSummary";
 import ColumnResizer from "./ColumnResizer";
 import InlineBlockEditor from "./InlineBlockEditor";
@@ -33,7 +33,6 @@ interface Props {
   onSelectBlock: (uid: string) => void;
   onRemoveBlock: (uid: string) => void;
   onRemoveRow: (uid: string) => void;
-  onAddFooterBlock: (type: string) => void;
   onUpdateFooterRepeat: (repeat: boolean) => void;
   onUpdatePageNumbers: (position: "disabled" | "left" | "center" | "right") => void;
   onSetRowWidths: (rowUid: string, widths: string[]) => void;
@@ -309,7 +308,6 @@ function FooterCanvas({
   onUpdateBlockId,
   onUpdateBlockConfig,
   onUpdateDataField,
-  onAddFooterBlock,
   onUpdateFooterRepeat,
   onUpdatePageNumbers,
 }: {
@@ -328,12 +326,9 @@ function FooterCanvas({
     value: unknown,
     options: { example: boolean; locked: boolean },
   ) => void;
-  onAddFooterBlock: (type: string) => void;
   onUpdateFooterRepeat: (repeat: boolean) => void;
   onUpdatePageNumbers: (position: "disabled" | "left" | "center" | "right") => void;
 }) {
-  const types = listBlockTypes(schema);
-  const [type, setType] = useState(types[0] ?? "text");
   const page = model.config.page as Record<string, unknown> | undefined;
   const footer = page?.footer as Record<string, unknown> | undefined;
   const pageNumbers = page?.pageNumbers as Record<string, unknown> | undefined;
@@ -363,44 +358,6 @@ function FooterCanvas({
             />
             Repeat
           </label>
-          <label className="inline-flex items-center gap-1.5 text-[var(--builder-muted-strong)]">
-            Page numbers
-            <select
-              className="rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-field)] px-2 py-1 text-xs text-[var(--builder-field-ink)]"
-              value={pageNumberPosition}
-              onChange={(event) =>
-                onUpdatePageNumbers(
-                  event.currentTarget.value as "disabled" | "left" | "center" | "right",
-                )
-              }
-            >
-              <option value="disabled">Disabled</option>
-              <option value="left">Left</option>
-              <option value="center">Center</option>
-              <option value="right">Right</option>
-            </select>
-          </label>
-          <label className="inline-flex items-center gap-1.5 text-[var(--builder-muted-strong)]">
-            Block
-            <select
-              className="rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-field)] px-2 py-1 text-xs text-[var(--builder-field-ink)]"
-              value={type}
-              onChange={(event) => setType(event.currentTarget.value)}
-            >
-              {types.map((candidate) => (
-                <option key={candidate} value={candidate}>
-                  {getBlockTitle(schema, candidate)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button
-            type="button"
-            className="rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-surface)] px-2 py-1 font-medium text-[var(--builder-muted-strong)] transition hover:border-[var(--builder-accent)]"
-            onClick={() => onAddFooterBlock(type)}
-          >
-            Add
-          </button>
         </div>
       </div>
       <div className="space-y-2 rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-surface)] p-2">
@@ -435,6 +392,25 @@ function FooterCanvas({
         )}
         <NewRowZone area="footer" />
       </div>
+      <div className="mt-2 flex justify-center border-t border-dashed border-[var(--builder-stroke)] pt-2">
+        <label className="inline-flex items-center gap-1.5 text-xs text-[var(--builder-muted-strong)]">
+          Page numbers
+          <select
+            className="rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-field)] px-2 py-1 text-xs text-[var(--builder-field-ink)]"
+            value={pageNumberPosition}
+            onChange={(event) =>
+              onUpdatePageNumbers(
+                event.currentTarget.value as "disabled" | "left" | "center" | "right",
+              )
+            }
+          >
+            <option value="disabled">Disabled</option>
+            <option value="left">Left</option>
+            <option value="center">Center</option>
+            <option value="right">Right</option>
+          </select>
+        </label>
+      </div>
     </section>
   );
 }
@@ -448,7 +424,6 @@ export default function EditCanvas({
   onSelectBlock,
   onRemoveBlock,
   onRemoveRow,
-  onAddFooterBlock,
   onUpdateFooterRepeat,
   onUpdatePageNumbers,
   onSetRowWidths,
@@ -500,7 +475,6 @@ export default function EditCanvas({
         onUpdateBlockId={onUpdateBlockId}
         onUpdateBlockConfig={onUpdateBlockConfig}
         onUpdateDataField={onUpdateDataField}
-        onAddFooterBlock={onAddFooterBlock}
         onUpdateFooterRepeat={onUpdateFooterRepeat}
         onUpdatePageNumbers={onUpdatePageNumbers}
       />

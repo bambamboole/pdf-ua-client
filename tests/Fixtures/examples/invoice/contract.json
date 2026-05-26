@@ -1,140 +1,193 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://pdfuakit.com/schemas/pdf-ua-client-template-data-v1.json",
-  "type": "object",
-  "properties": {
-    "invoice-meta": {
-      "type": "object",
-      "properties": {
-        "invoiceNumber": {
-          "type": "string"
-        },
-        "issueDate": {
-          "type": "string"
-        },
-        "dueDate": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false,
-      "required": ["invoiceNumber", "issueDate", "dueDate"]
-    },
-    "buyer": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "address": {
-          "type": "string"
-        },
-        "email": {
-          "type": "string"
-        },
-        "reference": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false,
-      "required": ["name", "address", "email", "reference"]
-    },
-    "items": {
-      "type": "object",
-      "properties": {
-        "headers": {
-          "type": "array",
-          "examples": [["Column A", "Column B"]]
-        },
-        "rows": {
-          "type": "array",
-          "examples": [
-            [
-              ["A1", "B1"],
-              ["A2", "B2"]
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://pdfuakit.com/schemas/pdf-ua-client-template-data-v1.json",
+    "type": "object",
+    "properties": {
+        "invoice-meta": {
+            "type": "object",
+            "properties": {
+                "invoiceNumber": {
+                    "type": "string"
+                },
+                "issueDate": {
+                    "type": "string"
+                },
+                "dueDate": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "invoiceNumber",
+                "issueDate",
+                "dueDate"
             ]
-          ]
-        }
-      },
-      "additionalProperties": false,
-      "required": ["headers", "rows"],
-      "title": "Table"
-    },
-    "vat-breakdown": {
-      "type": "object",
-      "properties": {
-        "headers": {
-          "type": "array",
-          "examples": [["Column A", "Column B"]]
         },
-        "rows": {
-          "type": "array",
-          "examples": [
-            [
-              ["A1", "B1"],
-              ["A2", "B2"]
+        "buyer": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "reference": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "name",
+                "address",
+                "email",
+                "reference"
             ]
-          ]
+        },
+        "lineItems": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "description": {
+                        "type": "string"
+                    },
+                    "quantity": {
+                        "type": "string"
+                    },
+                    "unitPrice": {
+                        "type": "string"
+                    },
+                    "vatRate": {
+                        "type": "string"
+                    },
+                    "total": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "description",
+                    "quantity",
+                    "unitPrice",
+                    "vatRate",
+                    "total"
+                ]
+            }
+        },
+        "vat-breakdown": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "vatCategory": {
+                        "type": "string"
+                    },
+                    "rate": {
+                        "type": "string"
+                    },
+                    "taxableAmount": {
+                        "type": "string"
+                    },
+                    "vatAmount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "vatCategory",
+                    "rate",
+                    "taxableAmount",
+                    "vatAmount"
+                ]
+            }
+        },
+        "totals": {
+            "type": "object",
+            "properties": {
+                "netAmount": {
+                    "type": "string"
+                },
+                "vatAmount": {
+                    "type": "string"
+                },
+                "grandTotal": {
+                    "type": "string"
+                },
+                "amountDue": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "netAmount",
+                "vatAmount",
+                "grandTotal",
+                "amountDue"
+            ]
+        },
+        "notice": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "examples": [
+                        "Thank you for your business."
+                    ],
+                    "default": "Please transfer the amount due within 30 days. Include the invoice number as the payment reference."
+                }
+            },
+            "additionalProperties": false,
+            "title": "Text",
+            "description": "A paragraph of text."
+        },
+        "payment": {
+            "type": "object",
+            "properties": {
+                "bank": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": "Musterbank Berlin"
+                },
+                "iban": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": "DE89370400440532013000"
+                },
+                "bic": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": "COBADEFFXXX"
+                },
+                "reference": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "reference"
+            ]
         }
-      },
-      "additionalProperties": false,
-      "required": ["headers", "rows"],
-      "title": "Table"
     },
-    "totals": {
-      "type": "object",
-      "properties": {
-        "netAmount": {
-          "type": "string"
-        },
-        "vatAmount": {
-          "type": "string"
-        },
-        "grandTotal": {
-          "type": "string"
-        },
-        "amountDue": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false,
-      "required": ["netAmount", "vatAmount", "grandTotal", "amountDue"]
-    },
-    "notice": {
-      "type": "object",
-      "properties": {
-        "text": {
-          "type": ["string", "null"],
-          "examples": ["Thank you for your business."],
-          "default": "Please transfer the amount due within 30 days. Include the invoice number as the payment reference."
-        }
-      },
-      "additionalProperties": false,
-      "title": "Text",
-      "description": "A paragraph of text."
-    },
-    "payment": {
-      "type": "object",
-      "properties": {
-        "bank": {
-          "type": ["string", "null"],
-          "default": "Musterbank Berlin"
-        },
-        "iban": {
-          "type": ["string", "null"],
-          "default": "DE89370400440532013000"
-        },
-        "bic": {
-          "type": ["string", "null"],
-          "default": "COBADEFFXXX"
-        },
-        "reference": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false,
-      "required": ["reference"]
-    }
-  },
-  "additionalProperties": false,
-  "required": ["invoice-meta", "buyer", "items", "vat-breakdown", "totals", "payment"]
+    "additionalProperties": false,
+    "required": [
+        "invoice-meta",
+        "buyer",
+        "lineItems",
+        "vat-breakdown",
+        "totals",
+        "payment"
+    ]
 }

@@ -36,7 +36,7 @@ describe("exampleFromSchema", () => {
     };
     expect(exampleFromSchema(s, root)).toEqual({ rows: [{ label: "L", value: "V" }] });
   });
-  it("uses an array-valued example directly (table headers)", () => {
+  it("uses an array-valued example directly", () => {
     const s: JsonSchema = {
       type: "object",
       properties: { headers: { type: "array", examples: [["A", "B"]] } },

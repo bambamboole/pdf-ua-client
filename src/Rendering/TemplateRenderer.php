@@ -39,7 +39,7 @@ final class TemplateRenderer
     ) {}
 
     /**
-     * @param  array<string, array<string, mixed>>  $runtimeData
+     * @param  array<string, mixed>  $runtimeData
      */
     public function render(
         Template $template,
@@ -65,7 +65,7 @@ final class TemplateRenderer
     }
 
     /**
-     * @param  array<string, array<string, mixed>>  $runtimeData
+     * @param  array<string, mixed>  $runtimeData
      */
     private function renderRow(Row $row, array $runtimeData, RenderContext $ctx): string
     {
@@ -90,7 +90,7 @@ final class TemplateRenderer
     }
 
     /**
-     * @param  array<string, array<string, mixed>>  $runtimeData
+     * @param  array<string, mixed>  $runtimeData
      */
     private function renderBlock(BlockInstance $instance, array $runtimeData, RenderContext $ctx, bool $widthOnCell = false): string
     {
@@ -126,7 +126,7 @@ final class TemplateRenderer
     }
 
     /**
-     * @param  array<string, mixed>  $data
+     * @param  array<array-key, mixed>  $data
      * @return array<string, mixed>
      */
     private function blockProps(BlockInstance $instance, array $data): array
@@ -135,11 +135,15 @@ final class TemplateRenderer
             return ['values' => $data];
         }
 
+        if ($instance->type === 'table') {
+            return ['rows' => array_is_list($data) ? $data : []];
+        }
+
         return $data;
     }
 
     /**
-     * @param  array<string, array<string, mixed>>  $runtimeData
+     * @param  array<string, mixed>  $runtimeData
      */
     private function renderFooter(Template $template, array $runtimeData, RenderContext $ctx, RenderOptions $options): string
     {
@@ -182,7 +186,7 @@ final class TemplateRenderer
         }
     }
 
-    /** @param array<string, array<string, mixed>> $runtimeData */
+    /** @param array<string, mixed> $runtimeData */
     private function validateData(Template $template, array $runtimeData): void
     {
         $schema = $this->dataSchemaCompiler->compile($template);
@@ -197,9 +201,9 @@ final class TemplateRenderer
     }
 
     /**
-     * @param  array<string, array<string, mixed>>  $runtimeData
+     * @param  array<string, mixed>  $runtimeData
      * @param  array<string, mixed>  $schema
-     * @return array<string, array<string, mixed>>
+     * @return array<string, mixed>
      */
     private function withoutEmptyDataForBlocksWithoutDataSchema(Template $template, array $runtimeData, array $schema): array
     {

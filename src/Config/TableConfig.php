@@ -12,22 +12,20 @@ use Bambamboole\PdfUaClient\Enums\Align;
 final readonly class TableConfig extends BlockConfig implements EmitsCss
 {
     /**
-     * @param  list<string>|null  $columnAlignments
-     * @param  list<int|string>|null  $columnWidths
+     * @param  list<TableColumn>  $columns
      */
     public function __construct(
         ?TypographyConfig $typography = null,
         ?SpacingConfig $spacing = null,
         ?string $width = null,
         ?Align $align = null,
-        #[Title('Column alignments')]
-        #[Description('Text alignment per table column, ordered from left to right.')]
-        #[ArrayOf('string')]
-        public ?array $columnAlignments = null,
-        #[Title('Column widths')]
-        #[Description('Column widths as millimetres or CSS width values, ordered from left to right.')]
-        #[ArrayOf('int', 'string')]
-        public ?array $columnWidths = null,
+        #[Title('Number rows')]
+        #[Description('Render an auto-incrementing row number column before configured data columns.')]
+        public bool $numberRows = false,
+        #[Title('Columns')]
+        #[Description('Fixed table columns. Runtime data uses these keys for each row object.')]
+        #[ArrayOf(TableColumn::class)]
+        public array $columns = [],
         #[Title('Style')]
         #[Description('Visual table style preset.')]
         public string $style = 'striped',

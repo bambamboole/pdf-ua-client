@@ -30,7 +30,15 @@ it('keys content-bearing blocks by id and requires those with required props', f
         'rows' => [
             ['blocks' => [['type' => 'heading', 'id' => 'title', 'config' => ['level' => 1]]]],
             ['blocks' => [['type' => 'divider', 'id' => 'rule']]],
-            ['blocks' => [['type' => 'table', 'id' => 'items']]],
+            ['blocks' => [[
+                'type' => 'table',
+                'id' => 'items',
+                'config' => [
+                    'columns' => [
+                        ['key' => 'description', 'label' => 'Description'],
+                    ],
+                ],
+            ]]],
         ],
     ]);
 
@@ -42,7 +50,7 @@ it('keys content-bearing blocks by id and requires those with required props', f
         ->and(array_keys($schema['properties']))->toBe(['title', 'items']) // divider omitted (no props)
         ->and($schema['properties']['title']['properties'])->toHaveKey('text')
         ->and($schema['properties']['title']['additionalProperties'])->toBeFalse()
-        ->and($schema['required'])->toBe(['title', 'items']); // heading.text + table.headers/rows are required
+        ->and($schema['required'])->toBe(['title', 'items']);
 });
 
 it('emits an empty-object schema with no required when no block needs data', function (): void {
@@ -170,6 +178,61 @@ it('does not expose legacy key value entries when configured fields are missing'
             'blocks' => [[
                 'type' => 'key-value',
                 'id' => 'invoice-meta',
+                'config' => [],
+            ]],
+        ]],
+    ]);
+
+    $schema = $this->compiler->compile($template);
+
+    expect($schema['properties'])->toBeInstanceOf(stdClass::class)
+        ->and($schema)->not->toHaveKey('required');
+});
+
+it('emits array item schemas from configured table columns', function (): void {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => [],
+        'rows' => [[
+            'blocks' => [[
+                'type' => 'table',
+                'id' => 'lineItems',
+                'config' => [
+                    'columns' => [
+                        ['key' => 'sku', 'label' => 'SKU'],
+                        ['key' => 'description', 'label' => 'Description'],
+                        ['key' => 'quantity', 'label' => 'Qty'],
+                    ],
+                ],
+            ]],
+        ]],
+    ]);
+
+    $schema = $this->compiler->compile($template);
+
+    expect($schema['properties']['lineItems'])->toMatchArray([
+        'type' => 'array',
+        'items' => [
+            'type' => 'object',
+            'properties' => [
+                'sku' => ['type' => 'string'],
+                'description' => ['type' => 'string'],
+                'quantity' => ['type' => 'string'],
+            ],
+            'additionalProperties' => false,
+            'required' => ['sku', 'description', 'quantity'],
+        ],
+    ])->and($schema['required'])->toBe(['lineItems']);
+});
+
+it('does not expose a table runtime contract when configured columns are missing', function (): void {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => [],
+        'rows' => [[
+            'blocks' => [[
+                'type' => 'table',
+                'id' => 'lineItems',
                 'config' => [],
             ]],
         ]],

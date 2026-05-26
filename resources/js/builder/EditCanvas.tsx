@@ -19,6 +19,7 @@ import type {
   EditorBlock,
   EditorArea,
   EditorRow,
+  DataValue,
   Json,
   JsonSchema,
   TemplateDataLayers,
@@ -44,6 +45,11 @@ interface Props {
     value: unknown,
     options: { example: boolean; locked: boolean },
   ) => void;
+  onUpdateBlockData: (
+    blockId: string,
+    value: DataValue,
+    options: { example: boolean; locked: boolean },
+  ) => void;
 }
 
 interface BlockBoxProps {
@@ -65,6 +71,11 @@ interface BlockBoxProps {
     value: unknown,
     options: { example: boolean; locked: boolean },
   ) => void;
+  onUpdateBlockData: (
+    blockId: string,
+    value: DataValue,
+    options: { example: boolean; locked: boolean },
+  ) => void;
 }
 
 function BlockBox({
@@ -81,6 +92,7 @@ function BlockBox({
   onUpdateBlockId,
   onUpdateBlockConfig,
   onUpdateDataField,
+  onUpdateBlockData,
 }: BlockBoxProps) {
   const [settingsOpen, setSettingsOpen] = useState(initiallyOpen);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -158,6 +170,7 @@ function BlockBox({
           onUpdateBlockId={onUpdateBlockId}
           onUpdateBlockConfig={onUpdateBlockConfig}
           onUpdateDataField={onUpdateDataField}
+          onUpdateBlockData={onUpdateBlockData}
         />
       </details>
     </div>
@@ -183,6 +196,11 @@ interface RowProps {
     value: unknown,
     options: { example: boolean; locked: boolean },
   ) => void;
+  onUpdateBlockData: (
+    blockId: string,
+    value: DataValue,
+    options: { example: boolean; locked: boolean },
+  ) => void;
 }
 
 function Row({
@@ -199,6 +217,7 @@ function Row({
   onUpdateBlockId,
   onUpdateBlockConfig,
   onUpdateDataField,
+  onUpdateBlockData,
 }: RowProps) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: `row-${row.uid}`,
@@ -263,6 +282,7 @@ function Row({
                 onUpdateBlockId={onUpdateBlockId}
                 onUpdateBlockConfig={onUpdateBlockConfig}
                 onUpdateDataField={onUpdateDataField}
+                onUpdateBlockData={onUpdateBlockData}
               />
               {i < row.blocks.length - 1 ? (
                 <ColumnResizer
@@ -309,6 +329,7 @@ function FooterCanvas({
   onUpdateBlockId,
   onUpdateBlockConfig,
   onUpdateDataField,
+  onUpdateBlockData,
   onUpdateFooterRepeat,
   onUpdatePageNumbers,
 }: {
@@ -325,6 +346,11 @@ function FooterCanvas({
     blockId: string,
     field: string,
     value: unknown,
+    options: { example: boolean; locked: boolean },
+  ) => void;
+  onUpdateBlockData: (
+    blockId: string,
+    value: DataValue,
     options: { example: boolean; locked: boolean },
   ) => void;
   onUpdateFooterRepeat: (repeat: boolean) => void;
@@ -383,6 +409,7 @@ function FooterCanvas({
                 onUpdateBlockId={onUpdateBlockId}
                 onUpdateBlockConfig={onUpdateBlockConfig}
                 onUpdateDataField={onUpdateDataField}
+                onUpdateBlockData={onUpdateBlockData}
               />
             ))}
           </SortableContext>
@@ -427,6 +454,7 @@ export default function EditCanvas({
   onUpdateBlockId,
   onUpdateBlockConfig,
   onUpdateDataField,
+  onUpdateBlockData,
 }: Props) {
   const [width] = pageSizeForFormat(format);
   const scaledWidth = mmToScaledPx(width, scale);
@@ -461,6 +489,7 @@ export default function EditCanvas({
               onUpdateBlockId={onUpdateBlockId}
               onUpdateBlockConfig={onUpdateBlockConfig}
               onUpdateDataField={onUpdateDataField}
+              onUpdateBlockData={onUpdateBlockData}
             />
           ))}
         </SortableContext>
@@ -477,6 +506,7 @@ export default function EditCanvas({
         onUpdateBlockId={onUpdateBlockId}
         onUpdateBlockConfig={onUpdateBlockConfig}
         onUpdateDataField={onUpdateDataField}
+        onUpdateBlockData={onUpdateBlockData}
         onUpdateFooterRepeat={onUpdateFooterRepeat}
         onUpdatePageNumbers={onUpdatePageNumbers}
       />

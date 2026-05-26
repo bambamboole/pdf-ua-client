@@ -17,7 +17,8 @@ it('writes a standalone data schema for a given template file', function (): voi
     $schema = json_decode((string) File::get($outPath), true, flags: JSON_THROW_ON_ERROR);
     expect($schema['type'])->toBe('object')
         ->and($schema['additionalProperties'])->toBeFalse()
-        ->and($schema['properties'])->toHaveKey('items');
+        ->and($schema['properties'])->toHaveKey('lineItems')
+        ->and($schema['properties']['lineItems']['type'])->toBe('array');
 
     File::deleteDirectory($dir);
 });

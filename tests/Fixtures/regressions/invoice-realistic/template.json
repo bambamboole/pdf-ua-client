@@ -81,7 +81,29 @@
           "id": "items",
           "config": {
             "style": "striped",
-            "columnAlignments": ["left", "right", "right", "right"]
+            "columns": [
+              {
+                "key": "description",
+                "label": "Description",
+                "align": "left"
+              },
+              {
+                "key": "quantity",
+                "label": "Qty",
+                "align": "right"
+              },
+              {
+                "key": "unitPrice",
+                "label": "Unit price",
+                "align": "right"
+              },
+              {
+                "key": "total",
+                "label": "Total",
+                "align": "right"
+              }
+            ],
+            "numberRows": false
           }
         }
       ]

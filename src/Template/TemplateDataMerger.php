@@ -6,8 +6,8 @@ namespace Bambamboole\PdfUaClient\Template;
 final readonly class TemplateDataMerger
 {
     /**
-     * @param  array<string, array<string, mixed>>  $runtimeData
-     * @return array<string, array<string, mixed>>
+     * @param  array<string, mixed>  $runtimeData
+     * @return array<string, mixed>
      */
     public function runtimeData(Template $template, array $runtimeData): array
     {
@@ -15,8 +15,8 @@ final readonly class TemplateDataMerger
     }
 
     /**
-     * @param  array<string, array<string, mixed>>  $maps
-     * @return array<string, array<string, mixed>>
+     * @param  array<string, mixed>  $maps
+     * @return array<string, mixed>
      */
     private function mergeMaps(array ...$maps): array
     {

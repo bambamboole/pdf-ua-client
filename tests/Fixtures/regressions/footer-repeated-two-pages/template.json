@@ -73,7 +73,29 @@
           "id": "items",
           "config": {
             "style": "striped",
-            "columnAlignments": ["left", "left", "right", "right"]
+            "columns": [
+              {
+                "key": "item",
+                "label": "Item",
+                "align": "left"
+              },
+              {
+                "key": "description",
+                "label": "Description",
+                "align": "left"
+              },
+              {
+                "key": "quantity",
+                "label": "Qty",
+                "align": "right"
+              },
+              {
+                "key": "total",
+                "label": "Total",
+                "align": "right"
+              }
+            ],
+            "numberRows": false
           }
         }
       ]

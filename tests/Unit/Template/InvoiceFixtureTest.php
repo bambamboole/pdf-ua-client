@@ -24,7 +24,7 @@ it('models a complete realistic invoice document structure', function (): void {
         'seller',
         'buyer',
         'invoice-meta',
-        'items',
+        'lineItems',
         'vat-breakdown',
         'totals',
         'payment',
@@ -35,9 +35,16 @@ it('models a complete realistic invoice document structure', function (): void {
         'id' => 'logo',
         'config' => ['width' => '58%', 'maxHeight' => 28],
     ]);
-    expect($blocks->get('items')['config'])->toMatchArray([
+    expect($blocks->get('lineItems')['config'])->toMatchArray([
         'style' => 'striped',
-        'columnAlignments' => ['center', 'left', 'right', 'right', 'right', 'right'],
+        'numberRows' => true,
+        'columns' => [
+            ['key' => 'description', 'label' => 'Description', 'align' => 'left', 'width' => '38%'],
+            ['key' => 'quantity', 'label' => 'Qty', 'align' => 'right', 'width' => '12%'],
+            ['key' => 'unitPrice', 'label' => 'Unit price', 'align' => 'right', 'width' => '16%'],
+            ['key' => 'vatRate', 'label' => 'VAT', 'align' => 'right', 'width' => '11%'],
+            ['key' => 'total', 'label' => 'Total', 'align' => 'right', 'width' => '16%'],
+        ],
     ]);
     expect($blocks->get('invoice-meta')['config']['fields'])->toContain(
         ['key' => 'invoiceNumber', 'label' => 'Invoice number'],
@@ -47,7 +54,7 @@ it('models a complete realistic invoice document structure', function (): void {
         ['key' => 'registration', 'label' => 'Registry'],
         ['key' => 'taxNumber', 'label' => 'Tax no.'],
     );
-    expect($document['data']['example'])->toHaveKeys(['invoice-meta', 'buyer', 'items', 'vat-breakdown', 'totals', 'payment']);
+    expect($document['data']['example'])->toHaveKeys(['invoice-meta', 'buyer', 'lineItems', 'vat-breakdown', 'totals', 'payment']);
     expect($document['data']['defaults'])->toHaveKeys(['notice', 'payment']);
     expect($document['data']['constants'])->toHaveKeys(['logo', 'seller', 'invoice-meta', 'footer-legal', 'footer-meta']);
 });
@@ -60,9 +67,15 @@ it('provides realistic runtime example data without locked constants', function 
         'name' => 'Musterkunde AG',
         'reference' => '04011000-12345-67',
     ]);
-    expect($data['items']['headers'])->toBe(['#', 'Description', 'Qty', 'Unit price', 'VAT', 'Total']);
-    expect($data['items']['rows'])->toHaveCount(4);
-    expect($data['vat-breakdown']['headers'])->toBe(['VAT category', 'Rate', 'Taxable amount', 'VAT amount']);
+    expect($data['lineItems'])->toHaveCount(4);
+    expect($data['lineItems'][0])->toMatchArray([
+        'description' => 'Accessible PDF template implementation',
+        'quantity' => '40',
+    ]);
+    expect($data['vat-breakdown'][0])->toMatchArray([
+        'vatCategory' => 'Standard rate',
+        'rate' => '19%',
+    ]);
     expect($data['totals'])->toMatchArray([
         'netAmount' => '6.120,00 €',
         'amountDue' => '7.282,80 €',

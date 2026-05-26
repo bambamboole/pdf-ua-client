@@ -47,6 +47,7 @@ describe("BlockDataEditor", () => {
         schema={schema}
         data={data({ src: "https://example.test/logo.png", alt: "Logo" })}
         onUpdateDataField={() => undefined}
+        onUpdateBlockData={() => undefined}
       />,
     );
 
@@ -71,6 +72,7 @@ describe("BlockDataEditor", () => {
         schema={schema}
         data={data({ invoiceNumber: "RE-2026-001234", currency: "EUR" })}
         onUpdateDataField={() => undefined}
+        onUpdateBlockData={() => undefined}
       />,
     );
 
@@ -78,5 +80,49 @@ describe("BlockDataEditor", () => {
     expect(html).toContain("invoiceNumber");
     expect(html).toContain('value="RE-2026-001234"');
     expect(html).not.toContain("entries");
+  });
+
+  it("renders configured table object rows as editable json", () => {
+    const html = renderToStaticMarkup(
+      <BlockDataEditor
+        block={block("table", {
+          columns: [
+            { key: "sku", label: "SKU" },
+            { key: "quantity", label: "Qty" },
+          ],
+        })}
+        schema={schema}
+        data={{
+          example: { block: [{ sku: "A-100", quantity: "2" }] },
+          defaults: {},
+          constants: {},
+        }}
+        onUpdateDataField={() => undefined}
+        onUpdateBlockData={() => undefined}
+      />,
+    );
+
+    expect(html).toContain("Rows");
+    expect(html).toContain("SKU");
+    expect(html).toContain("Qty");
+    expect(html).toContain("[");
+    expect(html).toContain("&quot;sku&quot;: &quot;A-100&quot;");
+    expect(html).not.toContain("A-100\t2");
+  });
+
+  it("does not render legacy table header and row fields without configured columns", () => {
+    const html = renderToStaticMarkup(
+      <BlockDataEditor
+        block={block("table")}
+        schema={schema}
+        data={data({ headers: ["Description"], rows: [["Implementation"]] })}
+        onUpdateDataField={() => undefined}
+        onUpdateBlockData={() => undefined}
+      />,
+    );
+
+    expect(html).toContain("Define table columns in Config.");
+    expect(html).not.toContain("Headers");
+    expect(html).not.toContain("Implementation");
   });
 });

@@ -1,4 +1,5 @@
 export type Json = Record<string, unknown>;
+export type DataValue = Record<string, unknown> | unknown[];
 export type JsonSchema = Record<string, unknown>;
 
 export interface TemplateBlock {
@@ -23,7 +24,7 @@ export interface EditorBlock {
   id: string;
   type: string;
   config: Json;
-  data: Json;
+  data: DataValue;
 }
 export interface EditorRow {
   uid: string;
@@ -38,7 +39,7 @@ export interface EditorModel {
   data: TemplateDataLayers;
 }
 
-export type DataMap = Record<string, Json>;
+export type DataMap = Record<string, DataValue>;
 export interface TemplateDataLayers {
   example: DataMap;
   defaults: DataMap;

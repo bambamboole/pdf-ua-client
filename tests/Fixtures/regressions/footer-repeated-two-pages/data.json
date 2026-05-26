@@ -5,263 +5,260 @@
   "intro": {
     "text": "This fixture intentionally spans multiple pages so the footer repeat behavior is covered by visual PDF comparison."
   },
-  "items": {
-    "headers": ["Item", "Description", "Qty", "Total"],
-    "rows": [
-      [
-        "Service line 1",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "126,00 EUR"
-      ],
-      [
-        "Service line 2",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "127,00 EUR"
-      ],
-      [
-        "Service line 3",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "128,00 EUR"
-      ],
-      [
-        "Service line 4",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "129,00 EUR"
-      ],
-      [
-        "Service line 5",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "130,00 EUR"
-      ],
-      [
-        "Service line 6",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "131,00 EUR"
-      ],
-      [
-        "Service line 7",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "132,00 EUR"
-      ],
-      [
-        "Service line 8",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "133,00 EUR"
-      ],
-      [
-        "Service line 9",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "134,00 EUR"
-      ],
-      [
-        "Service line 10",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "135,00 EUR"
-      ],
-      [
-        "Service line 11",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "136,00 EUR"
-      ],
-      [
-        "Service line 12",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "137,00 EUR"
-      ],
-      [
-        "Service line 13",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "138,00 EUR"
-      ],
-      [
-        "Service line 14",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "139,00 EUR"
-      ],
-      [
-        "Service line 15",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "140,00 EUR"
-      ],
-      [
-        "Service line 16",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "141,00 EUR"
-      ],
-      [
-        "Service line 17",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "142,00 EUR"
-      ],
-      [
-        "Service line 18",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "143,00 EUR"
-      ],
-      [
-        "Service line 19",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "144,00 EUR"
-      ],
-      [
-        "Service line 20",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "145,00 EUR"
-      ],
-      [
-        "Service line 21",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "146,00 EUR"
-      ],
-      [
-        "Service line 22",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "147,00 EUR"
-      ],
-      [
-        "Service line 23",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "148,00 EUR"
-      ],
-      [
-        "Service line 24",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "149,00 EUR"
-      ],
-      [
-        "Service line 25",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "150,00 EUR"
-      ],
-      [
-        "Service line 26",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "151,00 EUR"
-      ],
-      [
-        "Service line 27",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "152,00 EUR"
-      ],
-      [
-        "Service line 28",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "153,00 EUR"
-      ],
-      [
-        "Service line 29",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "154,00 EUR"
-      ],
-      [
-        "Service line 30",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "155,00 EUR"
-      ],
-      [
-        "Service line 31",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "156,00 EUR"
-      ],
-      [
-        "Service line 32",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "157,00 EUR"
-      ],
-      [
-        "Service line 33",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "158,00 EUR"
-      ],
-      [
-        "Service line 34",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "159,00 EUR"
-      ],
-      [
-        "Service line 35",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "160,00 EUR"
-      ],
-      [
-        "Service line 36",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "161,00 EUR"
-      ],
-      [
-        "Service line 37",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "162,00 EUR"
-      ],
-      [
-        "Service line 38",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "163,00 EUR"
-      ],
-      [
-        "Service line 39",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "164,00 EUR"
-      ],
-      [
-        "Service line 40",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "165,00 EUR"
-      ],
-      [
-        "Service line 41",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "166,00 EUR"
-      ],
-      [
-        "Service line 42",
-        "Detailed project delivery item for page flow verification.",
-        "1",
-        "167,00 EUR"
-      ]
-    ]
-  },
+  "items": [
+    {
+      "item": "Service line 1",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "126,00 EUR"
+    },
+    {
+      "item": "Service line 2",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "127,00 EUR"
+    },
+    {
+      "item": "Service line 3",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "128,00 EUR"
+    },
+    {
+      "item": "Service line 4",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "129,00 EUR"
+    },
+    {
+      "item": "Service line 5",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "130,00 EUR"
+    },
+    {
+      "item": "Service line 6",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "131,00 EUR"
+    },
+    {
+      "item": "Service line 7",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "132,00 EUR"
+    },
+    {
+      "item": "Service line 8",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "133,00 EUR"
+    },
+    {
+      "item": "Service line 9",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "134,00 EUR"
+    },
+    {
+      "item": "Service line 10",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "135,00 EUR"
+    },
+    {
+      "item": "Service line 11",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "136,00 EUR"
+    },
+    {
+      "item": "Service line 12",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "137,00 EUR"
+    },
+    {
+      "item": "Service line 13",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "138,00 EUR"
+    },
+    {
+      "item": "Service line 14",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "139,00 EUR"
+    },
+    {
+      "item": "Service line 15",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "140,00 EUR"
+    },
+    {
+      "item": "Service line 16",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "141,00 EUR"
+    },
+    {
+      "item": "Service line 17",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "142,00 EUR"
+    },
+    {
+      "item": "Service line 18",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "143,00 EUR"
+    },
+    {
+      "item": "Service line 19",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "144,00 EUR"
+    },
+    {
+      "item": "Service line 20",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "145,00 EUR"
+    },
+    {
+      "item": "Service line 21",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "146,00 EUR"
+    },
+    {
+      "item": "Service line 22",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "147,00 EUR"
+    },
+    {
+      "item": "Service line 23",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "148,00 EUR"
+    },
+    {
+      "item": "Service line 24",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "149,00 EUR"
+    },
+    {
+      "item": "Service line 25",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "150,00 EUR"
+    },
+    {
+      "item": "Service line 26",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "151,00 EUR"
+    },
+    {
+      "item": "Service line 27",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "152,00 EUR"
+    },
+    {
+      "item": "Service line 28",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "153,00 EUR"
+    },
+    {
+      "item": "Service line 29",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "154,00 EUR"
+    },
+    {
+      "item": "Service line 30",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "155,00 EUR"
+    },
+    {
+      "item": "Service line 31",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "156,00 EUR"
+    },
+    {
+      "item": "Service line 32",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "157,00 EUR"
+    },
+    {
+      "item": "Service line 33",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "158,00 EUR"
+    },
+    {
+      "item": "Service line 34",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "159,00 EUR"
+    },
+    {
+      "item": "Service line 35",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "160,00 EUR"
+    },
+    {
+      "item": "Service line 36",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "161,00 EUR"
+    },
+    {
+      "item": "Service line 37",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "162,00 EUR"
+    },
+    {
+      "item": "Service line 38",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "163,00 EUR"
+    },
+    {
+      "item": "Service line 39",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "164,00 EUR"
+    },
+    {
+      "item": "Service line 40",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "165,00 EUR"
+    },
+    {
+      "item": "Service line 41",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "166,00 EUR"
+    },
+    {
+      "item": "Service line 42",
+      "description": "Detailed project delivery item for page flow verification.",
+      "quantity": "1",
+      "total": "167,00 EUR"
+    }
+  ],
   "footer_note": {
     "text": "PDF UA Kit GmbH · Musterstrasse 1 · 10115 Berlin"
   },

@@ -11,7 +11,8 @@ it('emits block titles and prop examples into the schema', function (): void {
 
     expect($defs['headingProps']['title'])->toBe('Heading')
         ->and($defs['headingProps']['properties']['text']['examples'])->toBe(['Invoice 2026-001'])
-        ->and($defs['tableProps']['properties']['headers']['examples'][0])->toBeArray()
+        ->and($defs['tableProps']['properties'])->toHaveKey('rows')
+        ->and($defs['tableProps']['properties'])->not->toHaveKey('headers')
         ->and($defs['keyValueProps']['title'])->toBe('Key / Value')
         ->and($defs['keyValueProps']['properties'])->toHaveKey('values')
         ->and($defs['keyValueProps']['properties'])->not->toHaveKey('entries');
@@ -22,5 +23,6 @@ it('keeps required intact on the props catalog (not stripped like config)', func
     $defs = $schema['$defs'];
 
     expect($defs['headingProps']['required'])->toContain('text')
-        ->and($defs['tableProps']['required'])->toContain('headers', 'rows');
+        ->and($defs['tableProps']['required'])->toContain('rows')
+        ->and($defs['tableProps']['required'])->not->toContain('headers');
 });

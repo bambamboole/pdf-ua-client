@@ -61,7 +61,7 @@ final readonly class TemplateFactory
 
     /**
      * @param  array<string, mixed>  $data
-     * @return array<string, array<string, mixed>>
+     * @return array<string, mixed>
      */
     private function blockDataMap(array $data): array
     {

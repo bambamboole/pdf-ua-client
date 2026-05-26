@@ -2,6 +2,56 @@ import type { ReactNode } from "react";
 import type { DataValue, TemplateDataLayers } from "../types";
 import type { UpdateBlockData, UpdateDataField } from "./types";
 
+interface DataLayerSectionProps {
+  label: string;
+  subtitle: string;
+  example: boolean;
+  locked: boolean;
+  onToggleExample: (checked: boolean) => void;
+  onToggleLocked: (checked: boolean) => void;
+  children: ReactNode;
+}
+
+function DataLayerSection({
+  label,
+  subtitle,
+  example,
+  locked,
+  onToggleExample,
+  onToggleLocked,
+  children,
+}: DataLayerSectionProps) {
+  return (
+    <section className="min-w-0 overflow-hidden rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-surface)] p-3">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <div className="min-w-0">
+          <div className="text-xs font-medium text-[var(--builder-muted-strong)]">{label}</div>
+          <div className="font-mono text-[10px] text-[var(--builder-muted)]">{subtitle}</div>
+        </div>
+        <span className="flex items-center gap-3 text-xs text-[var(--builder-muted-strong)]">
+          <label className="inline-flex items-center gap-1.5">
+            <input
+              type="checkbox"
+              checked={example}
+              onChange={(event) => onToggleExample(event.currentTarget.checked)}
+            />
+            Example
+          </label>
+          <label className="inline-flex items-center gap-1.5">
+            <input
+              type="checkbox"
+              checked={locked}
+              onChange={(event) => onToggleLocked(event.currentTarget.checked)}
+            />
+            Lock
+          </label>
+        </span>
+      </div>
+      {children}
+    </section>
+  );
+}
+
 interface FieldControlProps {
   blockId: string;
   field: string;
@@ -29,44 +79,30 @@ export function FieldControl({
   }
 
   return (
-    <section className="min-w-0 overflow-hidden rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-surface)] p-3">
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-        <div className="min-w-0">
-          <div className="text-xs font-medium text-[var(--builder-muted-strong)]">{label}</div>
-          <div className="font-mono text-[10px] text-[var(--builder-muted)]">{field}</div>
-        </div>
-        <span className="flex items-center gap-3 text-xs text-[var(--builder-muted-strong)]">
-          <label className="inline-flex items-center gap-1.5">
-            <input
-              type="checkbox"
-              checked={example}
-              onChange={(event) =>
-                onUpdateDataField(blockId, field, value, {
-                  example: event.currentTarget.checked,
-                  locked,
-                })
-              }
-            />
-            Example
-          </label>
-          <label className="inline-flex items-center gap-1.5">
-            <input
-              type="checkbox"
-              checked={locked}
-              onChange={(event) =>
-                onUpdateDataField(blockId, field, value, {
-                  example,
-                  locked: event.currentTarget.checked,
-                })
-              }
-            />
-            Lock
-          </label>
-        </span>
-      </div>
+    <DataLayerSection
+      label={label}
+      subtitle={field}
+      example={example}
+      locked={locked}
+      onToggleExample={(checked) =>
+        onUpdateDataField(blockId, field, value, { example: checked, locked })
+      }
+      onToggleLocked={(checked) =>
+        onUpdateDataField(blockId, field, value, { example, locked: checked })
+      }
+    >
       {children({ value, update })}
-    </section>
+    </DataLayerSection>
   );
+}
+
+interface BlockDataControlProps {
+  blockId: string;
+  label: string;
+  value: DataValue;
+  data: TemplateDataLayers;
+  onUpdateBlockData: UpdateBlockData;
+  children: (props: { value: DataValue; update: (value: DataValue) => void }) => ReactNode;
 }
 
 export function BlockDataControl({
@@ -76,14 +112,7 @@ export function BlockDataControl({
   data,
   onUpdateBlockData,
   children,
-}: {
-  blockId: string;
-  label: string;
-  value: DataValue;
-  data: TemplateDataLayers;
-  onUpdateBlockData: UpdateBlockData;
-  children: (props: { value: DataValue; update: (value: DataValue) => void }) => ReactNode;
-}) {
+}: BlockDataControlProps) {
   const example = Object.hasOwn(data.example, blockId);
   const locked = Object.hasOwn(data.constants, blockId);
 
@@ -92,42 +121,15 @@ export function BlockDataControl({
   }
 
   return (
-    <section className="min-w-0 overflow-hidden rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-surface)] p-3">
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-        <div className="min-w-0">
-          <div className="text-xs font-medium text-[var(--builder-muted-strong)]">{label}</div>
-          <div className="font-mono text-[10px] text-[var(--builder-muted)]">{blockId}</div>
-        </div>
-        <span className="flex items-center gap-3 text-xs text-[var(--builder-muted-strong)]">
-          <label className="inline-flex items-center gap-1.5">
-            <input
-              type="checkbox"
-              checked={example}
-              onChange={(event) =>
-                onUpdateBlockData(blockId, value, {
-                  example: event.currentTarget.checked,
-                  locked,
-                })
-              }
-            />
-            Example
-          </label>
-          <label className="inline-flex items-center gap-1.5">
-            <input
-              type="checkbox"
-              checked={locked}
-              onChange={(event) =>
-                onUpdateBlockData(blockId, value, {
-                  example,
-                  locked: event.currentTarget.checked,
-                })
-              }
-            />
-            Lock
-          </label>
-        </span>
-      </div>
+    <DataLayerSection
+      label={label}
+      subtitle={blockId}
+      example={example}
+      locked={locked}
+      onToggleExample={(checked) => onUpdateBlockData(blockId, value, { example: checked, locked })}
+      onToggleLocked={(checked) => onUpdateBlockData(blockId, value, { example, locked: checked })}
+    >
       {children({ value, update })}
-    </section>
+    </DataLayerSection>
   );
 }

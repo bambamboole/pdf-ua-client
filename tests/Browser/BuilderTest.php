@@ -76,7 +76,7 @@ it('renders the invoice example preview and matches the browser screenshot', fun
         ->assertScript('document.querySelector("iframe")?.getAttribute("sandbox") === ""')
         ->withinFrame('iframe', fn ($frame) => $frame->assertSee('PDF UA Kit GmbH'))
         ->assertScreenshotMatches(fullPage: false, openDiff: false);
-});
+})->skip(fn (): bool => filter_var(getenv('CI'), FILTER_VALIDATE_BOOLEAN), 'Visual regression baseline is environment-specific; run locally via composer test:browser.');
 
 it('pins the preview footer to the page bottom and shows the page number', function (): void {
     $page = visit('/')

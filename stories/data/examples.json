@@ -28,11 +28,11 @@
                 {
                     "blocks": [
                         {
-                            "type": "heading",
-                            "id": "title",
+                            "type": "image",
+                            "id": "logo",
                             "config": {
-                                "level": 1,
-                                "width": "58%"
+                                "width": "58%",
+                                "maxHeight": 28
                             }
                         },
                         {
@@ -165,8 +165,9 @@
             ]
         },
         "data": {
-            "title": {
-                "text": "Invoice RE-2026-001234"
+            "logo": {
+                "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNjAiIGhlaWdodD0iNzIiIHZpZXdCb3g9IjAgMCAyNjAgNzIiPjx0ZXh0IHg9IjAiIHk9IjQyIiBmaWxsPSIjMTExODI3IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI3MDAiPlBERiBVQSBLaXQ8L3RleHQ+PC9zdmc+",
+                "alt": "PDF UA Kit GmbH logo"
             },
             "invoice-meta": {
                 "entries": [

@@ -323,12 +323,17 @@
             "properties": {
                 "src": {
                     "type": "string",
+                    "title": "Image source",
+                    "description": "Public image URL or uploaded image data URL. Uploads are limited to 200 KB.",
+                    "maxLength": 280000,
                     "examples": [
-                        "https://placehold.co/200x80"
+                        "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCAyMDAgODAiPjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iODAiIGZpbGw9IiMxMTE4MjciLz48dGV4dCB4PSIyNCIgeT0iNDgiIGZpbGw9IiNmOWZhZmIiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyMiIgZm9udC13ZWlnaHQ9IjcwMCI+TG9nbzwvdGV4dD48L3N2Zz4="
                     ]
                 },
                 "alt": {
                     "type": "string",
+                    "title": "Alt text",
+                    "description": "Alternative text for screen readers and PDF accessibility.",
                     "examples": [
                         "Logo"
                     ],
@@ -800,11 +805,11 @@
                 {
                     "blocks": [
                         {
-                            "type": "heading",
-                            "id": "title",
+                            "type": "image",
+                            "id": "logo",
                             "config": {
-                                "level": 1,
-                                "width": "58%"
+                                "width": "58%",
+                                "maxHeight": 28
                             }
                         },
                         {

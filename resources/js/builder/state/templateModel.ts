@@ -9,6 +9,7 @@ import type {
   Template,
   TemplateDataLayers,
 } from "../types";
+import { pruneDataForBlockConfig } from "../blocks/model";
 
 function uid(): string {
   return crypto.randomUUID();
@@ -44,15 +45,14 @@ export function uniqueBlockId(model: EditorModel, type: string): string {
 
 export function fromTemplate(template: Template, data: DataMap = {}): EditorModel {
   const layers = normalizeDataLayers(template.data, data);
-  const previewData = mergeDataMaps(layers.defaults, layers.example, layers.constants);
   const footerRows = footerRowsFromConfig(template.config);
 
   return {
     version: template.version,
     config: template.config ?? {},
     data: layers,
-    rows: rowsFromTemplate(template.rows ?? [], previewData),
-    footerRows: rowsFromTemplate(footerRows, previewData),
+    rows: rowsFromTemplate(template.rows ?? []),
+    footerRows: rowsFromTemplate(footerRows),
   };
 }
 
@@ -155,7 +155,6 @@ export function addBlock(
     id: uniqueBlockId(model, type),
     type,
     config: {},
-    data,
   };
   const dataLayers =
     Object.keys(data).length > 0
@@ -337,21 +336,9 @@ export function updateBlockConfig(model: EditorModel, blockUid: string, config: 
   const block = findBlock(model, blockUid)?.block;
   const updated = mapBlock(model, blockUid, (b) => ({ ...b, config }));
 
-  if (block?.type === "key-value") {
-    return {
-      ...updated,
-      data: pruneDataFieldsForId(updated.data, block.id, keyValueFieldKeys(config.fields)),
-    };
-  }
-
-  if (block?.type === "table") {
-    return {
-      ...updated,
-      data: pruneDataRowsForId(updated.data, block.id, keyValueFieldKeys(config.columns)),
-    };
-  }
-
-  return updated;
+  return block
+    ? { ...updated, data: pruneDataForBlockConfig(block.type, updated.data, block.id, config) }
+    : updated;
 }
 
 export function updateBlockId(model: EditorModel, blockUid: string, rawId: string): EditorModel {
@@ -384,23 +371,9 @@ export function updateDataField(
     data = writeDataField(data, "defaults", blockId, field, value);
   }
 
-  const previewData = mergeDataMaps(data.defaults, data.example, data.constants);
-
   return {
     ...model,
     data,
-    rows: model.rows.map((row) => ({
-      ...row,
-      blocks: row.blocks.map((block) =>
-        block.id === blockId ? { ...block, data: previewData[blockId] ?? {} } : block,
-      ),
-    })),
-    footerRows: model.footerRows.map((row) => ({
-      ...row,
-      blocks: row.blocks.map((block) =>
-        block.id === blockId ? { ...block, data: previewData[blockId] ?? {} } : block,
-      ),
-    })),
   };
 }
 
@@ -420,23 +393,9 @@ export function updateBlockData(
     data = writeDataBlock(data, "defaults", blockId, value);
   }
 
-  const previewData = mergeDataMaps(data.defaults, data.example, data.constants);
-
   return {
     ...model,
     data,
-    rows: model.rows.map((row) => ({
-      ...row,
-      blocks: row.blocks.map((block) =>
-        block.id === blockId ? { ...block, data: previewData[blockId] ?? {} } : block,
-      ),
-    })),
-    footerRows: model.footerRows.map((row) => ({
-      ...row,
-      blocks: row.blocks.map((block) =>
-        block.id === blockId ? { ...block, data: previewData[blockId] ?? {} } : block,
-      ),
-    })),
   };
 }
 
@@ -539,78 +498,6 @@ function writeDataBlock(
   };
 }
 
-function pruneDataFieldsForId(
-  layers: TemplateDataLayers,
-  blockId: string,
-  keys: Set<string>,
-): TemplateDataLayers {
-  return {
-    example: pruneDataMapFields(layers.example, blockId, keys),
-    defaults: pruneDataMapFields(layers.defaults, blockId, keys),
-    constants: pruneDataMapFields(layers.constants, blockId, keys),
-  };
-}
-
-function pruneDataMapFields(data: DataMap, blockId: string, keys: Set<string>): DataMap {
-  const blockData = data[blockId];
-  if (!blockData) {
-    return data;
-  }
-
-  const nextBlockData = Object.fromEntries(
-    Object.entries(blockData).filter(([field]) => keys.has(field)),
-  );
-
-  if (Object.keys(nextBlockData).length === Object.keys(blockData).length) {
-    return data;
-  }
-
-  return Object.keys(nextBlockData).length > 0
-    ? { ...data, [blockId]: nextBlockData }
-    : omitDataId(data, blockId);
-}
-
-function pruneDataRowsForId(
-  layers: TemplateDataLayers,
-  blockId: string,
-  keys: Set<string>,
-): TemplateDataLayers {
-  return {
-    example: pruneDataMapRows(layers.example, blockId, keys),
-    defaults: pruneDataMapRows(layers.defaults, blockId, keys),
-    constants: pruneDataMapRows(layers.constants, blockId, keys),
-  };
-}
-
-function pruneDataMapRows(data: DataMap, blockId: string, keys: Set<string>): DataMap {
-  const blockData = data[blockId];
-  if (!Array.isArray(blockData)) {
-    return data;
-  }
-
-  const rows = blockData.map((row) => {
-    if (!isPlainObject(row)) {
-      return row;
-    }
-
-    return Object.fromEntries(Object.entries(row).filter(([field]) => keys.has(field)));
-  });
-
-  return { ...data, [blockId]: rows };
-}
-
-function keyValueFieldKeys(fields: unknown): Set<string> {
-  if (!Array.isArray(fields)) {
-    return new Set();
-  }
-
-  return new Set(
-    fields
-      .map((field) => (isPlainObject(field) && typeof field.key === "string" ? field.key : ""))
-      .filter((key) => key !== ""),
-  );
-}
-
 export function updateTemplateConfig(model: EditorModel, config: Json): EditorModel {
   return { ...model, config };
 }
@@ -638,7 +525,7 @@ function allRows(model: EditorModel): EditorRow[] {
   return [...model.rows, ...model.footerRows];
 }
 
-function rowsFromTemplate(rows: Template["rows"], previewData: DataMap): EditorRow[] {
+function rowsFromTemplate(rows: Template["rows"]): EditorRow[] {
   return rows.map(
     (row): EditorRow => ({
       uid: uid(),
@@ -650,7 +537,6 @@ function rowsFromTemplate(rows: Template["rows"], previewData: DataMap): EditorR
           id,
           type: block.type,
           config: (block.config ?? {}) as Json,
-          data: previewData[id] ?? {},
         };
       }),
     }),

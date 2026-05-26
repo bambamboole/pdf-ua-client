@@ -35,7 +35,6 @@ function block(type: string, config: Record<string, unknown> = {}): EditorBlock 
     id: "block",
     type,
     config,
-    data: {},
   };
 }
 

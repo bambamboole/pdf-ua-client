@@ -59,7 +59,7 @@ describe("fromTemplate", () => {
     );
 
     expect(m.footerRows[0].blocks[0].id).toBe("footer-note");
-    expect(m.footerRows[0].blocks[0].data).toEqual({ text: "Footer" });
+    expect(m.data.example["footer-note"]).toEqual({ text: "Footer" });
   });
   it("leaves block data empty when the data map lacks an id", () => {
     expect(fromTemplate(template).data.example.title).toBeUndefined();
@@ -77,7 +77,7 @@ describe("fromTemplate", () => {
     expect(m.data.example.title).toEqual({ text: "Example" });
     expect(m.data.defaults.title).toEqual({ text: "Fallback" });
     expect(m.data.constants.title).toEqual({ locked: true });
-    expect(m.rows[0].blocks[0].data).toEqual({ text: "Example", locked: true });
+    expect("data" in m.rows[0].blocks[0]).toBe(false);
   });
 });
 
@@ -304,7 +304,7 @@ describe("updateDataField", () => {
     expect(m.data.constants.title).toBeUndefined();
   });
 
-  it("moves locked values to constants and updates block summary data", () => {
+  it("moves locked values to constants without denormalizing data onto blocks", () => {
     const m = updateDataField(fromTemplate(template), "title", "text", "Locked", {
       example: true,
       locked: true,
@@ -313,7 +313,7 @@ describe("updateDataField", () => {
     expect(m.data.example.title).toBeUndefined();
     expect(toDataMap(m)).toEqual({});
     expect(m.data.constants.title).toEqual({ text: "Locked" });
-    expect(m.rows[0].blocks[0].data).toEqual({ text: "Locked" });
+    expect("data" in m.rows[0].blocks[0]).toBe(false);
     expect(previewDataMap(m)).toEqual({ title: { text: "Locked" } });
   });
 });
@@ -332,7 +332,7 @@ describe("updateBlockData", () => {
     );
 
     expect(m.data.example.lineItems).toEqual([{ sku: "A-100", quantity: "2" }]);
-    expect(m.rows[0].blocks[0].data).toEqual([{ sku: "A-100", quantity: "2" }]);
+    expect("data" in m.rows[0].blocks[0]).toBe(false);
     expect(toDataMap(m)).toEqual({ lineItems: [{ sku: "A-100", quantity: "2" }] });
   });
 });

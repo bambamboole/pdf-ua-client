@@ -71,7 +71,6 @@ const tableBlock: EditorBlock = {
     spacing: { top: 2 },
     width: "100%",
   },
-  data: {},
 };
 
 describe("InlineBlockEditor", () => {

@@ -43,7 +43,7 @@ const schema: JsonSchema = {
     keyValueProps: {
       type: "object",
       properties: {
-        entries: { type: "array" },
+        values: { type: "array" },
       },
     },
     headingConfig: {

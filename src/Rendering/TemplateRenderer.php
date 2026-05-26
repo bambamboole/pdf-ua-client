@@ -131,7 +131,7 @@ final class TemplateRenderer
      */
     private function blockProps(BlockInstance $instance, array $data): array
     {
-        if ($instance->type === 'key-value' && isset($instance->config['fields'])) {
+        if ($instance->type === 'key-value') {
             return ['values' => $data];
         }
 

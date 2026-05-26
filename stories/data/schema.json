@@ -517,40 +517,6 @@
         "keyValueProps": {
             "type": "object",
             "properties": {
-                "entries": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "label": {
-                                "type": "string",
-                                "examples": [
-                                    "Label"
-                                ]
-                            },
-                            "value": {
-                                "type": "string",
-                                "examples": [
-                                    "Value"
-                                ]
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "label",
-                            "value"
-                        ]
-                    },
-                    "examples": [
-                        [
-                            {
-                                "label": "Label",
-                                "value": "Value"
-                            }
-                        ]
-                    ],
-                    "default": []
-                },
                 "values": {
                     "type": "array",
                     "default": []

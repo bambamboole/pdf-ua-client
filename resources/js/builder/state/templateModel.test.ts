@@ -309,7 +309,8 @@ describe("updateDataField", () => {
       locked: true,
     });
 
-    expect(m.data.example.title).toEqual({ text: "Locked" });
+    expect(m.data.example.title).toBeUndefined();
+    expect(toDataMap(m)).toEqual({});
     expect(m.data.constants.title).toEqual({ text: "Locked" });
     expect(m.rows[0].blocks[0].data).toEqual({ text: "Locked" });
     expect(previewDataMap(m)).toEqual({ title: { text: "Locked" } });
@@ -332,6 +333,41 @@ describe("config / moves / remove", () => {
     expect(
       updateBlockConfig(m, m.rows[0].blocks[0].uid, { level: 3 }).rows[0].blocks[0].config,
     ).toEqual({ level: 3 });
+  });
+  it("prunes stale data fields when key value config fields change", () => {
+    const m = fromTemplate({
+      version: 1,
+      config: {},
+      rows: [
+        {
+          blocks: [
+            {
+              type: "key-value",
+              id: "meta",
+              config: {
+                fields: [
+                  { key: "invoiceNumber", label: "Invoice number" },
+                  { key: "issueDate", label: "Issue date" },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+      data: {
+        example: { meta: { invoiceNumber: "RE-1", issueDate: "2026-05-26" } },
+        defaults: { meta: { issueDate: "2026-05-26" } },
+        constants: { meta: { invoiceNumber: "RE-1" } },
+      },
+    });
+
+    const out = updateBlockConfig(m, m.rows[0].blocks[0].uid, {
+      fields: [{ key: "invoiceNumber", label: "Invoice number" }],
+    });
+
+    expect(out.data.example.meta).toEqual({ invoiceNumber: "RE-1" });
+    expect(out.data.defaults.meta).toBeUndefined();
+    expect(out.data.constants.meta).toEqual({ invoiceNumber: "RE-1" });
   });
   it("removeBlock prunes empty rows", () => {
     const m = fromTemplate(template, data);

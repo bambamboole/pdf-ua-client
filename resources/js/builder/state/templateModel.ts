@@ -333,7 +333,17 @@ function mapBlock(
 }
 
 export function updateBlockConfig(model: EditorModel, blockUid: string, config: Json): EditorModel {
-  return mapBlock(model, blockUid, (b) => ({ ...b, config }));
+  const block = findBlock(model, blockUid)?.block;
+  const updated = mapBlock(model, blockUid, (b) => ({ ...b, config }));
+
+  if (block?.type !== "key-value") {
+    return updated;
+  }
+
+  return {
+    ...updated,
+    data: pruneDataFieldsForId(updated.data, block.id, keyValueFieldKeys(config.fields)),
+  };
 }
 
 export function updateBlockId(model: EditorModel, blockUid: string, rawId: string): EditorModel {
@@ -360,13 +370,9 @@ export function updateDataField(
 
   if (options.locked) {
     data = writeDataField(data, "constants", blockId, field, value);
-  }
-
-  if (options.example) {
+  } else if (options.example) {
     data = writeDataField(data, "example", blockId, field, value);
-  }
-
-  if (!options.example && !options.locked) {
+  } else {
     data = writeDataField(data, "defaults", blockId, field, value);
   }
 
@@ -472,6 +478,49 @@ function writeDataField(
       [blockId]: blockData,
     },
   };
+}
+
+function pruneDataFieldsForId(
+  layers: TemplateDataLayers,
+  blockId: string,
+  keys: Set<string>,
+): TemplateDataLayers {
+  return {
+    example: pruneDataMapFields(layers.example, blockId, keys),
+    defaults: pruneDataMapFields(layers.defaults, blockId, keys),
+    constants: pruneDataMapFields(layers.constants, blockId, keys),
+  };
+}
+
+function pruneDataMapFields(data: DataMap, blockId: string, keys: Set<string>): DataMap {
+  const blockData = data[blockId];
+  if (!blockData) {
+    return data;
+  }
+
+  const nextBlockData = Object.fromEntries(
+    Object.entries(blockData).filter(([field]) => keys.has(field)),
+  );
+
+  if (Object.keys(nextBlockData).length === Object.keys(blockData).length) {
+    return data;
+  }
+
+  return Object.keys(nextBlockData).length > 0
+    ? { ...data, [blockId]: nextBlockData }
+    : omitDataId(data, blockId);
+}
+
+function keyValueFieldKeys(fields: unknown): Set<string> {
+  if (!Array.isArray(fields)) {
+    return new Set();
+  }
+
+  return new Set(
+    fields
+      .map((field) => (isPlainObject(field) && typeof field.key === "string" ? field.key : ""))
+      .filter((key) => key !== ""),
+  );
 }
 
 export function updateTemplateConfig(model: EditorModel, config: Json): EditorModel {

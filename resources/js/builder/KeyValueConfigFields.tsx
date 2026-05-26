@@ -133,7 +133,7 @@ function nextFieldKey(fields: KeyValueField[]): string {
 }
 
 function normalizeKey(value: string): string {
-  return value.replace(/[^A-Za-z0-9_]/g, "");
+  return value.replace(/[^A-Za-z0-9_]/g, "").replace(/^[^A-Za-z]+/, "");
 }
 
 function stringValue(value: unknown): string {

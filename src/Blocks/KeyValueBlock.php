@@ -42,8 +42,8 @@ final readonly class KeyValueBlock implements BlockInterface
         if ($config->fields !== []) {
             return array_map(
                 fn (KeyValueField|array $field): array => [
-                    'label' => $field instanceof KeyValueField ? $field->label : (string) ($field['label'] ?? ''),
-                    'value' => $this->stringValue($this->values[$field instanceof KeyValueField ? $field->key : (string) ($field['key'] ?? '')] ?? ''),
+                    'label' => $this->fieldLabel($field),
+                    'value' => $this->stringValue($this->values[$this->fieldKey($field)] ?? ''),
                 ],
                 $config->fields,
             );
@@ -58,5 +58,17 @@ final readonly class KeyValueBlock implements BlockInterface
     private function stringValue(mixed $value): string
     {
         return $value === null ? '' : (string) $value;
+    }
+
+    /** @param KeyValueField|array{key: string, label: string} $field */
+    private function fieldKey(KeyValueField|array $field): string
+    {
+        return $field instanceof KeyValueField ? $field->key : $field['key'];
+    }
+
+    /** @param KeyValueField|array{key: string, label: string} $field */
+    private function fieldLabel(KeyValueField|array $field): string
+    {
+        return $field instanceof KeyValueField ? $field->label : $field['label'];
     }
 }

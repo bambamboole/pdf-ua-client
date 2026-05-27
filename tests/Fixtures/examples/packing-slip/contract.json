@@ -1,0 +1,139 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://pdfuakit.com/schemas/pdf-ua-client-template-data-v1.json",
+    "type": "object",
+    "properties": {
+        "order-meta": {
+            "type": "object",
+            "properties": {
+                "orderNumber": {
+                    "type": "string"
+                },
+                "packingSlipNumber": {
+                    "type": "string"
+                },
+                "shipDate": {
+                    "type": "string"
+                },
+                "carrier": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "orderNumber",
+                "packingSlipNumber",
+                "shipDate",
+                "carrier"
+            ]
+        },
+        "ship-to": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "company": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "cityStatePostal": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "name",
+                "company",
+                "address",
+                "cityStatePostal",
+                "country"
+            ]
+        },
+        "items": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "sku": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "ordered": {
+                        "type": "string"
+                    },
+                    "shipped": {
+                        "type": "string"
+                    },
+                    "backordered": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "sku",
+                    "description",
+                    "ordered",
+                    "shipped",
+                    "backordered"
+                ]
+            }
+        },
+        "package-summary": {
+            "type": "object",
+            "properties": {
+                "packages": {
+                    "type": "string"
+                },
+                "totalWeight": {
+                    "type": "string"
+                },
+                "handling": {
+                    "type": "string"
+                },
+                "reference": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "packages",
+                "totalWeight",
+                "handling",
+                "reference"
+            ]
+        },
+        "notes": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string",
+                    "examples": [
+                        "Thank you for your business."
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "text"
+            ],
+            "title": "Text",
+            "description": "A paragraph of text."
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "order-meta",
+        "ship-to",
+        "items",
+        "package-summary",
+        "notes"
+    ]
+}

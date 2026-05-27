@@ -1,0 +1,274 @@
+{
+  "title": "Packing Slip",
+  "version": 1,
+  "config": {
+    "page": {
+      "format": "Letter",
+      "locale": "en_US",
+      "margins": {
+        "top": 18,
+        "right": 18,
+        "bottom": 18,
+        "left": 18
+      },
+      "pageNumbers": {
+        "enabled": false,
+        "position": "center"
+      }
+    },
+    "typography": {
+      "family": "Inter",
+      "size": 10
+    }
+  },
+  "rows": [
+    {
+      "blocks": [
+        {
+          "type": "key-value",
+          "id": "warehouse",
+          "config": {
+            "width": "58%",
+            "fields": [
+              {
+                "key": "name",
+                "label": "Warehouse"
+              },
+              {
+                "key": "address",
+                "label": "Address"
+              },
+              {
+                "key": "dock",
+                "label": "Dock"
+              },
+              {
+                "key": "contact",
+                "label": "Contact"
+              }
+            ]
+          }
+        },
+        {
+          "type": "key-value",
+          "id": "order-meta",
+          "config": {
+            "width": "42%",
+            "align": "right",
+            "fields": [
+              {
+                "key": "orderNumber",
+                "label": "Order number"
+              },
+              {
+                "key": "packingSlipNumber",
+                "label": "Packing slip"
+              },
+              {
+                "key": "shipDate",
+                "label": "Ship date"
+              },
+              {
+                "key": "carrier",
+                "label": "Carrier"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "key-value",
+          "id": "ship-to",
+          "config": {
+            "width": "58%",
+            "fields": [
+              {
+                "key": "name",
+                "label": "Ship to"
+              },
+              {
+                "key": "company",
+                "label": "Company"
+              },
+              {
+                "key": "address",
+                "label": "Address"
+              },
+              {
+                "key": "cityStatePostal",
+                "label": "City / state"
+              },
+              {
+                "key": "country",
+                "label": "Country"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "heading",
+          "id": "heading",
+          "config": {
+            "level": 1
+          }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "table",
+          "id": "items",
+          "config": {
+            "style": "striped",
+            "columns": [
+              {
+                "key": "sku",
+                "label": "SKU",
+                "align": "left",
+                "width": "17%"
+              },
+              {
+                "key": "description",
+                "label": "Description",
+                "align": "left",
+                "width": "41%"
+              },
+              {
+                "key": "ordered",
+                "label": "Ordered",
+                "align": "right",
+                "width": "14%"
+              },
+              {
+                "key": "shipped",
+                "label": "Shipped",
+                "align": "right",
+                "width": "14%"
+              },
+              {
+                "key": "backordered",
+                "label": "Backordered",
+                "align": "right",
+                "width": "14%"
+              }
+            ],
+            "numberRows": false
+          }
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "key-value",
+          "id": "package-summary",
+          "config": {
+            "width": "42%",
+            "fields": [
+              {
+                "key": "packages",
+                "label": "Packages"
+              },
+              {
+                "key": "totalWeight",
+                "label": "Total weight"
+              },
+              {
+                "key": "handling",
+                "label": "Handling"
+              },
+              {
+                "key": "reference",
+                "label": "Reference"
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "id": "notes",
+          "config": {
+            "width": "58%"
+          }
+        }
+      ]
+    }
+  ],
+  "data": {
+    "example": {
+      "warehouse": {
+        "name": "PDF UA Kit Fulfillment Center",
+        "address": "1250 Harbor Way, Oakland, CA 94607",
+        "dock": "Dock 4B",
+        "contact": "fulfillment@example.test"
+      },
+      "order-meta": {
+        "orderNumber": "SO-2026-10482",
+        "packingSlipNumber": "PS-2026-00418",
+        "shipDate": "2026-05-27",
+        "carrier": "UPS Ground"
+      },
+      "ship-to": {
+        "name": "Nina Patel",
+        "company": "Northwind Field Services",
+        "address": "420 Industrial Parkway",
+        "cityStatePostal": "Austin, TX 78744",
+        "country": "US"
+      },
+      "heading": {
+        "text": "Packing Slip"
+      },
+      "items": [
+        {
+          "sku": "DOC-KIT-001",
+          "description": "Accessible document starter kit",
+          "ordered": "4",
+          "shipped": "4",
+          "backordered": "0"
+        },
+        {
+          "sku": "LBL-THERM-46",
+          "description": "Thermal label roll 4 x 6 in",
+          "ordered": "2",
+          "shipped": "2",
+          "backordered": "0"
+        },
+        {
+          "sku": "KIT-ADP-014",
+          "description": "Adapter pack for desktop scanners",
+          "ordered": "3",
+          "shipped": "2",
+          "backordered": "1"
+        }
+      ],
+      "package-summary": {
+        "packages": "2 cartons",
+        "totalWeight": "8.6 kg",
+        "handling": "Keep dry",
+        "reference": "Receiving dock B"
+      },
+      "notes": {
+        "text": "No pricing is included on this packing slip. Verify item counts at receiving and report shortages within 5 business days."
+      }
+    },
+    "constants": {
+      "warehouse": {
+        "name": "PDF UA Kit Fulfillment Center",
+        "address": "1250 Harbor Way, Oakland, CA 94607",
+        "dock": "Dock 4B",
+        "contact": "fulfillment@example.test"
+      },
+      "heading": {
+        "text": "Packing Slip"
+      }
+    }
+  }
+}

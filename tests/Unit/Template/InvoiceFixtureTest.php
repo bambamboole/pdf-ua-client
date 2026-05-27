@@ -149,3 +149,46 @@ it('models a shipping label example document structure', function (): void {
             'number' => '1Z999AA10123456784',
         ]);
 });
+
+it('models a packing slip example document structure', function (): void {
+    $fixture = collect(app(TemplateFixtureRepository::class)->examples())->firstWhere('slug', 'packing-slip');
+
+    expect($fixture)->not->toBeNull()
+        ->and($fixture->title)->toBe('Packing Slip')
+        ->and($fixture->template['config']['page']['format'])->toBe('Letter')
+        ->and($fixture->template['config']['page']['locale'])->toBe('en_US')
+        ->and($fixture->template['config']['typography'])->toBe(['family' => 'Inter', 'size' => 10]);
+
+    $blocks = collect($fixture->template['rows'])
+        ->flatMap(fn (array $row): array => $row['blocks'])
+        ->keyBy('id');
+
+    expect($blocks->keys()->all())->toContain('warehouse', 'ship-to', 'order-meta', 'items', 'package-summary', 'notes');
+
+    $columns = collect($blocks->get('items')['config']['columns'])->keyBy('key');
+
+    expect($columns->keys()->all())->toBe(['sku', 'description', 'ordered', 'shipped', 'backordered']);
+    expect($columns->get('sku'))->toMatchArray(['label' => 'SKU', 'align' => 'left'])
+        ->and($columns->get('description'))->toMatchArray(['label' => 'Description', 'align' => 'left'])
+        ->and($columns->get('ordered'))->toMatchArray(['label' => 'Ordered', 'align' => 'right'])
+        ->and($columns->get('shipped'))->toMatchArray(['label' => 'Shipped', 'align' => 'right'])
+        ->and($columns->get('backordered'))->toMatchArray(['label' => 'Backordered', 'align' => 'right']);
+
+    expect($fixture->data)->toHaveKeys(['ship-to', 'order-meta', 'items', 'package-summary', 'notes'])
+        ->and($fixture->data['ship-to'])->toMatchArray([
+            'name' => 'Nina Patel',
+            'company' => 'Northwind Field Services',
+        ])
+        ->and($fixture->data['order-meta'])->toMatchArray([
+            'orderNumber' => 'SO-2026-10482',
+        ])
+        ->and($fixture->data['items'])->toHaveCount(3)
+        ->and($fixture->data['items'][2])->toMatchArray([
+            'sku' => 'KIT-ADP-014',
+            'backordered' => '1',
+        ])
+        ->and($fixture->data['package-summary'])->toMatchArray([
+            'packages' => '2 cartons',
+            'totalWeight' => '8.6 kg',
+        ]);
+});

@@ -106,4 +106,37 @@ describe("BlockDataSummary", () => {
     expect(html).not.toContain("Description");
     expect(html).not.toContain("Implementation");
   });
+
+  it("summarizes text blocks with the text value", () => {
+    const html = renderToStaticMarkup(
+      <BlockDataSummary
+        block={block("text")}
+        data={{ example: { text: { text: "Hello world" } }, defaults: {}, constants: {} }}
+      />,
+    );
+
+    expect(html).toContain("Hello world");
+  });
+
+  it("summarizes heading blocks with the text value", () => {
+    const html = renderToStaticMarkup(
+      <BlockDataSummary
+        block={block("heading")}
+        data={{ example: { heading: { text: "Invoice" } }, defaults: {}, constants: {} }}
+      />,
+    );
+
+    expect(html).toContain("Invoice");
+  });
+
+  it("summarizes html blocks with a static label", () => {
+    const html = renderToStaticMarkup(
+      <BlockDataSummary
+        block={block("html")}
+        data={{ example: {}, defaults: {}, constants: {} }}
+      />,
+    );
+
+    expect(html).toContain("HTML");
+  });
 });

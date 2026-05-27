@@ -116,7 +116,6 @@ function KeyValueConfigEditor({
 }
 
 export const keyValueBlock: BlockDefinition = {
-  type: "key-value",
   DataEditor: KeyValueDataEditor,
   Summary: KeyValueSummary,
   ConfigEditor: KeyValueConfigEditor,

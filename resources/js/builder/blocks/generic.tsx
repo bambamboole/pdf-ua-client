@@ -9,7 +9,7 @@ import {
   previewBlockValue,
   stringValue,
 } from "./shared";
-import type { BlockDataEditorProps, BlockSummaryProps } from "./types";
+import type { BlockDataEditorProps, BlockDefinition, BlockSummaryProps } from "./types";
 
 export function GenericDataEditor({
   block,
@@ -57,21 +57,32 @@ export function GenericDataEditor({
   );
 }
 
-export function GenericSummary({ block, data }: BlockSummaryProps) {
+function TextSummary({ block, data }: BlockSummaryProps) {
   const blockData = previewBlockValue(data, block.id);
   const record = isPlainObject(blockData) ? blockData : {};
 
-  if (block.type === "heading" || block.type === "text") {
-    return <MutedSummary>{truncate(stringValue(record.text))}</MutedSummary>;
-  }
+  return <MutedSummary>{truncate(stringValue(record.text))}</MutedSummary>;
+}
 
-  if (block.type === "html") {
-    return <MutedSummary>HTML</MutedSummary>;
-  }
-
-  return null;
+function HtmlSummary() {
+  return <MutedSummary>HTML</MutedSummary>;
 }
 
 function fieldTitle(field: string, schema: JsonSchema): string {
   return typeof schema.title === "string" ? schema.title : field;
 }
+
+export const textBlock: BlockDefinition = {
+  DataEditor: GenericDataEditor,
+  Summary: TextSummary,
+};
+
+export const headingBlock: BlockDefinition = {
+  DataEditor: GenericDataEditor,
+  Summary: TextSummary,
+};
+
+export const htmlBlock: BlockDefinition = {
+  DataEditor: GenericDataEditor,
+  Summary: HtmlSummary,
+};

@@ -1,18 +1,22 @@
-import { GenericDataEditor, GenericSummary } from "./generic";
+import { GenericDataEditor, headingBlock, htmlBlock, textBlock } from "./generic";
 import { imageBlock } from "./image";
 import { keyValueBlock } from "./keyValue";
 import { tableBlock } from "./table";
 import type { BlockDefinition } from "./types";
 
-const definitions = [imageBlock, keyValueBlock, tableBlock] satisfies BlockDefinition[];
-const definitionsByType = new Map(definitions.map((definition) => [definition.type, definition]));
+const definitions: Record<string, BlockDefinition> = {
+  image: imageBlock,
+  "key-value": keyValueBlock,
+  table: tableBlock,
+  text: textBlock,
+  heading: headingBlock,
+  html: htmlBlock,
+};
 
 const genericDefinition: BlockDefinition = {
-  type: "*",
   DataEditor: GenericDataEditor,
-  Summary: GenericSummary,
 };
 
 export function blockDefinition(type: string): BlockDefinition {
-  return definitionsByType.get(type) ?? genericDefinition;
+  return definitions[type] ?? genericDefinition;
 }

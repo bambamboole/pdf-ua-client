@@ -46,7 +46,6 @@ export interface BlockConfigEditorProps {
 }
 
 export interface BlockDefinition {
-  type: string;
   DataEditor?: ComponentType<BlockDataEditorProps>;
   Summary?: ComponentType<BlockSummaryProps>;
   ConfigEditor?: ComponentType<BlockConfigEditorProps>;

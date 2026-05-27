@@ -129,7 +129,6 @@ function ImageSummary({ block, data }: BlockSummaryProps) {
 }
 
 export const imageBlock: BlockDefinition = {
-  type: "image",
   DataEditor: ImageDataEditor,
   Summary: ImageSummary,
 };

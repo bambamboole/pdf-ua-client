@@ -196,7 +196,6 @@ function TableConfigEditor({
 }
 
 export const tableBlock: BlockDefinition = {
-  type: "table",
   DataEditor: TableDataEditor,
   Summary: TableSummary,
   ConfigEditor: TableConfigEditor,

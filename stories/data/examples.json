@@ -1,5 +1,368 @@
 [
     {
+        "title": "Dunning Notice",
+        "template": {
+            "title": "Dunning Notice",
+            "version": 1,
+            "config": {
+                "page": {
+                    "format": "A4",
+                    "locale": "de_DE",
+                    "margins": {
+                        "top": 20,
+                        "right": 20,
+                        "bottom": 20,
+                        "left": 25
+                    },
+                    "pageNumbers": {
+                        "enabled": true,
+                        "position": "center"
+                    },
+                    "footer": {
+                        "repeat": true,
+                        "rows": [
+                            {
+                                "blocks": [
+                                    {
+                                        "type": "text",
+                                        "id": "footer-legal",
+                                        "config": {
+                                            "width": "68%"
+                                        }
+                                    },
+                                    {
+                                        "type": "key-value",
+                                        "id": "footer-meta",
+                                        "config": {
+                                            "width": "32%",
+                                            "align": "right",
+                                            "fields": [
+                                                {
+                                                    "key": "registration",
+                                                    "label": "Registry"
+                                                },
+                                                {
+                                                    "key": "taxNumber",
+                                                    "label": "Tax no."
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "typography": {
+                    "family": "Inter",
+                    "size": 10
+                }
+            },
+            "rows": [
+                {
+                    "blocks": [
+                        {
+                            "type": "key-value",
+                            "id": "creditor",
+                            "config": {
+                                "width": "58%",
+                                "fields": [
+                                    {
+                                        "key": "name",
+                                        "label": "Creditor"
+                                    },
+                                    {
+                                        "key": "address",
+                                        "label": "Address"
+                                    },
+                                    {
+                                        "key": "contact",
+                                        "label": "Contact"
+                                    },
+                                    {
+                                        "key": "email",
+                                        "label": "Email"
+                                    },
+                                    {
+                                        "key": "vatId",
+                                        "label": "VAT ID"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "key-value",
+                            "id": "notice-meta",
+                            "config": {
+                                "width": "42%",
+                                "align": "right",
+                                "fields": [
+                                    {
+                                        "key": "noticeNumber",
+                                        "label": "Notice number"
+                                    },
+                                    {
+                                        "key": "noticeDate",
+                                        "label": "Notice date"
+                                    },
+                                    {
+                                        "key": "customerNumber",
+                                        "label": "Customer number"
+                                    },
+                                    {
+                                        "key": "paymentDueDate",
+                                        "label": "Payment due"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "blocks": [
+                        {
+                            "type": "key-value",
+                            "id": "debtor",
+                            "config": {
+                                "width": "58%",
+                                "fields": [
+                                    {
+                                        "key": "name",
+                                        "label": "Debtor"
+                                    },
+                                    {
+                                        "key": "address",
+                                        "label": "Address"
+                                    },
+                                    {
+                                        "key": "email",
+                                        "label": "Email"
+                                    },
+                                    {
+                                        "key": "reference",
+                                        "label": "Debtor reference"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "blocks": [
+                        {
+                            "type": "heading",
+                            "id": "heading",
+                            "config": {
+                                "level": 1
+                            }
+                        }
+                    ]
+                },
+                {
+                    "blocks": [
+                        {
+                            "type": "text",
+                            "id": "notice-text",
+                            "config": {
+                                "width": "100%"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "blocks": [
+                        {
+                            "type": "table",
+                            "id": "overdue-invoices",
+                            "config": {
+                                "style": "striped",
+                                "columns": [
+                                    {
+                                        "key": "invoiceNumber",
+                                        "label": "Invoice no.",
+                                        "align": "left",
+                                        "width": "24%"
+                                    },
+                                    {
+                                        "key": "issueDate",
+                                        "label": "Issue date",
+                                        "align": "left",
+                                        "width": "18%"
+                                    },
+                                    {
+                                        "key": "dueDate",
+                                        "label": "Due date",
+                                        "align": "left",
+                                        "width": "18%"
+                                    },
+                                    {
+                                        "key": "daysOverdue",
+                                        "label": "Days overdue",
+                                        "align": "right",
+                                        "width": "18%"
+                                    },
+                                    {
+                                        "key": "amount",
+                                        "label": "Amount",
+                                        "align": "right",
+                                        "width": "22%"
+                                    }
+                                ],
+                                "numberRows": false
+                            }
+                        }
+                    ]
+                },
+                {
+                    "blocks": [
+                        {
+                            "type": "text",
+                            "id": "closing-note",
+                            "config": {
+                                "width": "54%"
+                            }
+                        },
+                        {
+                            "type": "key-value",
+                            "id": "payment",
+                            "config": {
+                                "width": "46%",
+                                "align": "right",
+                                "fields": [
+                                    {
+                                        "key": "amountDue",
+                                        "label": "Amount due"
+                                    },
+                                    {
+                                        "key": "bank",
+                                        "label": "Bank"
+                                    },
+                                    {
+                                        "key": "iban",
+                                        "label": "IBAN"
+                                    },
+                                    {
+                                        "key": "bic",
+                                        "label": "BIC"
+                                    },
+                                    {
+                                        "key": "reference",
+                                        "label": "Payment reference"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ],
+            "data": {
+                "example": {
+                    "notice-meta": {
+                        "noticeNumber": "MA-2026-00018",
+                        "noticeDate": "2026-04-24",
+                        "customerNumber": "K-10482",
+                        "paymentDueDate": "2026-05-02"
+                    },
+                    "debtor": {
+                        "name": "Musterkunde AG",
+                        "address": "K\u00e4uferweg 2, 80331 M\u00fcnchen, DE",
+                        "email": "accounting@musterkunde.example",
+                        "reference": "04011000-12345-67"
+                    },
+                    "notice-text": {
+                        "text": "According to our records, the invoices listed below remain unpaid after their agreed due dates. Please arrange payment of the outstanding balance no later than 2026-05-02. If payment has already been made, please disregard this reminder and send us the remittance advice."
+                    },
+                    "overdue-invoices": [
+                        {
+                            "invoiceNumber": "RE-2026-001104",
+                            "issueDate": "2026-02-03",
+                            "dueDate": "2026-03-04",
+                            "daysOverdue": "51",
+                            "amount": "2.856,00 \u20ac"
+                        },
+                        {
+                            "invoiceNumber": "RE-2026-001137",
+                            "issueDate": "2026-02-21",
+                            "dueDate": "2026-03-23",
+                            "daysOverdue": "32",
+                            "amount": "1.975,40 \u20ac"
+                        }
+                    ],
+                    "payment": {
+                        "amountDue": "4.831,40 \u20ac",
+                        "reference": "MA-2026-00018"
+                    }
+                },
+                "defaults": {
+                    "closing-note": {
+                        "text": "Please contact accounting@pdfua-kit.example if you need a copy invoice or want to clarify an already initiated payment."
+                    },
+                    "payment": {
+                        "bank": "Musterbank Berlin",
+                        "iban": "DE89370400440532013000",
+                        "bic": "COBADEFFXXX"
+                    }
+                },
+                "constants": {
+                    "heading": {
+                        "text": "Dunning notice / Payment reminder"
+                    },
+                    "creditor": {
+                        "name": "PDF UA Kit GmbH",
+                        "address": "Musterstra\u00dfe 1, 10115 Berlin, DE",
+                        "contact": "Max Mustermann",
+                        "email": "billing@pdfua-kit.example",
+                        "vatId": "DE123456789"
+                    },
+                    "footer-legal": {
+                        "text": "PDF UA Kit GmbH \u00b7 Musterstra\u00dfe 1 \u00b7 10115 Berlin \u00b7 Germany \u00b7 Please quote the notice number with every payment."
+                    },
+                    "footer-meta": {
+                        "registration": "HRB 123456 B",
+                        "taxNumber": "DE123456789"
+                    }
+                }
+            }
+        },
+        "data": {
+            "notice-meta": {
+                "noticeNumber": "MA-2026-00018",
+                "noticeDate": "2026-04-24",
+                "customerNumber": "K-10482",
+                "paymentDueDate": "2026-05-02"
+            },
+            "debtor": {
+                "name": "Musterkunde AG",
+                "address": "K\u00e4uferweg 2, 80331 M\u00fcnchen, DE",
+                "email": "accounting@musterkunde.example",
+                "reference": "04011000-12345-67"
+            },
+            "notice-text": {
+                "text": "According to our records, the invoices listed below remain unpaid after their agreed due dates. Please arrange payment of the outstanding balance no later than 2026-05-02. If payment has already been made, please disregard this reminder and send us the remittance advice."
+            },
+            "overdue-invoices": [
+                {
+                    "invoiceNumber": "RE-2026-001104",
+                    "issueDate": "2026-02-03",
+                    "dueDate": "2026-03-04",
+                    "daysOverdue": "51",
+                    "amount": "2.856,00 \u20ac"
+                },
+                {
+                    "invoiceNumber": "RE-2026-001137",
+                    "issueDate": "2026-02-21",
+                    "dueDate": "2026-03-23",
+                    "daysOverdue": "32",
+                    "amount": "1.975,40 \u20ac"
+                }
+            ],
+            "payment": {
+                "amountDue": "4.831,40 \u20ac",
+                "reference": "MA-2026-00018"
+            }
+        }
+    },
+    {
         "title": "Invoice",
         "template": {
             "title": "Invoice",
@@ -463,6 +826,604 @@
             },
             "payment": {
                 "reference": "RE-2026-001234"
+            }
+        }
+    },
+    {
+        "title": "Packing Slip",
+        "template": {
+            "title": "Packing Slip",
+            "version": 1,
+            "config": {
+                "page": {
+                    "format": "Letter",
+                    "locale": "en_US",
+                    "margins": {
+                        "top": 18,
+                        "right": 18,
+                        "bottom": 18,
+                        "left": 18
+                    },
+                    "pageNumbers": {
+                        "enabled": false,
+                        "position": "center"
+                    }
+                },
+                "typography": {
+                    "family": "Inter",
+                    "size": 10
+                }
+            },
+            "rows": [
+                {
+                    "blocks": [
+                        {
+                            "type": "key-value",
+                            "id": "warehouse",
+                            "config": {
+                                "width": "58%",
+                                "fields": [
+                                    {
+                                        "key": "name",
+                                        "label": "Warehouse"
+                                    },
+                                    {
+                                        "key": "address",
+                                        "label": "Address"
+                                    },
+                                    {
+                                        "key": "dock",
+                                        "label": "Dock"
+                                    },
+                                    {
+                                        "key": "contact",
+                                        "label": "Contact"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "key-value",
+                            "id": "order-meta",
+                            "config": {
+                                "width": "42%",
+                                "align": "right",
+                                "fields": [
+                                    {
+                                        "key": "orderNumber",
+                                        "label": "Order number"
+                                    },
+                                    {
+                                        "key": "packingSlipNumber",
+                                        "label": "Packing slip"
+                                    },
+                                    {
+                                        "key": "shipDate",
+                                        "label": "Ship date"
+                                    },
+                                    {
+                                        "key": "carrier",
+                                        "label": "Carrier"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "blocks": [
+                        {
+                            "type": "key-value",
+                            "id": "ship-to",
+                            "config": {
+                                "width": "58%",
+                                "fields": [
+                                    {
+                                        "key": "name",
+                                        "label": "Ship to"
+                                    },
+                                    {
+                                        "key": "company",
+                                        "label": "Company"
+                                    },
+                                    {
+                                        "key": "address",
+                                        "label": "Address"
+                                    },
+                                    {
+                                        "key": "cityStatePostal",
+                                        "label": "City / state"
+                                    },
+                                    {
+                                        "key": "country",
+                                        "label": "Country"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "blocks": [
+                        {
+                            "type": "heading",
+                            "id": "heading",
+                            "config": {
+                                "level": 1
+                            }
+                        }
+                    ]
+                },
+                {
+                    "blocks": [
+                        {
+                            "type": "table",
+                            "id": "items",
+                            "config": {
+                                "style": "striped",
+                                "columns": [
+                                    {
+                                        "key": "sku",
+                                        "label": "SKU",
+                                        "align": "left",
+                                        "width": "17%"
+                                    },
+                                    {
+                                        "key": "description",
+                                        "label": "Description",
+                                        "align": "left",
+                                        "width": "41%"
+                                    },
+                                    {
+                                        "key": "ordered",
+                                        "label": "Ordered",
+                                        "align": "right",
+                                        "width": "14%"
+                                    },
+                                    {
+                                        "key": "shipped",
+                                        "label": "Shipped",
+                                        "align": "right",
+                                        "width": "14%"
+                                    },
+                                    {
+                                        "key": "backordered",
+                                        "label": "Backordered",
+                                        "align": "right",
+                                        "width": "14%"
+                                    }
+                                ],
+                                "numberRows": false
+                            }
+                        }
+                    ]
+                },
+                {
+                    "blocks": [
+                        {
+                            "type": "key-value",
+                            "id": "package-summary",
+                            "config": {
+                                "width": "42%",
+                                "fields": [
+                                    {
+                                        "key": "packages",
+                                        "label": "Packages"
+                                    },
+                                    {
+                                        "key": "totalWeight",
+                                        "label": "Total weight"
+                                    },
+                                    {
+                                        "key": "handling",
+                                        "label": "Handling"
+                                    },
+                                    {
+                                        "key": "reference",
+                                        "label": "Reference"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "id": "notes",
+                            "config": {
+                                "width": "58%"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "data": {
+                "example": {
+                    "warehouse": {
+                        "name": "PDF UA Kit Fulfillment Center",
+                        "address": "1250 Harbor Way, Oakland, CA 94607",
+                        "dock": "Dock 4B",
+                        "contact": "fulfillment@example.test"
+                    },
+                    "order-meta": {
+                        "orderNumber": "SO-2026-10482",
+                        "packingSlipNumber": "PS-2026-00418",
+                        "shipDate": "2026-05-27",
+                        "carrier": "UPS Ground"
+                    },
+                    "ship-to": {
+                        "name": "Nina Patel",
+                        "company": "Northwind Field Services",
+                        "address": "420 Industrial Parkway",
+                        "cityStatePostal": "Austin, TX 78744",
+                        "country": "US"
+                    },
+                    "heading": {
+                        "text": "Packing Slip"
+                    },
+                    "items": [
+                        {
+                            "sku": "DOC-KIT-001",
+                            "description": "Accessible document starter kit",
+                            "ordered": "4",
+                            "shipped": "4",
+                            "backordered": "0"
+                        },
+                        {
+                            "sku": "LBL-THERM-46",
+                            "description": "Thermal label roll 4 x 6 in",
+                            "ordered": "2",
+                            "shipped": "2",
+                            "backordered": "0"
+                        },
+                        {
+                            "sku": "KIT-ADP-014",
+                            "description": "Adapter pack for desktop scanners",
+                            "ordered": "3",
+                            "shipped": "2",
+                            "backordered": "1"
+                        }
+                    ],
+                    "package-summary": {
+                        "packages": "2 cartons",
+                        "totalWeight": "8.6 kg",
+                        "handling": "Keep dry",
+                        "reference": "Receiving dock B"
+                    },
+                    "notes": {
+                        "text": "No pricing is included on this packing slip. Verify item counts at receiving and report shortages within 5 business days."
+                    }
+                },
+                "constants": {
+                    "warehouse": {
+                        "name": "PDF UA Kit Fulfillment Center",
+                        "address": "1250 Harbor Way, Oakland, CA 94607",
+                        "dock": "Dock 4B",
+                        "contact": "fulfillment@example.test"
+                    },
+                    "heading": {
+                        "text": "Packing Slip"
+                    }
+                }
+            }
+        },
+        "data": {
+            "order-meta": {
+                "orderNumber": "SO-2026-10482",
+                "packingSlipNumber": "PS-2026-00418",
+                "shipDate": "2026-05-27",
+                "carrier": "UPS Ground"
+            },
+            "ship-to": {
+                "name": "Nina Patel",
+                "company": "Northwind Field Services",
+                "address": "420 Industrial Parkway",
+                "cityStatePostal": "Austin, TX 78744",
+                "country": "US"
+            },
+            "items": [
+                {
+                    "sku": "DOC-KIT-001",
+                    "description": "Accessible document starter kit",
+                    "ordered": "4",
+                    "shipped": "4",
+                    "backordered": "0"
+                },
+                {
+                    "sku": "LBL-THERM-46",
+                    "description": "Thermal label roll 4 x 6 in",
+                    "ordered": "2",
+                    "shipped": "2",
+                    "backordered": "0"
+                },
+                {
+                    "sku": "KIT-ADP-014",
+                    "description": "Adapter pack for desktop scanners",
+                    "ordered": "3",
+                    "shipped": "2",
+                    "backordered": "1"
+                }
+            ],
+            "package-summary": {
+                "packages": "2 cartons",
+                "totalWeight": "8.6 kg",
+                "handling": "Keep dry",
+                "reference": "Receiving dock B"
+            },
+            "notes": {
+                "text": "No pricing is included on this packing slip. Verify item counts at receiving and report shortages within 5 business days."
+            }
+        }
+    },
+    {
+        "title": "Shipping Label",
+        "template": {
+            "title": "Shipping Label",
+            "version": 1,
+            "config": {
+                "page": {
+                    "format": "ParcelLabel4x6",
+                    "locale": "en_US",
+                    "margins": {
+                        "top": 5,
+                        "right": 5,
+                        "bottom": 5,
+                        "left": 5
+                    },
+                    "pageNumbers": {
+                        "enabled": false,
+                        "position": "center"
+                    }
+                },
+                "typography": {
+                    "family": "Inter",
+                    "size": 9
+                }
+            },
+            "rows": [
+                {
+                    "blocks": [
+                        {
+                            "type": "key-value",
+                            "id": "carrier",
+                            "config": {
+                                "width": "45%",
+                                "fields": [
+                                    {
+                                        "key": "name",
+                                        "label": "Carrier"
+                                    },
+                                    {
+                                        "key": "account",
+                                        "label": "Account"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "key-value",
+                            "id": "service",
+                            "config": {
+                                "width": "55%",
+                                "align": "right",
+                                "fields": [
+                                    {
+                                        "key": "level",
+                                        "label": "Service"
+                                    },
+                                    {
+                                        "key": "shipDate",
+                                        "label": "Ship date"
+                                    },
+                                    {
+                                        "key": "weight",
+                                        "label": "Weight"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "blocks": [
+                        {
+                            "type": "key-value",
+                            "id": "recipient",
+                            "config": {
+                                "width": "100%",
+                                "fields": [
+                                    {
+                                        "key": "name",
+                                        "label": "Ship to"
+                                    },
+                                    {
+                                        "key": "company",
+                                        "label": "Company"
+                                    },
+                                    {
+                                        "key": "address",
+                                        "label": "Address"
+                                    },
+                                    {
+                                        "key": "cityStatePostal",
+                                        "label": "City / state"
+                                    },
+                                    {
+                                        "key": "country",
+                                        "label": "Country"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "blocks": [
+                        {
+                            "type": "key-value",
+                            "id": "sender",
+                            "config": {
+                                "width": "100%",
+                                "fields": [
+                                    {
+                                        "key": "name",
+                                        "label": "From"
+                                    },
+                                    {
+                                        "key": "address",
+                                        "label": "Return address"
+                                    },
+                                    {
+                                        "key": "cityStatePostal",
+                                        "label": "City / state"
+                                    },
+                                    {
+                                        "key": "country",
+                                        "label": "Country"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "blocks": [
+                        {
+                            "type": "key-value",
+                            "id": "tracking",
+                            "config": {
+                                "width": "58%",
+                                "fields": [
+                                    {
+                                        "key": "number",
+                                        "label": "Tracking"
+                                    },
+                                    {
+                                        "key": "reference",
+                                        "label": "Reference"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "key-value",
+                            "id": "routing-code",
+                            "config": {
+                                "width": "42%",
+                                "align": "right",
+                                "fields": [
+                                    {
+                                        "key": "code",
+                                        "label": "Routing"
+                                    },
+                                    {
+                                        "key": "hub",
+                                        "label": "Hub"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "blocks": [
+                        {
+                            "type": "image",
+                            "id": "barcode",
+                            "config": {
+                                "width": "100%",
+                                "maxHeight": 72
+                            }
+                        }
+                    ]
+                },
+                {
+                    "blocks": [
+                        {
+                            "type": "text",
+                            "id": "handling",
+                            "config": {
+                                "width": "100%"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "data": {
+                "example": {
+                    "carrier": {
+                        "name": "UPS",
+                        "account": "A1B2C3"
+                    },
+                    "service": {
+                        "level": "Ground Commercial",
+                        "shipDate": "2026-05-27",
+                        "weight": "2.4 kg"
+                    },
+                    "recipient": {
+                        "name": "Jordan Lee",
+                        "company": "Acme Fulfillment Lab",
+                        "address": "742 Evergreen Terrace",
+                        "cityStatePostal": "Springfield, IL 62704",
+                        "country": "US"
+                    },
+                    "sender": {
+                        "name": "PDF UA Kit GmbH",
+                        "address": "Musterstrasse 1",
+                        "cityStatePostal": "10115 Berlin",
+                        "country": "DE"
+                    },
+                    "tracking": {
+                        "number": "1Z999AA10123456784",
+                        "reference": "SO-2026-10482"
+                    },
+                    "routing-code": {
+                        "code": "IL 627 9-04",
+                        "hub": "ORD-03"
+                    },
+                    "handling": {
+                        "text": "Keep dry. Deliver to receiving dock between 08:00 and 16:00."
+                    }
+                },
+                "constants": {
+                    "barcode": {
+                        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MjAiIGhlaWdodD0iMTUwIiB2aWV3Qm94PSIwIDAgNTIwIDE1MCI+PHJlY3Qgd2lkdGg9IjUyMCIgaGVpZ2h0PSIxNTAiIGZpbGw9IiNmZmYiLz48ZyBmaWxsPSIjMTExODI3Ij48cmVjdCB4PSIyMCIgeT0iMTIiIHdpZHRoPSI0IiBoZWlnaHQ9IjEwMCIvPjxyZWN0IHg9IjMwIiB5PSIxMiIgd2lkdGg9IjgiIGhlaWdodD0iMTAwIi8+PHJlY3QgeD0iNDYiIHk9IjEyIiB3aWR0aD0iMyIgaGVpZ2h0PSIxMDAiLz48cmVjdCB4PSI1OCIgeT0iMTIiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMDAiLz48cmVjdCB4PSI3NiIgeT0iMTIiIHdpZHRoPSI1IiBoZWlnaHQ9IjEwMCIvPjxyZWN0IHg9IjkyIiB5PSIxMiIgd2lkdGg9IjEyIiBoZWlnaHQ9IjEwMCIvPjxyZWN0IHg9IjExMiIgeT0iMTIiIHdpZHRoPSI0IiBoZWlnaHQ9IjEwMCIvPjxyZWN0IHg9IjEyNiIgeT0iMTIiIHdpZHRoPSI4IiBoZWlnaHQ9IjEwMCIvPjxyZWN0IHg9IjE0NiIgeT0iMTIiIHdpZHRoPSIzIiBoZWlnaHQ9IjEwMCIvPjxyZWN0IHg9IjE1OCIgeT0iMTIiIHdpZHRoPSIxMiIgaGVpZ2h0PSIxMDAiLz48cmVjdCB4PSIxODIiIHk9IjEyIiB3aWR0aD0iNSIgaGVpZ2h0PSIxMDAiLz48cmVjdCB4PSIxOTgiIHk9IjEyIiB3aWR0aD0iOCIgaGVpZ2h0PSIxMDAiLz48cmVjdCB4PSIyMTYiIHk9IjEyIiB3aWR0aD0iNCIgaGVpZ2h0PSIxMDAiLz48cmVjdCB4PSIyMzIiIHk9IjEyIiB3aWR0aD0iMTQiIGhlaWdodD0iMTAwIi8+PHJlY3QgeD0iMjU2IiB5PSIxMiIgd2lkdGg9IjQiIGhlaWdodD0iMTAwIi8+PHJlY3QgeD0iMjcwIiB5PSIxMiIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwMCIvPjxyZWN0IHg9IjI5MiIgeT0iMTIiIHdpZHRoPSI1IiBoZWlnaHQ9IjEwMCIvPjxyZWN0IHg9IjMwOCIgeT0iMTIiIHdpZHRoPSIxMiIgaGVpZ2h0PSIxMDAiLz48cmVjdCB4PSIzMzAiIHk9IjEyIiB3aWR0aD0iMyIgaGVpZ2h0PSIxMDAiLz48cmVjdCB4PSIzNDQiIHk9IjEyIiB3aWR0aD0iOSIgaGVpZ2h0PSIxMDAiLz48cmVjdCB4PSIzNjQiIHk9IjEyIiB3aWR0aD0iNCIgaGVpZ2h0PSIxMDAiLz48cmVjdCB4PSIzNzgiIHk9IjEyIiB3aWR0aD0iMTIiIGhlaWdodD0iMTAwIi8+PHJlY3QgeD0iNDAyIiB5PSIxMiIgd2lkdGg9IjUiIGhlaWdodD0iMTAwIi8+PHJlY3QgeD0iNDE4IiB5PSIxMiIgd2lkdGg9IjkiIGhlaWdodD0iMTAwIi8+PHJlY3QgeD0iNDQwIiB5PSIxMiIgd2lkdGg9IjQiIGhlaWdodD0iMTAwIi8+PHJlY3QgeD0iNDU0IiB5PSIxMiIgd2lkdGg9IjEyIiBoZWlnaHQ9IjEwMCIvPjxyZWN0IHg9IjQ3OCIgeT0iMTIiIHdpZHRoPSI2IiBoZWlnaHQ9IjEwMCIvPjxyZWN0IHg9IjQ5NCIgeT0iMTIiIHdpZHRoPSI0IiBoZWlnaHQ9IjEwMCIvPjwvZz48dGV4dCB4PSIyNjAiIHk9IjEzOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzExMTgyNyIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjI0IiBmb250LXdlaWdodD0iNzAwIj4xWjk5OUFBMTAxMjM0NTY3ODQ8L3RleHQ+PC9zdmc+",
+                        "alt": "Barcode for tracking number 1Z999AA10123456784"
+                    }
+                }
+            }
+        },
+        "data": {
+            "carrier": {
+                "name": "UPS",
+                "account": "A1B2C3"
+            },
+            "service": {
+                "level": "Ground Commercial",
+                "shipDate": "2026-05-27",
+                "weight": "2.4 kg"
+            },
+            "recipient": {
+                "name": "Jordan Lee",
+                "company": "Acme Fulfillment Lab",
+                "address": "742 Evergreen Terrace",
+                "cityStatePostal": "Springfield, IL 62704",
+                "country": "US"
+            },
+            "sender": {
+                "name": "PDF UA Kit GmbH",
+                "address": "Musterstrasse 1",
+                "cityStatePostal": "10115 Berlin",
+                "country": "DE"
+            },
+            "tracking": {
+                "number": "1Z999AA10123456784",
+                "reference": "SO-2026-10482"
+            },
+            "routing-code": {
+                "code": "IL 627 9-04",
+                "hub": "ORD-03"
+            },
+            "handling": {
+                "text": "Keep dry. Deliver to receiving dock between 08:00 and 16:00."
             }
         }
     }

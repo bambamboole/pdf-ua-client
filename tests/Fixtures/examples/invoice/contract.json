@@ -179,6 +179,31 @@
             "required": [
                 "reference"
             ]
+        },
+        "attachments": {
+            "type": "object",
+            "properties": {
+                "factur-x": {
+                    "type": "object",
+                    "required": [
+                        "contentBase64"
+                    ],
+                    "properties": {
+                        "contentBase64": {
+                            "type": "string",
+                            "minLength": 1,
+                            "contentEncoding": "base64",
+                            "title": "factur-x.xml",
+                            "description": "Base64 encoded attachment content."
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "factur-x"
+            ]
         }
     },
     "additionalProperties": false,
@@ -188,6 +213,7 @@
         "lineItems",
         "vat-breakdown",
         "totals",
-        "payment"
+        "payment",
+        "attachments"
     ]
 }

@@ -58,6 +58,14 @@ final readonly class DataSchemaCompiler
             }
         }
 
+        if ($template->attachmentRequirements !== []) {
+            $properties['attachments'] = $this->attachmentsSchema($template->attachmentRequirements);
+
+            if ($this->hasRequiredAttachmentRequirements($template->attachmentRequirements)) {
+                $required[] = 'attachments';
+            }
+        }
+
         $schema = [
             '$schema' => 'https://json-schema.org/draft/2020-12/schema',
             '$id' => 'https://pdfuakit.com/schemas/pdf-ua-client-template-data-v1.json',
@@ -71,6 +79,61 @@ final readonly class DataSchemaCompiler
         }
 
         return $schema;
+    }
+
+    /**
+     * @param  list<TemplateAttachmentRequirement>  $requirements
+     * @return array<string, mixed>
+     */
+    private function attachmentsSchema(array $requirements): array
+    {
+        $properties = [];
+        $required = [];
+
+        foreach ($requirements as $requirement) {
+            $properties[$requirement->id] = [
+                'type' => 'object',
+                'required' => ['contentBase64'],
+                'properties' => [
+                    'contentBase64' => [
+                        'type' => 'string',
+                        'minLength' => 1,
+                        'contentEncoding' => 'base64',
+                        'title' => $requirement->name,
+                        'description' => 'Base64 encoded attachment content.',
+                    ],
+                ],
+                'additionalProperties' => false,
+            ];
+
+            if ($requirement->required) {
+                $required[] = $requirement->id;
+            }
+        }
+
+        $schema = [
+            'type' => 'object',
+            'properties' => $properties,
+            'additionalProperties' => false,
+        ];
+
+        if ($required !== []) {
+            $schema['required'] = $required;
+        }
+
+        return $schema;
+    }
+
+    /** @param list<TemplateAttachmentRequirement> $requirements */
+    private function hasRequiredAttachmentRequirements(array $requirements): bool
+    {
+        foreach ($requirements as $requirement) {
+            if ($requirement->required) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /** @return array<string, mixed> */

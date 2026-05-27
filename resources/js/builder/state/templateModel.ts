@@ -9,6 +9,7 @@ import type {
   PageNumberPosition,
   Template,
   TemplateAttachment,
+  TemplateAttachmentRequirement,
   TemplateDataLayers,
 } from "../types";
 import { blockMeta } from "../blocks/meta";
@@ -57,6 +58,7 @@ export function fromTemplate(template: Template, data: DataMap = {}): EditorMode
     rows: rowsFromTemplate(template.rows ?? []),
     footerRows: rowsFromTemplate(footerRows),
     attachments: normalizeAttachments(template.attachments),
+    attachmentRequirements: normalizeAttachmentRequirements(template.attachmentRequirements),
   };
 }
 
@@ -69,6 +71,9 @@ export function toTemplate(model: EditorModel): Template {
     rows: rowsToTemplate(model.rows),
     ...(Object.keys(data).length > 0 ? { data } : {}),
     ...(model.attachments.length > 0 ? { attachments: model.attachments } : {}),
+    ...(model.attachmentRequirements.length > 0
+      ? { attachmentRequirements: model.attachmentRequirements }
+      : {}),
   };
 }
 
@@ -94,6 +99,34 @@ function normalizeAttachments(attachments: TemplateAttachment[] | undefined): Te
       ...(typeof attachment.relationship === "string"
         ? { relationship: attachment.relationship }
         : {}),
+    }));
+}
+
+function normalizeAttachmentRequirements(
+  requirements: TemplateAttachmentRequirement[] | undefined,
+): TemplateAttachmentRequirement[] {
+  if (!Array.isArray(requirements)) {
+    return [];
+  }
+
+  return requirements
+    .filter(
+      (requirement) =>
+        typeof requirement?.id === "string" &&
+        typeof requirement.name === "string" &&
+        typeof requirement.mimeType === "string",
+    )
+    .map((requirement) => ({
+      id: requirement.id,
+      name: requirement.name,
+      mimeType: requirement.mimeType,
+      ...(typeof requirement.description === "string"
+        ? { description: requirement.description }
+        : {}),
+      ...(typeof requirement.relationship === "string"
+        ? { relationship: requirement.relationship }
+        : {}),
+      ...(typeof requirement.required === "boolean" ? { required: requirement.required } : {}),
     }));
 }
 

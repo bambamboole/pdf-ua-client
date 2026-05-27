@@ -18,12 +18,21 @@ export interface TemplateAttachment {
   description?: string;
   relationship?: string;
 }
+export interface TemplateAttachmentRequirement {
+  id: string;
+  name: string;
+  mimeType: string;
+  description?: string;
+  relationship?: string;
+  required?: boolean;
+}
 export interface Template {
   version: number;
   config: Json;
   rows: TemplateRow[];
   data?: Partial<TemplateDataLayers>;
   attachments?: TemplateAttachment[];
+  attachmentRequirements?: TemplateAttachmentRequirement[];
 }
 
 export interface EditorBlock {
@@ -44,6 +53,7 @@ export interface EditorModel {
   footerRows: EditorRow[];
   data: TemplateDataLayers;
   attachments: TemplateAttachment[];
+  attachmentRequirements: TemplateAttachmentRequirement[];
 }
 
 export type DataMap = Record<string, DataValue>;

@@ -174,6 +174,48 @@ it('forwards template attachments when converting to pdf', function (): void {
     });
 });
 
+it('forwards runtime attachments required by the template when converting to pdf', function (): void {
+    Http::fake([
+        'http://pdf-ua-api:8888/convert' => Http::response('%PDF-FAKE', 200, ['Content-Type' => 'application/pdf']),
+    ]);
+    config()->set('pdf-ua-client.base_url', 'http://pdf-ua-api:8888');
+
+    postJson('/pdf', [
+        'template' => [
+            'version' => 1,
+            'config' => ['page' => ['format' => 'A4']],
+            'rows' => [
+                ['blocks' => [
+                    ['type' => 'heading', 'id' => 'title', 'config' => ['level' => 1]],
+                ]],
+            ],
+            'attachmentRequirements' => [[
+                'id' => 'factur-x',
+                'name' => 'factur-x.xml',
+                'mimeType' => 'application/xml',
+                'description' => 'Factur-X invoice data',
+                'relationship' => 'Alternative',
+            ]],
+        ],
+        'data' => [
+            'title' => ['text' => 'Invoice 2026-001'],
+            'attachments' => [
+                'factur-x' => ['contentBase64' => 'PEludm9pY2UvPg=='],
+            ],
+        ],
+    ])->assertOk();
+
+    Http::assertSent(function ($request): bool {
+        $attachment = $request->data()['attachments'][0] ?? [];
+
+        return $attachment['name'] === 'factur-x.xml'
+            && $attachment['content'] === 'PEludm9pY2UvPg=='
+            && $attachment['mimeType'] === 'application/xml'
+            && $attachment['description'] === 'Factur-X invoice data'
+            && $attachment['relationship'] === 'Alternative';
+    });
+});
+
 it('returns 502 when pdf conversion fails upstream', function (): void {
     Http::fake([
         'http://pdf-ua-api:8888/convert' => Http::response('upstream unavailable', 503),

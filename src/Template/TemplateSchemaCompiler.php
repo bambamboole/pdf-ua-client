@@ -71,6 +71,7 @@ final readonly class TemplateSchemaCompiler
 
         $defs->ref('block', ['oneOf' => $blockRefs]);
         $defs->ref('attachment', $this->attachmentSchema());
+        $defs->ref('attachmentRequirement', $this->attachmentRequirementSchema());
         $this->registerPageFooterConfig($defs);
 
         $templateConfigRef = $defs->ref('templateConfig', $this->reflector->reflectWithRefs(TemplateConfig::class, $defs));
@@ -101,6 +102,10 @@ final readonly class TemplateSchemaCompiler
                 'attachments' => [
                     'type' => 'array',
                     'items' => ['$ref' => '#/$defs/attachment'],
+                ],
+                'attachmentRequirements' => [
+                    'type' => 'array',
+                    'items' => ['$ref' => '#/$defs/attachmentRequirement'],
                 ],
             ],
             '$defs' => $allDefs === [] ? new stdClass : $allDefs,
@@ -145,6 +150,53 @@ final readonly class TemplateSchemaCompiler
                     'enum' => array_map(static fn (AttachmentRelationship $relationship): string => $relationship->value, AttachmentRelationship::cases()),
                     'title' => 'Relationship',
                     'description' => 'PDF associated-file relationship.',
+                ],
+            ],
+            'additionalProperties' => false,
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function attachmentRequirementSchema(): array
+    {
+        return [
+            'type' => 'object',
+            'required' => ['id', 'name', 'mimeType'],
+            'properties' => [
+                'id' => [
+                    'type' => 'string',
+                    'minLength' => 1,
+                    'title' => 'Attachment id',
+                    'description' => 'Runtime data key used to provide this attachment.',
+                ],
+                'name' => [
+                    'type' => 'string',
+                    'minLength' => 1,
+                    'title' => 'File name',
+                    'description' => 'File name shown in the PDF attachment list.',
+                ],
+                'mimeType' => [
+                    'type' => 'string',
+                    'minLength' => 1,
+                    'title' => 'MIME type',
+                    'description' => 'Attachment media type, for example application/xml.',
+                ],
+                'description' => [
+                    'type' => 'string',
+                    'title' => 'Description',
+                    'description' => 'Optional human-readable attachment description.',
+                ],
+                'relationship' => [
+                    'type' => 'string',
+                    'enum' => array_map(static fn (AttachmentRelationship $relationship): string => $relationship->value, AttachmentRelationship::cases()),
+                    'title' => 'Relationship',
+                    'description' => 'PDF associated-file relationship.',
+                ],
+                'required' => [
+                    'type' => 'boolean',
+                    'title' => 'Required',
+                    'description' => 'Require this attachment in the runtime data contract.',
+                    'default' => true,
                 ],
             ],
             'additionalProperties' => false,

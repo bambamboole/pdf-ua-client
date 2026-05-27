@@ -90,6 +90,30 @@ it('hydrates root-level PDF attachments', function () {
     expect($template->attachments[0]->relationship)->toBe(AttachmentRelationship::Alternative);
 });
 
+it('hydrates runtime PDF attachment requirements', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['format' => 'A4']],
+        'rows' => [],
+        'attachmentRequirements' => [[
+            'id' => 'factur-x',
+            'name' => 'factur-x.xml',
+            'mimeType' => 'application/xml',
+            'description' => 'Factur-X invoice data',
+            'relationship' => 'Alternative',
+            'required' => false,
+        ]],
+    ]);
+
+    expect($template->attachmentRequirements)->toHaveCount(1);
+    expect($template->attachmentRequirements[0]->id)->toBe('factur-x');
+    expect($template->attachmentRequirements[0]->name)->toBe('factur-x.xml');
+    expect($template->attachmentRequirements[0]->mimeType)->toBe('application/xml');
+    expect($template->attachmentRequirements[0]->description)->toBe('Factur-X invoice data');
+    expect($template->attachmentRequirements[0]->relationship)->toBe(AttachmentRelationship::Alternative);
+    expect($template->attachmentRequirements[0]->required)->toBeFalse();
+});
+
 it('builds page number settings with a backed enum position', function () {
     $template = $this->factory->fromArray([
         'version' => 1,

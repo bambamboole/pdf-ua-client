@@ -57,14 +57,16 @@ it('models a complete realistic invoice document structure', function (): void {
         ['key' => 'registration', 'label' => 'Registry'],
         ['key' => 'taxNumber', 'label' => 'Tax no.'],
     );
-    expect($document['data']['example'])->toHaveKeys(['invoice-meta', 'buyer', 'lineItems', 'vat-breakdown', 'totals', 'payment']);
+    expect($document['data']['example'])->toHaveKeys(['attachments', 'invoice-meta', 'buyer', 'lineItems', 'vat-breakdown', 'totals', 'payment']);
     expect($document['data']['defaults'])->toHaveKeys(['notice', 'payment']);
     expect($document['data']['constants'])->toHaveKeys(['logo', 'seller', 'invoice-meta', 'footer-legal', 'footer-meta']);
-    expect($document['attachments'][0])->toMatchArray([
+    expect($document['attachmentRequirements'][0])->toMatchArray([
+        'id' => 'factur-x',
         'name' => 'factur-x.xml',
         'mimeType' => 'application/xml',
         'description' => 'Factur-X invoice data',
         'relationship' => 'Alternative',
+        'required' => true,
     ]);
 });
 
@@ -75,6 +77,7 @@ it('provides realistic runtime example data without locked constants', function 
     $data = $fixture->data;
 
     expect($data)->not->toHaveKeys(['logo', 'seller', 'footer-legal', 'footer-meta']);
+    expect($data['attachments'])->toHaveKey('factur-x');
     expect($data['buyer'])->toMatchArray([
         'name' => 'Musterkunde AG',
         'reference' => '04011000-12345-67',

@@ -49,6 +49,25 @@ it('emits a PDF attachment schema', function () {
     ]);
 });
 
+it('emits a runtime PDF attachment requirement schema', function () {
+    $schema = $this->compiler->compile($this->registry);
+
+    expect($schema['properties']['attachmentRequirements'])->toBe([
+        'type' => 'array',
+        'items' => ['$ref' => '#/$defs/attachmentRequirement'],
+    ]);
+    expect($schema['$defs']['attachmentRequirement']['required'])->toBe(['id', 'name', 'mimeType']);
+    expect($schema['$defs']['attachmentRequirement']['properties'])->toHaveKeys([
+        'id',
+        'name',
+        'mimeType',
+        'description',
+        'relationship',
+        'required',
+    ]);
+    expect($schema['$defs']['attachmentRequirement']['properties']['required']['default'])->toBeTrue();
+});
+
 it('declares a shared blockBase $def with the common envelope fields', function () {
     $schema = $this->compiler->compile($this->registry);
 

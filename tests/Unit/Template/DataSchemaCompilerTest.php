@@ -98,6 +98,65 @@ it('includes footer blocks in the data schema', function (): void {
     expect($schema['required'])->toBe(['body_heading', 'footer_heading']);
 });
 
+it('includes required runtime PDF attachments in the data schema', function (): void {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => [],
+        'rows' => [['blocks' => [['type' => 'divider', 'id' => 'rule']]]],
+        'attachmentRequirements' => [[
+            'id' => 'factur-x',
+            'name' => 'factur-x.xml',
+            'mimeType' => 'application/xml',
+            'relationship' => 'Alternative',
+        ]],
+    ]);
+
+    $schema = $this->compiler->compile($template);
+
+    expect($schema['properties']['attachments'])->toMatchArray([
+        'type' => 'object',
+        'properties' => [
+            'factur-x' => [
+                'type' => 'object',
+                'required' => ['contentBase64'],
+                'properties' => [
+                    'contentBase64' => [
+                        'type' => 'string',
+                        'minLength' => 1,
+                        'contentEncoding' => 'base64',
+                        'title' => 'factur-x.xml',
+                        'description' => 'Base64 encoded attachment content.',
+                    ],
+                ],
+                'additionalProperties' => false,
+            ],
+        ],
+        'required' => ['factur-x'],
+        'additionalProperties' => false,
+    ]);
+    expect($schema['required'])->toBe(['attachments']);
+});
+
+it('includes optional runtime PDF attachments without requiring them', function (): void {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => [],
+        'rows' => [['blocks' => [['type' => 'divider', 'id' => 'rule']]]],
+        'attachmentRequirements' => [[
+            'id' => 'supporting-data',
+            'name' => 'supporting-data.json',
+            'mimeType' => 'application/json',
+            'required' => false,
+        ]],
+    ]);
+
+    $schema = $this->compiler->compile($template);
+
+    expect($schema['properties']['attachments']['properties'])->toHaveKey('supporting-data');
+    expect($schema['properties']['attachments'])->not->toHaveKey('required');
+    expect($schema)->not->toHaveKey('required');
+});
+
 it('annotates block schemas with fallback defaults and omits locked constants from the runtime contract', function (): void {
     $template = $this->factory->fromArray([
         'version' => 1,

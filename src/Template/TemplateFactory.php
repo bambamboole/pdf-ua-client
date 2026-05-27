@@ -48,6 +48,7 @@ final readonly class TemplateFactory
             rows: $this->buildRows($data['rows']),
             data: $this->buildTemplateData((array) ($data['data'] ?? [])),
             attachments: $this->buildAttachments((array) ($data['attachments'] ?? [])),
+            attachmentRequirements: $this->buildAttachmentRequirements((array) ($data['attachmentRequirements'] ?? [])),
         );
     }
 
@@ -68,6 +69,27 @@ final readonly class TemplateFactory
                     : null,
             ),
             $attachments,
+        );
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $requirements
+     * @return list<TemplateAttachmentRequirement>
+     */
+    private function buildAttachmentRequirements(array $requirements): array
+    {
+        return array_map(
+            fn (array $requirement): TemplateAttachmentRequirement => new TemplateAttachmentRequirement(
+                id: (string) $requirement['id'],
+                name: (string) $requirement['name'],
+                mimeType: (string) $requirement['mimeType'],
+                description: isset($requirement['description']) ? (string) $requirement['description'] : null,
+                relationship: isset($requirement['relationship'])
+                    ? AttachmentRelationship::from((string) $requirement['relationship'])
+                    : null,
+                required: isset($requirement['required']) ? (bool) $requirement['required'] : true,
+            ),
+            $requirements,
         );
     }
 

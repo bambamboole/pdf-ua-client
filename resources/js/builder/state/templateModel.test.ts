@@ -101,6 +101,30 @@ describe("fromTemplate", () => {
       },
     ]);
   });
+  it("loads template attachment requirements into editor state", () => {
+    const m = fromTemplate({
+      ...template,
+      attachmentRequirements: [
+        {
+          id: "factur-x",
+          name: "factur-x.xml",
+          mimeType: "application/xml",
+          relationship: "Alternative",
+          required: true,
+        },
+      ],
+    });
+
+    expect(m.attachmentRequirements).toEqual([
+      {
+        id: "factur-x",
+        name: "factur-x.xml",
+        mimeType: "application/xml",
+        relationship: "Alternative",
+        required: true,
+      },
+    ]);
+  });
 });
 
 describe("toTemplate", () => {
@@ -132,6 +156,32 @@ describe("toTemplate", () => {
         mimeType: "application/xml",
         description: "Factur-X invoice data",
         relationship: "Alternative",
+      },
+    ]);
+  });
+  it("serializes template attachment requirements", () => {
+    const model = fromTemplate({
+      ...template,
+      attachmentRequirements: [
+        {
+          id: "factur-x",
+          name: "factur-x.xml",
+          mimeType: "application/xml",
+          description: "Factur-X invoice data",
+          relationship: "Alternative",
+          required: false,
+        },
+      ],
+    });
+
+    expect(toTemplate(model).attachmentRequirements).toEqual([
+      {
+        id: "factur-x",
+        name: "factur-x.xml",
+        mimeType: "application/xml",
+        description: "Factur-X invoice data",
+        relationship: "Alternative",
+        required: false,
       },
     ]);
   });

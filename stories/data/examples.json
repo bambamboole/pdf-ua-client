@@ -672,17 +672,23 @@
                     ]
                 }
             ],
-            "attachments": [
+            "attachmentRequirements": [
                 {
+                    "id": "factur-x",
                     "name": "factur-x.xml",
-                    "contentBase64": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48cnNtOkNyb3NzSW5kdXN0cnlJbnZvaWNlIHhtbG5zOnJzbT0idXJuOnVuOnVuZWNlOnVuY2VmYWN0OmRhdGE6c3RhbmRhcmQ6Q3Jvc3NJbmR1c3RyeUludm9pY2U6MTAwIj48cnNtOkV4Y2hhbmdlZERvY3VtZW50PjxyYW06SUQgeG1sbnM6cmFtPSJ1cm46dW46dW5lY2U6dW5jZWZhY3Q6ZGF0YTpzdGFuZGFyZDpSZXVzYWJsZUFnZ3JlZ2F0ZUJ1c2luZXNzSW5mb3JtYXRpb25FbnRpdHk6MTAwIj5SRS0yMDI2LTAwMTIzNDwvcmFtOklEPjwvcnNtOkV4Y2hhbmdlZERvY3VtZW50PjwvcnNtOkNyb3NzSW5kdXN0cnlJbnZvaWNlPg==",
                     "mimeType": "application/xml",
                     "description": "Factur-X invoice data",
-                    "relationship": "Alternative"
+                    "relationship": "Alternative",
+                    "required": true
                 }
             ],
             "data": {
                 "example": {
+                    "attachments": {
+                        "factur-x": {
+                            "contentBase64": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48cnNtOkNyb3NzSW5kdXN0cnlJbnZvaWNlIHhtbG5zOnJzbT0idXJuOnVuOnVuZWNlOnVuY2VmYWN0OmRhdGE6c3RhbmRhcmQ6Q3Jvc3NJbmR1c3RyeUludm9pY2U6MTAwIj48cnNtOkV4Y2hhbmdlZERvY3VtZW50PjxyYW06SUQgeG1sbnM6cmFtPSJ1cm46dW46dW5lY2U6dW5jZWZhY3Q6ZGF0YTpzdGFuZGFyZDpSZXVzYWJsZUFnZ3JlZ2F0ZUJ1c2luZXNzSW5mb3JtYXRpb25FbnRpdHk6MTAwIj5SRS0yMDI2LTAwMTIzNDwvcmFtOklEPjwvcnNtOkV4Y2hhbmdlZERvY3VtZW50PjwvcnNtOkNyb3NzSW5kdXN0cnlJbnZvaWNlPg=="
+                        }
+                    },
                     "invoice-meta": {
                         "invoiceNumber": "RE-2026-001234",
                         "issueDate": "2026-02-17",
@@ -778,6 +784,11 @@
             }
         },
         "data": {
+            "attachments": {
+                "factur-x": {
+                    "contentBase64": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48cnNtOkNyb3NzSW5kdXN0cnlJbnZvaWNlIHhtbG5zOnJzbT0idXJuOnVuOnVuZWNlOnVuY2VmYWN0OmRhdGE6c3RhbmRhcmQ6Q3Jvc3NJbmR1c3RyeUludm9pY2U6MTAwIj48cnNtOkV4Y2hhbmdlZERvY3VtZW50PjxyYW06SUQgeG1sbnM6cmFtPSJ1cm46dW46dW5lY2U6dW5jZWZhY3Q6ZGF0YTpzdGFuZGFyZDpSZXVzYWJsZUFnZ3JlZ2F0ZUJ1c2luZXNzSW5mb3JtYXRpb25FbnRpdHk6MTAwIj5SRS0yMDI2LTAwMTIzNDwvcmFtOklEPjwvcnNtOkV4Y2hhbmdlZERvY3VtZW50PjwvcnNtOkNyb3NzSW5kdXN0cnlJbnZvaWNlPg=="
+                }
+            },
             "invoice-meta": {
                 "invoiceNumber": "RE-2026-001234",
                 "issueDate": "2026-02-17",

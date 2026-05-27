@@ -79,6 +79,52 @@ describe("fromTemplate", () => {
     expect(m.data.constants.title).toEqual({ locked: true });
     expect("data" in m.rows[0].blocks[0]).toBe(false);
   });
+  it("loads template attachments into editor state", () => {
+    const m = fromTemplate({
+      ...template,
+      attachments: [
+        {
+          name: "factur-x.xml",
+          contentBase64: "PEludm9pY2UvPg==",
+          mimeType: "application/xml",
+          relationship: "Alternative",
+        },
+      ],
+    });
+
+    expect(m.attachments).toEqual([
+      {
+        name: "factur-x.xml",
+        contentBase64: "PEludm9pY2UvPg==",
+        mimeType: "application/xml",
+        relationship: "Alternative",
+      },
+    ]);
+  });
+  it("loads template attachment requirements into editor state", () => {
+    const m = fromTemplate({
+      ...template,
+      attachmentRequirements: [
+        {
+          id: "factur-x",
+          name: "factur-x.xml",
+          mimeType: "application/xml",
+          relationship: "Alternative",
+          required: true,
+        },
+      ],
+    });
+
+    expect(m.attachmentRequirements).toEqual([
+      {
+        id: "factur-x",
+        name: "factur-x.xml",
+        mimeType: "application/xml",
+        relationship: "Alternative",
+        required: true,
+      },
+    ]);
+  });
 });
 
 describe("toTemplate", () => {
@@ -88,6 +134,56 @@ describe("toTemplate", () => {
     expect(out.rows[1].blocks[0].config).toEqual({ width: "50%" });
     expect((out.rows[1] as unknown as Record<string, unknown>).columnWidths).toBeUndefined();
     expect(out.data?.example).toEqual(data);
+  });
+  it("serializes template attachments", () => {
+    const model = fromTemplate({
+      ...template,
+      attachments: [
+        {
+          name: "factur-x.xml",
+          contentBase64: "PEludm9pY2UvPg==",
+          mimeType: "application/xml",
+          description: "Factur-X invoice data",
+          relationship: "Alternative",
+        },
+      ],
+    });
+
+    expect(toTemplate(model).attachments).toEqual([
+      {
+        name: "factur-x.xml",
+        contentBase64: "PEludm9pY2UvPg==",
+        mimeType: "application/xml",
+        description: "Factur-X invoice data",
+        relationship: "Alternative",
+      },
+    ]);
+  });
+  it("serializes template attachment requirements", () => {
+    const model = fromTemplate({
+      ...template,
+      attachmentRequirements: [
+        {
+          id: "factur-x",
+          name: "factur-x.xml",
+          mimeType: "application/xml",
+          description: "Factur-X invoice data",
+          relationship: "Alternative",
+          required: false,
+        },
+      ],
+    });
+
+    expect(toTemplate(model).attachmentRequirements).toEqual([
+      {
+        id: "factur-x",
+        name: "factur-x.xml",
+        mimeType: "application/xml",
+        description: "Factur-X invoice data",
+        relationship: "Alternative",
+        required: false,
+      },
+    ]);
   });
   it("serializes editable footer rows back into page footer config", () => {
     const m = fromTemplate({

@@ -10,6 +10,7 @@ use Bambamboole\PdfUaClient\Config\PageNumbersConfig;
 use Bambamboole\PdfUaClient\Config\SpacingConfig;
 use Bambamboole\PdfUaClient\Config\TemplateConfig;
 use Bambamboole\PdfUaClient\Config\TypographyConfig;
+use Bambamboole\PdfUaClient\Enums\AttachmentRelationship;
 use Bambamboole\PdfUaClient\Enums\PageFormat;
 use Bambamboole\PdfUaClient\Exceptions\TemplateValidationException;
 use Bambamboole\PdfUaClient\Support\SchemaAwareNormalizer;
@@ -46,6 +47,49 @@ final readonly class TemplateFactory
             config: $this->buildTemplateConfig((array) ($data['config'] ?? [])),
             rows: $this->buildRows($data['rows']),
             data: $this->buildTemplateData((array) ($data['data'] ?? [])),
+            attachments: $this->buildAttachments((array) ($data['attachments'] ?? [])),
+            attachmentRequirements: $this->buildAttachmentRequirements((array) ($data['attachmentRequirements'] ?? [])),
+        );
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $attachments
+     * @return list<TemplateAttachment>
+     */
+    private function buildAttachments(array $attachments): array
+    {
+        return array_map(
+            fn (array $attachment): TemplateAttachment => new TemplateAttachment(
+                name: (string) $attachment['name'],
+                contentBase64: (string) $attachment['contentBase64'],
+                mimeType: (string) $attachment['mimeType'],
+                description: isset($attachment['description']) ? (string) $attachment['description'] : null,
+                relationship: isset($attachment['relationship'])
+                    ? AttachmentRelationship::from((string) $attachment['relationship'])
+                    : null,
+            ),
+            $attachments,
+        );
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $requirements
+     * @return list<TemplateAttachmentRequirement>
+     */
+    private function buildAttachmentRequirements(array $requirements): array
+    {
+        return array_map(
+            fn (array $requirement): TemplateAttachmentRequirement => new TemplateAttachmentRequirement(
+                id: (string) $requirement['id'],
+                name: (string) $requirement['name'],
+                mimeType: (string) $requirement['mimeType'],
+                description: isset($requirement['description']) ? (string) $requirement['description'] : null,
+                relationship: isset($requirement['relationship'])
+                    ? AttachmentRelationship::from((string) $requirement['relationship'])
+                    : null,
+                required: isset($requirement['required']) ? (bool) $requirement['required'] : true,
+            ),
+            $requirements,
         );
     }
 

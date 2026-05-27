@@ -8,6 +8,8 @@ import type {
   Json,
   PageNumberPosition,
   Template,
+  TemplateAttachment,
+  TemplateAttachmentRequirement,
   TemplateDataLayers,
 } from "../types";
 import { blockMeta } from "../blocks/meta";
@@ -55,6 +57,8 @@ export function fromTemplate(template: Template, data: DataMap = {}): EditorMode
     data: layers,
     rows: rowsFromTemplate(template.rows ?? []),
     footerRows: rowsFromTemplate(footerRows),
+    attachments: normalizeAttachments(template.attachments),
+    attachmentRequirements: normalizeAttachmentRequirements(template.attachmentRequirements),
   };
 }
 
@@ -66,7 +70,64 @@ export function toTemplate(model: EditorModel): Template {
     config: configWithFooterRows(model.config ?? {}, rowsToTemplate(model.footerRows)),
     rows: rowsToTemplate(model.rows),
     ...(Object.keys(data).length > 0 ? { data } : {}),
+    ...(model.attachments.length > 0 ? { attachments: model.attachments } : {}),
+    ...(model.attachmentRequirements.length > 0
+      ? { attachmentRequirements: model.attachmentRequirements }
+      : {}),
   };
+}
+
+function normalizeAttachments(attachments: TemplateAttachment[] | undefined): TemplateAttachment[] {
+  if (!Array.isArray(attachments)) {
+    return [];
+  }
+
+  return attachments
+    .filter(
+      (attachment) =>
+        typeof attachment?.name === "string" &&
+        typeof attachment.contentBase64 === "string" &&
+        typeof attachment.mimeType === "string",
+    )
+    .map((attachment) => ({
+      name: attachment.name,
+      contentBase64: attachment.contentBase64,
+      mimeType: attachment.mimeType,
+      ...(typeof attachment.description === "string"
+        ? { description: attachment.description }
+        : {}),
+      ...(typeof attachment.relationship === "string"
+        ? { relationship: attachment.relationship }
+        : {}),
+    }));
+}
+
+function normalizeAttachmentRequirements(
+  requirements: TemplateAttachmentRequirement[] | undefined,
+): TemplateAttachmentRequirement[] {
+  if (!Array.isArray(requirements)) {
+    return [];
+  }
+
+  return requirements
+    .filter(
+      (requirement) =>
+        typeof requirement?.id === "string" &&
+        typeof requirement.name === "string" &&
+        typeof requirement.mimeType === "string",
+    )
+    .map((requirement) => ({
+      id: requirement.id,
+      name: requirement.name,
+      mimeType: requirement.mimeType,
+      ...(typeof requirement.description === "string"
+        ? { description: requirement.description }
+        : {}),
+      ...(typeof requirement.relationship === "string"
+        ? { relationship: requirement.relationship }
+        : {}),
+      ...(typeof requirement.required === "boolean" ? { required: requirement.required } : {}),
+    }));
 }
 
 export function toDataMap(model: EditorModel): DataMap {

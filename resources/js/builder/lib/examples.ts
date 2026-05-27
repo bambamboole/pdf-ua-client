@@ -32,6 +32,9 @@ export function loadExample(entry: {
     config: (entry.template.config ?? {}) as Json,
     rows: (entry.template.rows ?? []) as Template["rows"],
     data: entry.template.data as Template["data"],
+    attachments: entry.template.attachments as Template["attachments"],
+    attachmentRequirements: entry.template
+      .attachmentRequirements as Template["attachmentRequirements"],
   } as Template;
 
   return fromTemplate(template, (entry.data ?? {}) as DataMap);

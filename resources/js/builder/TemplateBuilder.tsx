@@ -72,6 +72,44 @@ function errorMessage(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause);
 }
 
+interface DebouncedTask<T> {
+  run: () => Promise<T>;
+  onResult: (value: T) => void;
+  onError: (message: string) => void;
+  onStart?: () => void;
+  onSettle?: () => void;
+}
+
+function runDebounced<T>(task: DebouncedTask<T>): () => void {
+  let cancelled = false;
+  task.onStart?.();
+
+  const handle = setTimeout(() => {
+    task
+      .run()
+      .then((value) => {
+        if (!cancelled) {
+          task.onResult(value);
+        }
+      })
+      .catch((cause: unknown) => {
+        if (!cancelled) {
+          task.onError(errorMessage(cause));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          task.onSettle?.();
+        }
+      });
+  }, 300);
+
+  return () => {
+    cancelled = true;
+    clearTimeout(handle);
+  };
+}
+
 function rowIndexById(model: EditorModel, rowSortableId: string, area: EditorArea): number {
   const uid = rowSortableId.replace(/^row-/, "");
   const rows = area === "footer" ? model.footerRows : model.rows;
@@ -103,9 +141,6 @@ export default function TemplateBuilder({
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pdfDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const schemaDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pdfUrlRef = useRef<string | null>(null);
   const renderTemplateRef = useLatest(renderTemplate);
   const renderPdfRef = useLatest(renderPdf);
@@ -128,74 +163,6 @@ export default function TemplateBuilder({
     onChangeRef.current?.(template);
   }, [template, onChangeRef]);
 
-  useEffect(() => {
-    if (tab !== "html") {
-      return;
-    }
-
-    let cancelled = false;
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-
-    debounceRef.current = setTimeout(() => {
-      renderTemplateRef
-        .current(template, data)
-        .then((result) => {
-          if (!cancelled) {
-            setHtml(result);
-            setError(null);
-          }
-        })
-        .catch((cause: unknown) => {
-          if (!cancelled) {
-            setError(errorMessage(cause));
-          }
-        });
-    }, 300);
-
-    return () => {
-      cancelled = true;
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
-    };
-  }, [tab, template, data, renderTemplateRef]);
-
-  useEffect(() => {
-    if (tab !== "schema") {
-      return;
-    }
-
-    let cancelled = false;
-    if (schemaDebounceRef.current) {
-      clearTimeout(schemaDebounceRef.current);
-    }
-
-    schemaDebounceRef.current = setTimeout(() => {
-      fetchSchemaRef
-        .current(template)
-        .then((result) => {
-          if (!cancelled) {
-            setDataSchema(result);
-            setSchemaError(null);
-          }
-        })
-        .catch((cause: unknown) => {
-          if (!cancelled) {
-            setSchemaError(errorMessage(cause));
-          }
-        });
-    }, 300);
-
-    return () => {
-      cancelled = true;
-      if (schemaDebounceRef.current) {
-        clearTimeout(schemaDebounceRef.current);
-      }
-    };
-  }, [tab, template, fetchSchemaRef]);
-
   useEffect(
     () => () => {
       if (pdfUrlRef.current) {
@@ -206,47 +173,53 @@ export default function TemplateBuilder({
   );
 
   useEffect(() => {
+    if (tab !== "html") {
+      return;
+    }
+
+    return runDebounced({
+      run: () => renderTemplateRef.current(template, data),
+      onResult: (result) => {
+        setHtml(result);
+        setError(null);
+      },
+      onError: setError,
+    });
+  }, [tab, template, data, renderTemplateRef]);
+
+  useEffect(() => {
+    if (tab !== "schema") {
+      return;
+    }
+
+    return runDebounced({
+      run: () => fetchSchemaRef.current(template),
+      onResult: (result) => {
+        setDataSchema(result);
+        setSchemaError(null);
+      },
+      onError: setSchemaError,
+    });
+  }, [tab, template, fetchSchemaRef]);
+
+  useEffect(() => {
     if (tab !== "pdf") {
       return;
     }
 
-    let cancelled = false;
-    setPdfLoading(true);
-    setPdfError(null);
-
-    if (pdfDebounceRef.current) {
-      clearTimeout(pdfDebounceRef.current);
-    }
-
-    pdfDebounceRef.current = setTimeout(() => {
-      renderPdfRef
-        .current(template, data)
-        .then((blob) => {
-          if (cancelled) {
-            return;
-          }
-
-          replacePdfUrl(blob);
-          setPdfError(null);
-        })
-        .catch((cause: unknown) => {
-          if (!cancelled) {
-            setPdfError(errorMessage(cause));
-          }
-        })
-        .finally(() => {
-          if (!cancelled) {
-            setPdfLoading(false);
-          }
-        });
-    }, 300);
-
-    return () => {
-      cancelled = true;
-      if (pdfDebounceRef.current) {
-        clearTimeout(pdfDebounceRef.current);
-      }
-    };
+    return runDebounced({
+      run: () => renderPdfRef.current(template, data),
+      onStart: () => {
+        setPdfLoading(true);
+        setPdfError(null);
+      },
+      onResult: (blob) => {
+        replacePdfUrl(blob);
+        setPdfError(null);
+      },
+      onError: setPdfError,
+      onSettle: () => setPdfLoading(false),
+    });
   }, [tab, template, data, renderPdfRef, replacePdfUrl]);
 
   const selectBlock = useCallback((uid: string) => setSelectedBlockUid(uid), []);

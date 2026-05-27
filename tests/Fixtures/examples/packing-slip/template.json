@@ -204,12 +204,6 @@
   ],
   "data": {
     "example": {
-      "warehouse": {
-        "name": "PDF UA Kit Fulfillment Center",
-        "address": "1250 Harbor Way, Oakland, CA 94607",
-        "dock": "Dock 4B",
-        "contact": "fulfillment@example.test"
-      },
       "order-meta": {
         "orderNumber": "SO-2026-10482",
         "packingSlipNumber": "PS-2026-00418",
@@ -222,9 +216,6 @@
         "address": "420 Industrial Parkway",
         "cityStatePostal": "Austin, TX 78744",
         "country": "US"
-      },
-      "heading": {
-        "text": "Packing Slip"
       },
       "items": [
         {

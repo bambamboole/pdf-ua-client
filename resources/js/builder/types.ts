@@ -24,7 +24,6 @@ export interface EditorBlock {
   id: string;
   type: string;
   config: Json;
-  data: DataValue;
 }
 export interface EditorRow {
   uid: string;

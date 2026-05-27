@@ -139,7 +139,7 @@ function BlockBox({
           </button>
         </span>
       </div>
-      <BlockDataSummary block={block} />
+      <BlockDataSummary block={block} data={data} />
       <details
         data-inline-block-details
         open={settingsOpen}

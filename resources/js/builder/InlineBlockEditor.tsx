@@ -1,13 +1,12 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import type { DataValue, EditorBlock, Json, JsonSchema, TemplateDataLayers } from "./types";
+import { blockDefinition } from "./blocks/registry";
 import {
   getBlockConfigGroupSchema,
   getBlockSubschemas,
   getNestedBlockConfigSchema,
 } from "./lib/schema";
 import BlockDataEditor from "./BlockDataEditor";
-import KeyValueConfigFields from "./KeyValueConfigFields";
-import TableConfigColumns from "./TableConfigColumns";
 
 const SettingsForm = lazy(() => import("./SettingsForm"));
 type InlineEditorTab = "data" | "config" | "typography" | "spacing";
@@ -50,8 +49,9 @@ export default function InlineBlockEditor({
     !Array.isArray(dataProperties) &&
     Object.keys(dataProperties).length > 0;
   const configSchema = getBlockConfigGroupSchema(schema, block.type);
+  const definition = blockDefinition(block.type);
   const hasGenericConfig = hasSchemaProperties(configSchema);
-  const hasConfigTab = hasGenericConfig || block.type === "key-value" || block.type === "table";
+  const hasConfigTab = hasGenericConfig || Boolean(definition.ConfigEditor);
   const typographySchema = getNestedBlockConfigSchema(schema, block.type, "typography");
   const spacingSchema = getNestedBlockConfigSchema(schema, block.type, "spacing");
   const [tab, setTab] = useState<InlineEditorTab>(() => (hasDataProperties ? "data" : "config"));
@@ -99,41 +99,15 @@ export default function InlineBlockEditor({
           onUpdateDataField={onUpdateDataField}
           onUpdateBlockData={onUpdateBlockData}
         />
-      ) : tab === "config" && block.type === "key-value" ? (
-        <div className="space-y-3">
-          <BlockIdControl block={block} onUpdateBlockId={onUpdateBlockId} />
-          <KeyValueConfigFields
-            config={block.config ?? {}}
-            onChange={(config) => onUpdateBlockConfig(block.uid, config)}
-          />
-          <ConfigSettingsForm
-            schema={configSchema}
-            config={block.config ?? {}}
-            onChange={(config) =>
-              onUpdateBlockConfig(block.uid, { ...config, fields: block.config.fields })
-            }
-          />
-        </div>
-      ) : tab === "config" && block.type === "table" ? (
-        <div className="space-y-3">
-          <BlockIdControl block={block} onUpdateBlockId={onUpdateBlockId} />
-          <TableConfigColumns
-            config={block.config ?? {}}
-            onChange={(config) => onUpdateBlockConfig(block.uid, config)}
-          />
-          <ConfigSettingsForm
-            schema={configSchema}
-            config={block.config ?? {}}
-            onChange={(config) =>
-              onUpdateBlockConfig(block.uid, {
-                ...config,
-                columns: block.config.columns,
-                numberRows: block.config.numberRows,
-                style: block.config.style,
-              })
-            }
-          />
-        </div>
+      ) : tab === "config" && definition.ConfigEditor ? (
+        <definition.ConfigEditor
+          block={block}
+          configSchema={configSchema}
+          onUpdateBlockId={onUpdateBlockId}
+          onUpdateBlockConfig={onUpdateBlockConfig}
+          BlockIdControl={BlockIdControl}
+          ConfigSettingsForm={ConfigSettingsForm}
+        />
       ) : tab === "config" ? (
         <div className="space-y-3">
           <BlockIdControl block={block} onUpdateBlockId={onUpdateBlockId} />

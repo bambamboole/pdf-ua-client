@@ -1,15 +1,22 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import BlockDataSummary from "./BlockDataSummary";
-import type { EditorBlock } from "./types";
+import type { DataValue, EditorBlock, TemplateDataLayers } from "./types";
 
-function block(type: EditorBlock["type"], data: EditorBlock["data"]): EditorBlock {
+function block(type: string, config: Record<string, unknown> = {}): EditorBlock {
   return {
     uid: `${type}-uid`,
     id: type,
     type,
-    config: {},
-    data,
+    config,
+  };
+}
+
+function data(value: DataValue): TemplateDataLayers {
+  return {
+    example: { image: value, "key-value": value, table: value },
+    defaults: {},
+    constants: {},
   };
 }
 
@@ -17,7 +24,8 @@ describe("BlockDataSummary", () => {
   it("renders image data directly when a source is available", () => {
     const html = renderToStaticMarkup(
       <BlockDataSummary
-        block={block("image", {
+        block={block("image")}
+        data={data({
           src: "https://example.test/logo.png",
           alt: "Company logo",
         })}
@@ -32,18 +40,16 @@ describe("BlockDataSummary", () => {
   it("renders key-value data as a compact table preview", () => {
     const html = renderToStaticMarkup(
       <BlockDataSummary
-        block={{
-          ...block("key-value", {
-            seller: "PDF UA Kit GmbH",
-            vatId: "DE123456789",
-          }),
-          config: {
-            fields: [
-              { key: "seller", label: "Seller" },
-              { key: "vatId", label: "VAT ID" },
-            ],
-          },
-        }}
+        block={block("key-value", {
+          fields: [
+            { key: "seller", label: "Seller" },
+            { key: "vatId", label: "VAT ID" },
+          ],
+        })}
+        data={data({
+          seller: "PDF UA Kit GmbH",
+          vatId: "DE123456789",
+        })}
       />,
     );
 
@@ -55,15 +61,13 @@ describe("BlockDataSummary", () => {
   it("renders configured table object rows", () => {
     const html = renderToStaticMarkup(
       <BlockDataSummary
-        block={{
-          ...block("table", [{ description: "Implementation", total: "3.800,00 €" }]),
-          config: {
-            columns: [
-              { key: "description", label: "Description" },
-              { key: "total", label: "Total" },
-            ],
-          },
-        }}
+        block={block("table", {
+          columns: [
+            { key: "description", label: "Description" },
+            { key: "total", label: "Total" },
+          ],
+        })}
+        data={data([{ description: "Implementation", total: "3.800,00 €" }])}
       />,
     );
 
@@ -75,17 +79,10 @@ describe("BlockDataSummary", () => {
   it("renders every example row", () => {
     const html = renderToStaticMarkup(
       <BlockDataSummary
-        block={{
-          ...block("table", [
-            { item: "One" },
-            { item: "Two" },
-            { item: "Three" },
-            { item: "Four" },
-          ]),
-          config: {
-            columns: [{ key: "item", label: "Item" }],
-          },
-        }}
+        block={block("table", {
+          columns: [{ key: "item", label: "Item" }],
+        })}
+        data={data([{ item: "One" }, { item: "Two" }, { item: "Three" }, { item: "Four" }])}
       />,
     );
 
@@ -97,7 +94,8 @@ describe("BlockDataSummary", () => {
   it("renders an empty summary when table columns are missing", () => {
     const html = renderToStaticMarkup(
       <BlockDataSummary
-        block={block("table", {
+        block={block("table")}
+        data={data({
           headers: ["Description", "Total"],
           rows: [["Implementation", "3.800,00 €"]],
         })}
@@ -107,5 +105,38 @@ describe("BlockDataSummary", () => {
     expect(html).toContain("0 cols × 0 rows");
     expect(html).not.toContain("Description");
     expect(html).not.toContain("Implementation");
+  });
+
+  it("summarizes text blocks with the text value", () => {
+    const html = renderToStaticMarkup(
+      <BlockDataSummary
+        block={block("text")}
+        data={{ example: { text: { text: "Hello world" } }, defaults: {}, constants: {} }}
+      />,
+    );
+
+    expect(html).toContain("Hello world");
+  });
+
+  it("summarizes heading blocks with the text value", () => {
+    const html = renderToStaticMarkup(
+      <BlockDataSummary
+        block={block("heading")}
+        data={{ example: { heading: { text: "Invoice" } }, defaults: {}, constants: {} }}
+      />,
+    );
+
+    expect(html).toContain("Invoice");
+  });
+
+  it("summarizes html blocks with a static label", () => {
+    const html = renderToStaticMarkup(
+      <BlockDataSummary
+        block={block("html")}
+        data={{ example: {}, defaults: {}, constants: {} }}
+      />,
+    );
+
+    expect(html).toContain("HTML");
   });
 });

@@ -6,10 +6,10 @@
       "format": "ParcelLabel4x6",
       "locale": "en_US",
       "margins": {
-        "top": 5,
-        "right": 5,
-        "bottom": 5,
-        "left": 5
+        "top": 3,
+        "right": 3,
+        "bottom": 3,
+        "left": 3
       },
       "pageNumbers": {
         "enabled": false,
@@ -18,7 +18,7 @@
     },
     "typography": {
       "family": "Inter",
-      "size": 9
+      "size": 8
     }
   },
   "rows": [
@@ -35,8 +35,8 @@
                 "label": "Carrier"
               },
               {
-                "key": "account",
-                "label": "Account"
+                "key": "shipDate",
+                "label": "Ship date"
               }
             ]
           }
@@ -51,10 +51,6 @@
               {
                 "key": "level",
                 "label": "Service"
-              },
-              {
-                "key": "shipDate",
-                "label": "Ship date"
               },
               {
                 "key": "weight",
@@ -78,20 +74,12 @@
                 "label": "Ship to"
               },
               {
-                "key": "company",
-                "label": "Company"
-              },
-              {
                 "key": "address",
                 "label": "Address"
               },
               {
                 "key": "cityStatePostal",
                 "label": "City / state"
-              },
-              {
-                "key": "country",
-                "label": "Country"
               }
             ]
           }
@@ -117,10 +105,6 @@
               {
                 "key": "cityStatePostal",
                 "label": "City / state"
-              },
-              {
-                "key": "country",
-                "label": "Country"
               }
             ]
           }
@@ -138,10 +122,6 @@
               {
                 "key": "number",
                 "label": "Tracking"
-              },
-              {
-                "key": "reference",
-                "label": "Reference"
               }
             ]
           }
@@ -177,53 +157,34 @@
           }
         }
       ]
-    },
-    {
-      "blocks": [
-        {
-          "type": "text",
-          "id": "handling",
-          "config": {
-            "width": "100%"
-          }
-        }
-      ]
     }
   ],
   "data": {
     "example": {
       "carrier": {
         "name": "UPS",
-        "account": "A1B2C3"
+        "shipDate": "2026-05-27"
       },
       "service": {
         "level": "Ground Commercial",
-        "shipDate": "2026-05-27",
         "weight": "2.4 kg"
       },
       "recipient": {
         "name": "Jordan Lee",
-        "company": "Acme Fulfillment Lab",
         "address": "742 Evergreen Terrace",
-        "cityStatePostal": "Springfield, IL 62704",
-        "country": "US"
+        "cityStatePostal": "Springfield, IL 62704"
       },
       "sender": {
         "name": "PDF UA Kit GmbH",
         "address": "Musterstrasse 1",
-        "cityStatePostal": "10115 Berlin",
-        "country": "DE"
+        "cityStatePostal": "10115 Berlin"
       },
       "tracking": {
-        "number": "1Z999AA10123456784",
-        "reference": "SO-2026-10482"
+        "number": "1Z999AA10123456784"
       },
       "routing-code": {
         "code": "IL 627 9-04",
         "hub": "ORD-03"
-      },
-      "handling": {
-        "text": "Keep dry. Deliver to receiving dock between 08:00 and 16:00."
       }
     },
     "constants": {

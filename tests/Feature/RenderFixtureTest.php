@@ -167,3 +167,20 @@ it('matches the committed golden PDF', function (string $name, TemplateFixture $
 
     expect($result->matches(PdfPageComparator::THRESHOLD))->toBeTrue();
 })->with('pdfFixtures');
+
+it('keeps the committed shipping label golden PDF to one page', function () {
+    if (! PdfPageComparator::isSupported()) {
+        $this->markTestSkipped('ext-imagick and Ghostscript are required for PDF comparison.');
+    }
+
+    $fixture = collect((new TemplateFixtureRepository(__DIR__.'/../Fixtures'))->examples())
+        ->firstWhere('slug', 'shipping-label');
+
+    if (! $fixture instanceof TemplateFixture || $fixture->pdfPath === null) {
+        $this->markTestSkipped('Shipping label golden PDF is missing — run UPDATE_PDF_FIXTURES=1 to generate it.');
+    }
+
+    $pages = (new PdfPageComparator)->rasterize((string) file_get_contents($fixture->pdfPath));
+
+    expect($pages->getNumberImages())->toBe(1);
+});

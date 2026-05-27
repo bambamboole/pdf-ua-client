@@ -9,23 +9,20 @@
                 "name": {
                     "type": "string"
                 },
-                "account": {
+                "shipDate": {
                     "type": "string"
                 }
             },
             "additionalProperties": false,
             "required": [
                 "name",
-                "account"
+                "shipDate"
             ]
         },
         "service": {
             "type": "object",
             "properties": {
                 "level": {
-                    "type": "string"
-                },
-                "shipDate": {
                     "type": "string"
                 },
                 "weight": {
@@ -35,7 +32,6 @@
             "additionalProperties": false,
             "required": [
                 "level",
-                "shipDate",
                 "weight"
             ]
         },
@@ -45,26 +41,18 @@
                 "name": {
                     "type": "string"
                 },
-                "company": {
-                    "type": "string"
-                },
                 "address": {
                     "type": "string"
                 },
                 "cityStatePostal": {
-                    "type": "string"
-                },
-                "country": {
                     "type": "string"
                 }
             },
             "additionalProperties": false,
             "required": [
                 "name",
-                "company",
                 "address",
-                "cityStatePostal",
-                "country"
+                "cityStatePostal"
             ]
         },
         "sender": {
@@ -78,17 +66,13 @@
                 },
                 "cityStatePostal": {
                     "type": "string"
-                },
-                "country": {
-                    "type": "string"
                 }
             },
             "additionalProperties": false,
             "required": [
                 "name",
                 "address",
-                "cityStatePostal",
-                "country"
+                "cityStatePostal"
             ]
         },
         "tracking": {
@@ -96,15 +80,11 @@
             "properties": {
                 "number": {
                     "type": "string"
-                },
-                "reference": {
-                    "type": "string"
                 }
             },
             "additionalProperties": false,
             "required": [
-                "number",
-                "reference"
+                "number"
             ]
         },
         "routing-code": {
@@ -122,23 +102,6 @@
                 "code",
                 "hub"
             ]
-        },
-        "handling": {
-            "type": "object",
-            "properties": {
-                "text": {
-                    "type": "string",
-                    "examples": [
-                        "Thank you for your business."
-                    ]
-                }
-            },
-            "additionalProperties": false,
-            "required": [
-                "text"
-            ],
-            "title": "Text",
-            "description": "A paragraph of text."
         }
     },
     "additionalProperties": false,
@@ -148,7 +111,6 @@
         "recipient",
         "sender",
         "tracking",
-        "routing-code",
-        "handling"
+        "routing-code"
     ]
 }

@@ -30,15 +30,9 @@ final class SchemaAwareNormalizer
         }
 
         if (isset($node['oneOf']) && is_array($node['oneOf']) && is_array($value) && isset($value['type'])) {
-            foreach ($node['oneOf'] as $branch) {
-                if (! is_array($branch)) {
-                    continue;
-                }
-
-                $variant = self::resolveVariant($branch, $defs);
-                if ($variant !== null && self::branchMatchesType($branch, $variant, (string) $value['type'], $defs)) {
-                    return self::walk($value, $variant, $defs);
-                }
+            $variant = self::matchOneOfVariant($node['oneOf'], (string) $value['type'], $defs);
+            if ($variant !== null) {
+                return self::walk($value, $variant, $defs);
             }
         }
 
@@ -110,55 +104,34 @@ final class SchemaAwareNormalizer
     }
 
     /**
-     * Resolve a `oneOf` branch to a usable variant schema.
+     * Resolve the `oneOf` branch whose referenced schema carries the matching
+     * `type` const discriminator. Branches are `{$ref: <perBlockDef>}` and the
+     * discriminator comes from the referenced def's flattened
+     * `properties.type.const`.
      *
-     * Supports both `{$ref: ...}` (the inheritance-aware shape) and the
-     * legacy `{if: ..., then: {$ref: ...}}` discriminator shape.
-     *
-     * @param  array<string, mixed>  $branch
+     * @param  list<mixed>  $branches
      * @param  array<string, array<string, mixed>>  $defs
      * @return array<string, mixed>|null
      */
-    private static function resolveVariant(array $branch, array $defs): ?array
+    private static function matchOneOfVariant(array $branches, string $type, array $defs): ?array
     {
-        if (isset($branch['$ref']) && is_string($branch['$ref'])) {
-            return self::resolveRef($branch['$ref'], $defs);
-        }
-
-        if (isset($branch['then']) && is_array($branch['then'])) {
-            if (isset($branch['then']['$ref']) && is_string($branch['then']['$ref'])) {
-                return self::resolveRef($branch['then']['$ref'], $defs);
+        foreach ($branches as $branch) {
+            if (! is_array($branch) || ! isset($branch['$ref']) || ! is_string($branch['$ref'])) {
+                continue;
             }
 
-            return $branch['then'];
+            $variant = self::resolveRef($branch['$ref'], $defs);
+            if ($variant === null) {
+                continue;
+            }
+
+            $const = self::flattenAllOf($variant, $defs)['properties']['type']['const'] ?? null;
+            if (is_string($const) && $const === $type) {
+                return $variant;
+            }
         }
 
         return null;
-    }
-
-    /**
-     * Match a oneOf branch against the runtime `type` value.
-     *
-     * Two shapes are supported:
-     *   - inheritance-aware: `{ $ref: <perBlockDef> }` — discriminator comes
-     *     from the referenced def's flattened `properties.type.const`.
-     *   - legacy: `{ if: { properties: { type: { const: ... } } }, then: ... }`.
-     *
-     * @param  array<string, mixed>  $branch
-     * @param  array<string, mixed>  $variant
-     * @param  array<string, array<string, mixed>>  $defs
-     */
-    private static function branchMatchesType(array $branch, array $variant, string $type, array $defs): bool
-    {
-        $legacyConst = $branch['if']['properties']['type']['const'] ?? null;
-        if (is_string($legacyConst)) {
-            return $legacyConst === $type;
-        }
-
-        $flattened = self::flattenAllOf($variant, $defs);
-        $const = $flattened['properties']['type']['const'] ?? null;
-
-        return is_string($const) && $const === $type;
     }
 
     /**

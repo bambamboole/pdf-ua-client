@@ -42,6 +42,7 @@ beforeEach(function () {
     $this->fonts = new FontRegistry;
     $this->renderer = new TemplateRenderer(
         new BlockHydrator($registry),
+        $registry,
         new DataSchemaCompiler($reflector, $registry, $this->factory),
         $this->fonts,
     );

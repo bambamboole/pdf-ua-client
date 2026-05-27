@@ -4,11 +4,13 @@ declare(strict_types=1);
 namespace Bambamboole\PdfUaClient\Rendering;
 
 use Bambamboole\PdfUaClient\Block\BlockHydrator;
+use Bambamboole\PdfUaClient\Block\BlockRegistry;
 use Bambamboole\PdfUaClient\Block\RenderContext;
 use Bambamboole\PdfUaClient\Config\BlockConfig;
 use Bambamboole\PdfUaClient\Config\PageConfig;
 use Bambamboole\PdfUaClient\Config\SpacingConfig;
 use Bambamboole\PdfUaClient\Contracts\EmitsCss;
+use Bambamboole\PdfUaClient\Contracts\HasDynamicData;
 use Bambamboole\PdfUaClient\Enums\Align;
 use Bambamboole\PdfUaClient\Exceptions\DataValidationException;
 use Bambamboole\PdfUaClient\Fonts\FontDefinition;
@@ -33,6 +35,7 @@ final class TemplateRenderer
 
     public function __construct(
         private readonly BlockHydrator $hydrator,
+        private readonly BlockRegistry $registry,
         private readonly DataSchemaCompiler $dataSchemaCompiler,
         private readonly ?FontRegistry $fonts = null,
         private readonly TemplateDataMerger $dataMerger = new TemplateDataMerger,
@@ -131,12 +134,10 @@ final class TemplateRenderer
      */
     private function blockProps(BlockInstance $instance, array $data): array
     {
-        if ($instance->type === 'key-value') {
-            return ['values' => $data];
-        }
+        $blockClass = $this->registry->resolve($instance->type);
 
-        if ($instance->type === 'table') {
-            return ['rows' => array_is_list($data) ? $data : []];
+        if (is_subclass_of($blockClass, HasDynamicData::class)) {
+            return $blockClass::mapRuntimeData($instance->config, $data);
         }
 
         return $data;

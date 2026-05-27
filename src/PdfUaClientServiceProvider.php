@@ -93,6 +93,7 @@ final class PdfUaClientServiceProvider extends PackageServiceProvider
 
         $this->app->singleton(TemplateRenderer::class, fn (Container $app): TemplateRenderer => new TemplateRenderer(
             $app->make(BlockHydrator::class),
+            $app->make(BlockRegistry::class),
             $app->make(DataSchemaCompiler::class),
             $app->make(FontRegistry::class),
         ));

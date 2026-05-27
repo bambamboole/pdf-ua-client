@@ -14,7 +14,6 @@ use Bambamboole\PdfUaClient\Rendering\TemplateRenderer;
 use Bambamboole\PdfUaClient\Template\DataSchemaCompiler;
 use Bambamboole\PdfUaClient\Template\Template;
 use Bambamboole\PdfUaClient\Template\TemplateAttachment;
-use Bambamboole\PdfUaClient\Template\TemplateAttachmentRequirement;
 use Bambamboole\PdfUaClient\Template\TemplateFactory;
 use Bambamboole\PdfUaClient\Template\TemplateSchemaCompiler;
 use Illuminate\Http\JsonResponse;
@@ -101,7 +100,7 @@ final class TemplateBuilderController
         foreach ($template->attachmentRequirements as $requirement) {
             $payload = $attachmentData[$requirement->id] ?? null;
 
-            if (! $requirement instanceof TemplateAttachmentRequirement || ! is_array($payload)) {
+            if (! is_array($payload)) {
                 continue;
             }
 

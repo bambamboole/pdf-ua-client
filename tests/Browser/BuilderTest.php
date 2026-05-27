@@ -2,6 +2,25 @@
 
 declare(strict_types=1);
 
+use Pest\Browser\Api\AwaitableWebpage;
+
+function waitForBrowserScript(AwaitableWebpage $page, string $expression, float $seconds = 5): AwaitableWebpage
+{
+    $deadline = microtime(true) + $seconds;
+
+    do {
+        if ($page->page()->evaluate($expression) === true) {
+            return $page;
+        }
+
+        usleep(100_000);
+    } while (microtime(true) < $deadline);
+
+    expect(false)->toBeTrue("Timed out waiting for browser expression: {$expression}");
+
+    return $page;
+}
+
 it('loads the builder without browser smoke failures', function (): void {
     visit('/')
         ->assertSee('Build')
@@ -62,13 +81,15 @@ it('sizes the build canvas to the selected page format', function (): void {
 });
 
 it('renders the invoice example preview and matches the browser screenshot', function (): void {
-    visit('/')
+    $page = visit('/')
         ->click('Invoice')
         ->click('HTML')
-        ->wait(1)
         ->assertNoJavaScriptErrors()
-        ->assertNoConsoleLogs()
-        ->assertScript('document.querySelector("iframe")?.getAttribute("sandbox") === ""')
+        ->assertNoConsoleLogs();
+
+    waitForBrowserScript($page, 'document.querySelector("iframe")?.getAttribute("sandbox") === ""');
+
+    $page
         ->withinFrame('iframe', fn ($frame) => $frame->assertSee('PDF UA Kit GmbH'))
         ->assertScreenshotMatches(fullPage: false, openDiff: false);
 })->skip(fn (): bool => filter_var(getenv('CI'), FILTER_VALIDATE_BOOLEAN), 'Visual regression baseline is environment-specific; run locally via composer test:browser.');
@@ -86,8 +107,9 @@ it('pins the preview footer to the page bottom and shows the page number', funct
     $page = visit('/')
         ->click('Invoice')
         ->click('HTML')
-        ->wait(1)
         ->assertNoJavaScriptErrors();
+
+    waitForBrowserScript($page, 'document.querySelector("iframe")?.getAttribute("sandbox") === ""');
 
     $page->withinFrame('iframe', function ($frame): void {
         $frame->assertSee('1 / 1');

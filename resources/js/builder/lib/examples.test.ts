@@ -50,4 +50,47 @@ describe("loadExample", () => {
       constants: { title: { badge: "Locked" } },
     });
   });
+
+  it("keeps attachment metadata embedded in example templates", () => {
+    const model = loadExample({
+      template: {
+        ...entry.template,
+        attachments: [
+          {
+            name: "static.xml",
+            contentBase64: "PHhtbC8+",
+            mimeType: "application/xml",
+          },
+        ],
+        attachmentRequirements: [
+          {
+            id: "factur-x",
+            name: "factur-x.xml",
+            mimeType: "application/xml",
+            relationship: "Alternative",
+          },
+        ],
+      },
+      data: { attachments: { "factur-x": { contentBase64: "PEludm9pY2UvPg==" } } },
+    });
+
+    expect(toTemplate(model).attachments).toEqual([
+      {
+        name: "static.xml",
+        contentBase64: "PHhtbC8+",
+        mimeType: "application/xml",
+      },
+    ]);
+    expect(toTemplate(model).attachmentRequirements).toEqual([
+      {
+        id: "factur-x",
+        name: "factur-x.xml",
+        mimeType: "application/xml",
+        relationship: "Alternative",
+      },
+    ]);
+    expect(toDataMap(model)).toEqual({
+      attachments: { "factur-x": { contentBase64: "PEludm9pY2UvPg==" } },
+    });
+  });
 });

@@ -1,4 +1,4 @@
-export const PAGE_SIZES_MM: Record<string, [number, number]> = {
+const PAGE_SIZES_MM: Record<string, [number, number]> = {
   A4: [210, 297],
   A5: [148, 210],
   Letter: [215.9, 279.4],

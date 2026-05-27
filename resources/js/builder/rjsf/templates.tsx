@@ -8,7 +8,7 @@ import {
   getInputProps,
 } from "@rjsf/utils";
 
-export function BaseInputTemplate(props: BaseInputTemplateProps) {
+function BaseInputTemplate(props: BaseInputTemplateProps) {
   const {
     id,
     value,
@@ -97,7 +97,7 @@ export function DescriptionFieldTemplate({ id, description }: DescriptionFieldPr
   );
 }
 
-export function ObjectFieldTemplate(props: ObjectFieldTemplateProps) {
+function ObjectFieldTemplate(props: ObjectFieldTemplateProps) {
   const { title, description, properties } = props;
   return (
     <fieldset className="mb-3 rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-panel)] p-3">
@@ -114,7 +114,7 @@ export function ObjectFieldTemplate(props: ObjectFieldTemplateProps) {
   );
 }
 
-export function SelectWidget(props: WidgetProps) {
+function SelectWidget(props: WidgetProps) {
   const {
     id,
     options,

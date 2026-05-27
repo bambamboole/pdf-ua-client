@@ -5,7 +5,6 @@ export type JsonSchema = Record<string, unknown>;
 export interface TemplateBlock {
   type: string;
   id?: string;
-  props?: Json;
   config?: Json;
 }
 export interface TemplateRow {

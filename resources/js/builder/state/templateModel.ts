@@ -10,7 +10,7 @@ import type {
   TemplateDataLayers,
 } from "../types";
 import { blockMeta } from "../blocks/meta";
-import { cleanDataMap, isPlainObject, mergeDataMaps, omitDataId } from "../lib/dataLayers";
+import { cleanDataMap, isPlainObject, omitDataId } from "../lib/dataLayers";
 
 function uid(): string {
   return crypto.randomUUID();
@@ -35,7 +35,7 @@ function makeUnique(base: string, taken: Set<string>): string {
   return `${base}-${n}`;
 }
 
-export function uniqueBlockId(model: EditorModel, type: string): string {
+function uniqueBlockId(model: EditorModel, type: string): string {
   const taken = new Set(allRows(model).flatMap((r) => r.blocks.map((b) => b.id)));
   let n = 1;
   while (taken.has(`${type}-${n}`)) {
@@ -70,10 +70,6 @@ export function toTemplate(model: EditorModel): Template {
 
 export function toDataMap(model: EditorModel): DataMap {
   return cleanDataMap(model.data.example);
-}
-
-export function previewDataMap(model: EditorModel): DataMap {
-  return mergeDataMaps(model.data.defaults, model.data.example, model.data.constants);
 }
 
 function normalizeDataLayers(

@@ -37,7 +37,6 @@ interface BlockBoxProps {
   rowUid: string;
   area: EditorArea;
   selected: boolean;
-  initiallyOpen: boolean;
   style?: CSSProperties;
   schema: JsonSchema;
   data: TemplateDataLayers;
@@ -48,13 +47,12 @@ const BlockBox = memo(function BlockBox({
   rowUid,
   area,
   selected,
-  initiallyOpen,
   style: layoutStyle,
   schema,
   data,
 }: BlockBoxProps) {
   const { onSelectBlock, onRemoveBlock } = useBuilderActions();
-  const [settingsOpen, setSettingsOpen] = useState(initiallyOpen);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: block.uid,
     data: { source: "block", rowUid, area } satisfies DragData,
@@ -130,14 +128,13 @@ const BlockBox = memo(function BlockBox({
 
 interface RowProps {
   row: EditorRow;
-  rowIndex: number;
   area: EditorArea;
   schema: JsonSchema;
   data: TemplateDataLayers;
   selectedBlockUid: string | null;
 }
 
-const Row = memo(function Row({ row, rowIndex, area, schema, data, selectedBlockUid }: RowProps) {
+const Row = memo(function Row({ row, area, schema, data, selectedBlockUid }: RowProps) {
   const { onRemoveRow, onSetRowWidths } = useBuilderActions();
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: `row-${row.uid}`,
@@ -193,7 +190,6 @@ const Row = memo(function Row({ row, rowIndex, area, schema, data, selectedBlock
                 rowUid={row.uid}
                 area={area}
                 selected={block.uid === selectedBlockUid}
-                initiallyOpen={rowIndex === 0 && i === 0}
                 style={widths ? { minWidth: 0 } : undefined}
                 schema={schema}
                 data={data}
@@ -279,11 +275,10 @@ function FooterCanvas({
             items={model.footerRows.map((candidate) => `row-${candidate.uid}`)}
             strategy={verticalListSortingStrategy}
           >
-            {model.footerRows.map((row, rowIndex) => (
+            {model.footerRows.map((row) => (
               <Row
                 key={row.uid}
                 row={row}
-                rowIndex={rowIndex}
                 area="footer"
                 schema={schema}
                 data={model.data}
@@ -335,11 +330,10 @@ export default function EditCanvas({ model, schema, format, selectedBlockUid }: 
           items={model.rows.map((r) => `row-${r.uid}`)}
           strategy={verticalListSortingStrategy}
         >
-          {model.rows.map((row, rowIndex) => (
+          {model.rows.map((row) => (
             <Row
               key={row.uid}
               row={row}
-              rowIndex={rowIndex}
               area="body"
               schema={schema}
               data={model.data}

@@ -18,7 +18,10 @@ it('opens block settings inline on the selected block', function (): void {
     $page = visit('/')
         ->click('Invoice')
         ->assertSee('PDF UA Kit GmbH')
-        ->assertNoJavaScriptErrors();
+        ->assertNoJavaScriptErrors()
+        ->assertScript('document.querySelectorAll("main [data-inline-block-details][open]").length === 0');
+
+    $page->click('More');
 
     $page
         ->assertSee('Data')

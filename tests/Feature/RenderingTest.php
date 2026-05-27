@@ -42,6 +42,7 @@ beforeEach(function () {
     $this->fonts = new FontRegistry;
     $this->renderer = new TemplateRenderer(
         new BlockHydrator($registry),
+        $registry,
         new DataSchemaCompiler($reflector, $registry, $this->factory),
         $this->fonts,
     );
@@ -99,6 +100,22 @@ it('emits @page in print mode and body padding in preview mode', function () {
     expect($print)->toContain('margin: 25mm 20mm 20mm 25mm');
     expect($preview)->not->toContain('@page');
     expect($preview)->toContain('padding: 25mm 20mm 20mm 25mm');
+});
+
+it('emits roomier base spacing for document and table rows', function (): void {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['format' => 'A4']],
+        'rows' => [['blocks' => [['type' => 'text', 'id' => 'x']]]],
+    ]);
+
+    $html = $this->renderer->render($template, ['x' => ['text' => 'x']]);
+
+    expect($html)
+        ->toContain('.row { width: 100%; border-collapse: collapse; margin: 0 0 4mm; }')
+        ->toContain('.key-value td { padding: 0.9mm 0 0.9mm 3mm; vertical-align: top; }')
+        ->toContain('.data-table th { padding: 2mm 2.4mm;')
+        ->toContain('.data-table td { padding: 2mm 2.4mm;');
 });
 
 it('supplies block content via runtime data by block id', function () {
@@ -290,7 +307,7 @@ it('emits base document and table styling once per rendered document', function 
 
     expect(substr_count((string) $html, 'hr { border: none; border-top: 1px solid #d1d5db; margin: 2.5mm 0; }'))->toBe(1);
     expect($html)->toContain('.key-value { display: inline-table; border-collapse: collapse; text-align: left; }');
-    expect($html)->toContain('.key-value td { padding: 0.65mm 0 0.65mm 3mm; vertical-align: top; }');
+    expect($html)->toContain('.key-value td { padding: 0.9mm 0 0.9mm 3mm; vertical-align: top; }');
     expect($html)->toContain('.data-table { width: 100%; border-collapse: collapse; text-align: left; }');
 });
 

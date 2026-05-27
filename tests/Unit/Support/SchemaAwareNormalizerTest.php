@@ -44,13 +44,25 @@ it('resolves $ref into $defs and recurses', function () {
     expect($result->config->nested)->toBeInstanceOf(stdClass::class);
 });
 
-it('dispatches into oneOf branches via if/then discriminator', function () {
+it('dispatches into the oneOf branch whose $ref carries the matching type const', function () {
     $schema = [
         'type' => 'object',
         'oneOf' => [
-            [
-                'if' => ['properties' => ['type' => ['const' => 'foo']]],
-                'then' => ['type' => 'object', 'properties' => ['extra' => ['type' => 'object']]],
+            ['$ref' => '#/$defs/fooBlock'],
+            ['$ref' => '#/$defs/barBlock'],
+        ],
+        '$defs' => [
+            'blockBase' => ['type' => 'object', 'properties' => ['type' => ['type' => 'string']]],
+            'fooBlock' => [
+                'allOf' => [['$ref' => '#/$defs/blockBase']],
+                'properties' => [
+                    'type' => ['const' => 'foo', 'type' => 'string'],
+                    'extra' => ['type' => 'object'],
+                ],
+            ],
+            'barBlock' => [
+                'allOf' => [['$ref' => '#/$defs/blockBase']],
+                'properties' => ['type' => ['const' => 'bar', 'type' => 'string']],
             ],
         ],
     ];

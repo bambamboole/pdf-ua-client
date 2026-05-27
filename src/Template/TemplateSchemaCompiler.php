@@ -71,11 +71,9 @@ final readonly class TemplateSchemaCompiler
         $defs->ref('block', ['oneOf' => $blockRefs]);
         $this->registerPageFooterConfig($defs);
 
-        $templateConfigSchema = $this->reflector->reflectWithRefs(TemplateConfig::class, $defs);
-        $templateConfigSchema = $this->stripRequired($templateConfigSchema);
-        $templateConfigRef = $defs->ref('templateConfig', $templateConfigSchema);
+        $templateConfigRef = $defs->ref('templateConfig', $this->reflector->reflectWithRefs(TemplateConfig::class, $defs));
 
-        $allDefs = $this->stripRequiredFromConfigs($defs->all());
+        $allDefs = $this->makeConfigsOptional($defs->all());
 
         $schema = [
             '$schema' => 'https://json-schema.org/draft/2020-12/schema',
@@ -144,10 +142,8 @@ final readonly class TemplateSchemaCompiler
     private function registerConfigRef(string $configClass, SchemaRegistry $defs): array
     {
         $defName = lcfirst(new ReflectionClass($configClass)->getShortName());
-        $schema = $this->reflector->reflectWithRefs($configClass, $defs);
-        $schema = $this->stripRequired($schema);
 
-        return $defs->ref($defName, $schema);
+        return $defs->ref($defName, $this->reflector->reflectWithRefs($configClass, $defs));
     }
 
     private function blockDefName(string $type): string
@@ -193,15 +189,15 @@ final readonly class TemplateSchemaCompiler
     }
 
     /**
-     * Defensive pass: parent configs registered transitively during inheritance
-     * reflection bypass the per-child stripRequired call. Strip any lingering
-     * `required` entries from every config-named $def so config fields stay
-     * optional in template JSON.
+     * Config fields are always optional in template JSON. Reflection emits
+     * `required` for non-nullable, default-less constructor params, so strip it
+     * from every config-named $def (including those registered transitively
+     * during inheritance reflection).
      *
      * @param  array<string, array<string, mixed>>  $defs
      * @return array<string, array<string, mixed>>
      */
-    private function stripRequiredFromConfigs(array $defs): array
+    private function makeConfigsOptional(array $defs): array
     {
         foreach ($defs as $name => $schema) {
             if (! str_ends_with($name, 'Config')) {

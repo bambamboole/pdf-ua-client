@@ -4,11 +4,13 @@ declare(strict_types=1);
 namespace Bambamboole\PdfUaClient\Rendering;
 
 use Bambamboole\PdfUaClient\Block\BlockHydrator;
+use Bambamboole\PdfUaClient\Block\BlockRegistry;
 use Bambamboole\PdfUaClient\Block\RenderContext;
 use Bambamboole\PdfUaClient\Config\BlockConfig;
 use Bambamboole\PdfUaClient\Config\PageConfig;
 use Bambamboole\PdfUaClient\Config\SpacingConfig;
 use Bambamboole\PdfUaClient\Contracts\EmitsCss;
+use Bambamboole\PdfUaClient\Contracts\HasDynamicData;
 use Bambamboole\PdfUaClient\Enums\Align;
 use Bambamboole\PdfUaClient\Exceptions\DataValidationException;
 use Bambamboole\PdfUaClient\Fonts\FontDefinition;
@@ -33,6 +35,7 @@ final class TemplateRenderer
 
     public function __construct(
         private readonly BlockHydrator $hydrator,
+        private readonly BlockRegistry $registry,
         private readonly DataSchemaCompiler $dataSchemaCompiler,
         private readonly ?FontRegistry $fonts = null,
         private readonly TemplateDataMerger $dataMerger = new TemplateDataMerger,
@@ -131,12 +134,10 @@ final class TemplateRenderer
      */
     private function blockProps(BlockInstance $instance, array $data): array
     {
-        if ($instance->type === 'key-value') {
-            return ['values' => $data];
-        }
+        $blockClass = $this->registry->resolve($instance->type);
 
-        if ($instance->type === 'table') {
-            return ['rows' => array_is_list($data) ? $data : []];
+        if (is_subclass_of($blockClass, HasDynamicData::class)) {
+            return $blockClass::mapRuntimeData($instance->config, $data);
         }
 
         return $data;
@@ -293,15 +294,15 @@ body { color: #111827; line-height: 1.35; }
 p { margin: 0 0 2mm; }
 h1, h2, h3, h4, h5, h6 { margin: 0 0 3mm; line-height: 1.12; color: #111827; }
 hr { border: none; border-top: 1px solid #d1d5db; margin: 2.5mm 0; }
-.row { width: 100%; border-collapse: collapse; margin: 0 0 3mm; }
+.row { width: 100%; border-collapse: collapse; margin: 0 0 4mm; }
 .row > tbody > tr > td, .row > tr > td { vertical-align: top; padding: 0; }
 .key-value { display: inline-table; border-collapse: collapse; text-align: left; }
-.key-value td { padding: 0.65mm 0 0.65mm 3mm; vertical-align: top; }
+.key-value td { padding: 0.9mm 0 0.9mm 3mm; vertical-align: top; }
 .key-value td:first-child { padding-left: 0; color: #6b7280; font-weight: 600; }
 .key-value td:last-child { color: #111827; font-weight: 500; }
 .data-table { width: 100%; border-collapse: collapse; text-align: left; }
-.data-table th { padding: 1.6mm 2.2mm; background: #f3f4f6; color: #374151; font-weight: 700; border-bottom: 1px solid #d1d5db; }
-.data-table td { padding: 1.6mm 2.2mm; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+.data-table th { padding: 2mm 2.4mm; background: #f3f4f6; color: #374151; font-weight: 700; border-bottom: 1px solid #d1d5db; }
+.data-table td { padding: 2mm 2.4mm; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
 .data-table tbody tr:last-child td { border-bottom: 1px solid #d1d5db; }
 .page-footer { color: #6b7280; font-size: 8pt; line-height: 1.25; }
 .page-footer .row { margin: 0; }

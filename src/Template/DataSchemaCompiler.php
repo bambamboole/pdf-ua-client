@@ -5,6 +5,7 @@ namespace Bambamboole\PdfUaClient\Template;
 
 use Bambamboole\PdfUaClient\Block\BlockRegistry;
 use Bambamboole\PdfUaClient\Block\PropsReflector;
+use Bambamboole\PdfUaClient\Contracts\HasDynamicData;
 use stdClass;
 
 final readonly class DataSchemaCompiler
@@ -75,94 +76,13 @@ final readonly class DataSchemaCompiler
     /** @return array<string, mixed> */
     private function dataSchemaForBlock(BlockInstance $block): array
     {
-        if ($block->type === 'key-value') {
-            return $this->keyValueDataSchema(is_array($block->config['fields'] ?? null) ? $block->config['fields'] : []);
+        $blockClass = $this->registry->resolve($block->type);
+
+        if (is_subclass_of($blockClass, HasDynamicData::class)) {
+            return $blockClass::dataSchema($block->config);
         }
 
-        if ($block->type === 'table') {
-            return $this->tableDataSchema(is_array($block->config['columns'] ?? null) ? $block->config['columns'] : []);
-        }
-
-        return $this->reflector->reflectBlock($this->registry->resolve($block->type))['data'];
-    }
-
-    /**
-     * @param  list<array<string, mixed>>  $fields
-     * @return array<string, mixed>
-     */
-    private function keyValueDataSchema(array $fields): array
-    {
-        $properties = [];
-        $required = [];
-
-        foreach ($fields as $field) {
-            $key = (string) ($field['key'] ?? '');
-            if ($key === '') {
-                continue;
-            }
-
-            $properties[$key] = [
-                'type' => 'string',
-            ];
-            $required[] = $key;
-        }
-
-        $schema = [
-            'type' => 'object',
-            'properties' => $properties === [] ? new stdClass : $properties,
-            'additionalProperties' => false,
-        ];
-
-        if ($required !== []) {
-            $schema['required'] = $required;
-        }
-
-        return $schema;
-    }
-
-    /**
-     * @param  list<array<string, mixed>>  $columns
-     * @return array<string, mixed>
-     */
-    private function tableDataSchema(array $columns): array
-    {
-        $properties = [];
-        $required = [];
-
-        foreach ($columns as $column) {
-            $key = (string) ($column['key'] ?? '');
-            if ($key === '') {
-                continue;
-            }
-
-            $properties[$key] = [
-                'type' => 'string',
-            ];
-            $required[] = $key;
-        }
-
-        if ($properties === []) {
-            return [
-                'type' => 'object',
-                'properties' => new stdClass,
-                'additionalProperties' => false,
-            ];
-        }
-
-        $schema = [
-            'type' => 'array',
-            'items' => [
-                'type' => 'object',
-                'properties' => $properties,
-                'additionalProperties' => false,
-            ],
-        ];
-
-        if ($required !== []) {
-            $schema['items']['required'] = $required;
-        }
-
-        return $schema;
+        return $this->reflector->reflectBlock($blockClass)['data'];
     }
 
     /**

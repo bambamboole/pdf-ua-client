@@ -8,10 +8,12 @@ use Bambamboole\PdfUaClient\Attributes\Title;
 use Bambamboole\PdfUaClient\Config\TableColumn;
 use Bambamboole\PdfUaClient\Config\TableConfig;
 use Bambamboole\PdfUaClient\Contracts\BlockInterface;
+use Bambamboole\PdfUaClient\Contracts\HasDynamicData;
+use stdClass;
 
 #[Block('table', config: TableConfig::class)]
 #[Title('Table')]
-final readonly class TableBlock implements BlockInterface
+final readonly class TableBlock implements BlockInterface, HasDynamicData
 {
     /**
      * @param  list<array<string, mixed>>  $rows
@@ -19,6 +21,38 @@ final readonly class TableBlock implements BlockInterface
     public function __construct(
         public array $rows,
     ) {}
+
+    public static function dataSchema(array $config): array
+    {
+        $columns = is_array($config['columns'] ?? null) ? $config['columns'] : [];
+
+        $properties = [];
+        foreach ($columns as $column) {
+            $key = (string) ($column['key'] ?? '');
+            if ($key !== '') {
+                $properties[$key] = ['type' => 'string'];
+            }
+        }
+
+        if ($properties === []) {
+            return ['type' => 'object', 'properties' => new stdClass, 'additionalProperties' => false];
+        }
+
+        return [
+            'type' => 'array',
+            'items' => [
+                'type' => 'object',
+                'properties' => $properties,
+                'additionalProperties' => false,
+                'required' => array_keys($properties),
+            ],
+        ];
+    }
+
+    public static function mapRuntimeData(array $config, array $data): array
+    {
+        return ['rows' => array_is_list($data) ? $data : []];
+    }
 
     public function render(TableConfig $config): string
     {

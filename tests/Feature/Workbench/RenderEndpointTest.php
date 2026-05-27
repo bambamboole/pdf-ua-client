@@ -71,7 +71,7 @@ it('returns 422 when posted data violates the template data contract', function 
 });
 
 it('renders the registered invoice example payload', function (): void {
-    $fixture = app(TemplateFixtureRepository::class)->examples()[0];
+    $fixture = collect(app(TemplateFixtureRepository::class)->examples())->firstWhere('slug', 'invoice');
 
     $response = postJson('/html', [
         'template' => $fixture->template,

@@ -13,7 +13,7 @@ it('renders the builder page with the compiled schema prop', function (): void {
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('Builder')
-            ->where('schema.examples.0.title', 'Invoice')
+            ->where('schema.examples', fn ($examples): bool => $examples->contains('title', 'Invoice'))
             ->where('schema.$defs.block.oneOf', [
                 ['$ref' => '#/$defs/headingBlock'],
                 ['$ref' => '#/$defs/textBlock'],
@@ -28,9 +28,8 @@ it('renders the builder page with the compiled schema prop', function (): void {
 });
 
 it('returns user-facing examples from the workbench endpoint', function (): void {
-    get('/examples')
+    $response = get('/examples')
         ->assertOk()
-        ->assertJsonPath('examples.0.title', 'Invoice')
         ->assertJsonStructure([
             'examples' => [
                 [
@@ -40,4 +39,7 @@ it('returns user-facing examples from the workbench endpoint', function (): void
                 ],
             ],
         ]);
+
+    expect(collect($response->json('examples'))->firstWhere('title', 'Invoice'))
+        ->toHaveKeys(['title', 'template', 'data']);
 });

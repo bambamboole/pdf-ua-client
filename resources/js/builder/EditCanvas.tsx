@@ -9,7 +9,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { gridTemplateForWidths } from "./lib/columns";
 import { pageSizeForFormat } from "./lib/pageSizes";
-import { mmToScaledPx } from "./lib/displayScale";
+import { mmToPx } from "./lib/displayScale";
 import { getBlockTitle } from "./lib/schema";
 import BlockDataSummary from "./BlockDataSummary";
 import ColumnResizer from "./ColumnResizer";
@@ -29,7 +29,6 @@ interface Props {
   model: { rows: EditorRow[]; footerRows: EditorRow[]; data: TemplateDataLayers; config: Json };
   schema: JsonSchema;
   format: string;
-  scale: number;
   selectedBlockUid: string | null;
   onSelectBlock: (uid: string) => void;
   onRemoveBlock: (uid: string) => void;
@@ -443,7 +442,6 @@ export default function EditCanvas({
   model,
   schema,
   format,
-  scale,
   selectedBlockUid,
   onSelectBlock,
   onRemoveBlock,
@@ -457,13 +455,13 @@ export default function EditCanvas({
   onUpdateBlockData,
 }: Props) {
   const [width] = pageSizeForFormat(format);
-  const scaledWidth = mmToScaledPx(width, scale);
+  const maxWidth = mmToPx(width);
 
   return (
     <div
       data-edit-canvas
       className="mx-auto box-border w-full space-y-3"
-      style={{ maxWidth: `${scaledWidth}px` }}
+      style={{ maxWidth: `${maxWidth}px` }}
     >
       <div
         data-body-canvas

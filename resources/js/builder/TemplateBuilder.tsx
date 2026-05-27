@@ -43,7 +43,6 @@ import type {
   JsonSchema,
   Template,
 } from "./types";
-import CanvasZoomControls from "./CanvasZoomControls";
 
 const SchemaView = lazy(() => import("./SchemaView"));
 
@@ -55,10 +54,6 @@ const tabs: Array<{ key: BuilderTab; label: string }> = [
   { key: "html", label: "HTML" },
   { key: "pdf", label: "PDF" },
 ];
-
-const ZOOM_STEP = 0.05;
-const MIN_ZOOM = 0.75;
-const MAX_ZOOM = 1.6;
 
 export interface TemplateBuilderProps {
   schema: JsonSchema;
@@ -102,7 +97,6 @@ export default function TemplateBuilder({
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [dataSchema, setDataSchema] = useState<JsonSchema>({});
   const [schemaError, setSchemaError] = useState<string | null>(null);
-  const [canvasScale, setCanvasScale] = useState(1);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -391,16 +385,10 @@ export default function TemplateBuilder({
           <div className="flex-1 overflow-auto bg-[var(--builder-bg)] p-5">
             {tab === "build" ? (
               <div className="grid items-start gap-5">
-                <CanvasZoomControls
-                  onDecrease={() => setCanvasScale((scale) => clampZoom(scale - ZOOM_STEP))}
-                  onIncrease={() => setCanvasScale((scale) => clampZoom(scale + ZOOM_STEP))}
-                  onReset={() => setCanvasScale(1)}
-                />
                 <EditCanvas
                   model={model}
                   schema={schema}
                   format={format}
-                  scale={canvasScale}
                   selectedBlockUid={selectedBlockUid}
                   onSelectBlock={selectBlock}
                   onRemoveBlock={(uid) => setModel((m) => removeBlock(m, uid))}
@@ -483,10 +471,6 @@ export default function TemplateBuilder({
       </DragOverlay>
     </DndContext>
   );
-}
-
-function clampZoom(scale: number): number {
-  return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Number(scale.toFixed(2))));
 }
 
 function updateFooterRepeat(model: EditorModel, repeat: boolean): EditorModel {

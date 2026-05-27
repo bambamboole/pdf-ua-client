@@ -43,7 +43,6 @@ export const Invoice: Story = {
     },
     schema: typedSchema,
     format: getPageFormat(typedSchema),
-    scale: 1,
     selectedBlockUid: null,
     onSelectBlock: () => {},
     onRemoveBlock: () => {},

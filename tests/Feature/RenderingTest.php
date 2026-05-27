@@ -102,6 +102,20 @@ it('emits @page in print mode and body padding in preview mode', function () {
     expect($preview)->toContain('padding: 25mm 20mm 20mm 25mm');
 });
 
+it('sizes preview body to the configured page format', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['format' => 'ParcelLabel4x6', 'margins' => ['top' => 3, 'right' => 3, 'bottom' => 3, 'left' => 3]]],
+        'rows' => [['blocks' => [['type' => 'text', 'id' => 'x']]]],
+    ]);
+
+    $preview = $this->renderer->render($template, ['x' => ['text' => 'label']], options: new RenderOptions(mode: 'preview'));
+
+    expect($preview)
+        ->toContain('width: 101.6mm')
+        ->toContain('min-height: 152.4mm');
+});
+
 it('emits roomier base spacing for document and table rows', function (): void {
     $template = $this->factory->fromArray([
         'version' => 1,
@@ -116,6 +130,25 @@ it('emits roomier base spacing for document and table rows', function (): void {
         ->toContain('.key-value td { padding: 0.9mm 0 0.9mm 3mm; vertical-align: top; }')
         ->toContain('.data-table th { padding: 2mm 2.4mm;')
         ->toContain('.data-table td { padding: 2mm 2.4mm;');
+});
+
+it('scopes comma-separated descendant CSS rules to the block', function (): void {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['format' => 'ParcelLabel4x6']],
+        'rows' => [['blocks' => [['type' => 'image', 'id' => 'barcode', 'config' => ['maxHeight' => 72]]]]],
+    ]);
+
+    $html = $this->renderer->render($template, [
+        'barcode' => [
+            'src' => 'data:image/svg+xml;base64,'.base64_encode('<svg xmlns="http://www.w3.org/2000/svg" width="520" height="150"><rect width="520" height="150"/></svg>'),
+            'alt' => 'Barcode',
+        ],
+    ]);
+
+    expect($html)
+        ->toContain('.block-1 img, .block-1 svg { max-height: 72px; }')
+        ->toContain('img, svg { max-width: 100%; height: auto; }');
 });
 
 it('supplies block content via runtime data by block id', function () {

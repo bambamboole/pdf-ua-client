@@ -112,7 +112,7 @@ final class TemplateRenderer
         $body = $hydrated->render();
 
         foreach ($this->cssRulesFor($config) as $suffix => $props) {
-            $selector = ".{$id}".($suffix !== '' ? " {$suffix}" : '');
+            $selector = $this->scopedSelector($id, $suffix);
             $ctx->css("{$selector} { {$props} }");
         }
 
@@ -251,9 +251,10 @@ final class TemplateRenderer
             : '';
 
         $heightMm = $page->format->heightMm();
+        $widthMm = $page->format->widthMm();
         $margins = $this->marginShorthand($page->margins);
         $bodyPadding = $options->mode === 'preview'
-            ? "body { padding: {$margins}; min-height: {$heightMm}mm; box-sizing: border-box; display: flex; flex-direction: column; }"
+            ? "body { width: {$widthMm}mm; padding: {$margins}; min-height: {$heightMm}mm; box-sizing: border-box; display: flex; flex-direction: column; }"
             : '';
 
         $bodyTypographyProps = $this->cssRulesFor($template->config->typography)[''] ?? '';
@@ -291,6 +292,7 @@ HTML;
     {
         return <<<'CSS'
 body { color: #111827; line-height: 1.35; }
+img, svg { max-width: 100%; height: auto; }
 p { margin: 0 0 2mm; }
 h1, h2, h3, h4, h5, h6 { margin: 0 0 3mm; line-height: 1.12; color: #111827; }
 hr { border: none; border-top: 1px solid #d1d5db; margin: 2.5mm 0; }
@@ -368,6 +370,18 @@ CSS;
         }
 
         return $rules;
+    }
+
+    private function scopedSelector(string $id, string $suffix): string
+    {
+        if ($suffix === '') {
+            return ".{$id}";
+        }
+
+        return implode(', ', array_map(
+            static fn (string $selector): string => ".{$id} {$selector}",
+            array_filter(array_map('trim', explode(',', $suffix))),
+        ));
     }
 
     private function resolveRegisteredFontFamilies(string $props): string

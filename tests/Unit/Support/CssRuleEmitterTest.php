@@ -45,7 +45,7 @@ final readonly class EmitterNestedFixture
 final readonly class EmitterSelectorFixture
 {
     public function __construct(
-        #[CssRule(key: 'max-height', value: '{value}px', selector: 'img')]
+        #[CssRule(key: 'max-height', value: '{value}px', selector: 'img, svg')]
         public ?int $maxHeight = null,
         #[CssRule(key: 'color', value: '{value}')]
         public ?string $color = null,
@@ -93,7 +93,7 @@ it('groups descendant-selector rules by their selector suffix', function () {
     $css = CssRuleEmitter::for(new EmitterSelectorFixture(maxHeight: 80, color: '#222'));
 
     expect($css)->toBe([
-        'img' => 'max-height: 80px;',
+        'img, svg' => 'max-height: 80px;',
         '' => 'color: #222;',
     ]);
 });

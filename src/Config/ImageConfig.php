@@ -19,7 +19,7 @@ final readonly class ImageConfig extends BlockConfig
         #[Title('Maximum height')]
         #[Description('Maximum rendered image height in pixels.')]
         #[Min(1)]
-        #[CssRule(key: 'max-height', value: '{value}px', selector: 'img')]
+        #[CssRule(key: 'max-height', value: '{value}px', selector: 'img, svg')]
         public int $maxHeight = 60,
     ) {
         parent::__construct($typography, $spacing, $width, $align);

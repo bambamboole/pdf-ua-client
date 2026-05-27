@@ -29,6 +29,7 @@
           "id": "carrier",
           "config": {
             "width": "45%",
+            "labelWidth": "18mm",
             "fields": [
               {
                 "key": "name",
@@ -47,6 +48,7 @@
           "config": {
             "width": "55%",
             "align": "right",
+            "labelWidth": "18mm",
             "fields": [
               {
                 "key": "level",
@@ -68,6 +70,7 @@
           "id": "recipient",
           "config": {
             "width": "100%",
+            "labelWidth": "24mm",
             "fields": [
               {
                 "key": "name",
@@ -93,6 +96,7 @@
           "id": "sender",
           "config": {
             "width": "100%",
+            "labelWidth": "24mm",
             "fields": [
               {
                 "key": "name",
@@ -117,7 +121,8 @@
           "type": "key-value",
           "id": "tracking",
           "config": {
-            "width": "58%",
+            "width": "100%",
+            "labelWidth": "20mm",
             "fields": [
               {
                 "key": "number",
@@ -125,13 +130,17 @@
               }
             ]
           }
-        },
+        }
+      ]
+    },
+    {
+      "blocks": [
         {
           "type": "key-value",
           "id": "routing-code",
           "config": {
-            "width": "42%",
-            "align": "right",
+            "width": "100%",
+            "labelWidth": "20mm",
             "fields": [
               {
                 "key": "code",
@@ -189,7 +198,7 @@
     },
     "constants": {
       "barcode": {
-        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MjAiIGhlaWdodD0iMTUwIiB2aWV3Qm94PSIwIDAgNTIwIDE1MCI+PHJlY3Qgd2lkdGg9IjUyMCIgaGVpZ2h0PSIxNTAiIGZpbGw9IiNmZmYiLz48ZyBmaWxsPSIjMTExODI3Ij48cmVjdCB4PSIyMCIgeT0iMTIiIHdpZHRoPSI0IiBoZWlnaHQ9IjEwMCIvPjxyZWN0IHg9IjMwIiB5PSIxMiIgd2lkdGg9IjgiIGhlaWdodD0iMTAwIi8+PHJlY3QgeD0iNDYiIHk9IjEyIiB3aWR0aD0iMyIgaGVpZ2h0PSIxMDAiLz48cmVjdCB4PSI1OCIgeT0iMTIiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMDAiLz48cmVjdCB4PSI3NiIgeT0iMTIiIHdpZHRoPSI1IiBoZWlnaHQ9IjEwMCIvPjxyZWN0IHg9IjkyIiB5PSIxMiIgd2lkdGg9IjEyIiBoZWlnaHQ9IjEwMCIvPjxyZWN0IHg9IjExMiIgeT0iMTIiIHdpZHRoPSI0IiBoZWlnaHQ9IjEwMCIvPjxyZWN0IHg9IjEyNiIgeT0iMTIiIHdpZHRoPSI4IiBoZWlnaHQ9IjEwMCIvPjxyZWN0IHg9IjE0NiIgeT0iMTIiIHdpZHRoPSIzIiBoZWlnaHQ9IjEwMCIvPjxyZWN0IHg9IjE1OCIgeT0iMTIiIHdpZHRoPSIxMiIgaGVpZ2h0PSIxMDAiLz48cmVjdCB4PSIxODIiIHk9IjEyIiB3aWR0aD0iNSIgaGVpZ2h0PSIxMDAiLz48cmVjdCB4PSIxOTgiIHk9IjEyIiB3aWR0aD0iOCIgaGVpZ2h0PSIxMDAiLz48cmVjdCB4PSIyMTYiIHk9IjEyIiB3aWR0aD0iNCIgaGVpZ2h0PSIxMDAiLz48cmVjdCB4PSIyMzIiIHk9IjEyIiB3aWR0aD0iMTQiIGhlaWdodD0iMTAwIi8+PHJlY3QgeD0iMjU2IiB5PSIxMiIgd2lkdGg9IjQiIGhlaWdodD0iMTAwIi8+PHJlY3QgeD0iMjcwIiB5PSIxMiIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwMCIvPjxyZWN0IHg9IjI5MiIgeT0iMTIiIHdpZHRoPSI1IiBoZWlnaHQ9IjEwMCIvPjxyZWN0IHg9IjMwOCIgeT0iMTIiIHdpZHRoPSIxMiIgaGVpZ2h0PSIxMDAiLz48cmVjdCB4PSIzMzAiIHk9IjEyIiB3aWR0aD0iMyIgaGVpZ2h0PSIxMDAiLz48cmVjdCB4PSIzNDQiIHk9IjEyIiB3aWR0aD0iOSIgaGVpZ2h0PSIxMDAiLz48cmVjdCB4PSIzNjQiIHk9IjEyIiB3aWR0aD0iNCIgaGVpZ2h0PSIxMDAiLz48cmVjdCB4PSIzNzgiIHk9IjEyIiB3aWR0aD0iMTIiIGhlaWdodD0iMTAwIi8+PHJlY3QgeD0iNDAyIiB5PSIxMiIgd2lkdGg9IjUiIGhlaWdodD0iMTAwIi8+PHJlY3QgeD0iNDE4IiB5PSIxMiIgd2lkdGg9IjkiIGhlaWdodD0iMTAwIi8+PHJlY3QgeD0iNDQwIiB5PSIxMiIgd2lkdGg9IjQiIGhlaWdodD0iMTAwIi8+PHJlY3QgeD0iNDU0IiB5PSIxMiIgd2lkdGg9IjEyIiBoZWlnaHQ9IjEwMCIvPjxyZWN0IHg9IjQ3OCIgeT0iMTIiIHdpZHRoPSI2IiBoZWlnaHQ9IjEwMCIvPjxyZWN0IHg9IjQ5NCIgeT0iMTIiIHdpZHRoPSI0IiBoZWlnaHQ9IjEwMCIvPjwvZz48dGV4dCB4PSIyNjAiIHk9IjEzOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzExMTgyNyIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjI0IiBmb250LXdlaWdodD0iNzAwIj4xWjk5OUFBMTAxMjM0NTY3ODQ8L3RleHQ+PC9zdmc+",
+        "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAggAAACWCAIAAAA0becuAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAEFElEQVR4nO3dwW3bMBiGYafIBLllg+w/TTbILSu4h6KuPon8RdF2bSDPgx6K0KJoIeBryy76cj6fTwDw169HLwCA5yIMAARhACAIAwBBGAAIwgBAEAYAgjAAEIQBgCAMAARhACC8XnPw2/vH5e/fX5/F6NL2kavH9x5QzDk48+78I2cZP1d9oqPXp3ns9LWaONfgIXPPa/y61We533nnfveKGe76e7ia4ZpzHTr2mms4eLrtPHd9dtsZHvIcD5138EkVvGMAIAgDAEEYAAjCAEAQBgCCMAAQhAGAIAwABGEAIAgDAEEYAAjCAEAQBgCCMAAQhAGAIAwABGEAIAgDAEEYAAjCAEAQBgCCMAAQhAGAIAwABGEAIAgDAEEYAAjCAEAQBgCCMAAQhAGAIAwABGEAIAgDAEEYAAjCAEAQBgCCMAAQhAGAIAwABGEAIAgDAEEYAAjCAEAQBgCCMAAQhAGAIAwABGEAIAgDAEEYAAjCAEAQBgCCMAAQhAGAIAwABGEAIAgDAEEYAAjCAEAQBgCCMAAQhAGAIAwABGEAIAgDAEEYAAjCAEAQBgCCMAAQhAGAIAwABGEAIAgDAEEYAAjCAEAQBgCCMAAQhAGAIAwABGEAIAgDAEEYAAjCAEAQBgCCMAAQhAGAIAwABGEAIAgDAEEYAAjCAEAQBgCCMAAQhAGAIAwABGEAIAgDAEEYAAjCAEB4OZ/Pj14DAE/EOwYAgjAAEIQBgCAMAARhACAIAwBBGAAIwgBAEAYAgjAAEIQBgCAMAARhACAIAwBBGAAIr49eAE/h7f3jdDp9f32ufrLSe8Dy59NDzWX8/6HeClcXpDnnatq5a9g8qveAkWXAUf6jHv5tNMU+stpottvflUOnq0szvsUXR/VWWDyRYtp6d66vxsSqdp8dDHIr6afrvT7dPeSy6Sw3qbmh5ej2tfbuUL3I8aOKFV7maS5+dzGD55o76pplQJMw/HSrLa/p3vclpnPSW/zcUSOXojl/8yerx//5U8w58nahV9PBZcAgYWDHdq9pbk/XDD2n5iZ72d8PVaH5xmU54eCbmNPiMqoC9yMMVHp7zXJ7Wo3ODT2b4onvvmxfPbi487PbjO3MvVtkqsAN+VYSXfVeU+xBc0O7Hxj8N7ub7PfX5ypv2xv9I3v0shnNCYvPxm+4DFgRBtpGbo/ccOjUuisyMtSbarljHno1ffSl9+D3mg6ZOLBOCBziVhKTdj8CPTp0W8W9+ELxBdDmF6UG17A9qhiq7031joIb8u8YfrrtC/DeLe9T/5V78+Xq+FDxOWr9EWtv8c0HN9ewPKr3XqQ5OvIlou3p5q5G8xRHlwHjhAGA4FYSAEEYAAjCAEAQBgCCMAAQhAGAIAwABGEAIAgDAEEYAAi/AWOSkuVOdk3nAAAAAElFTkSuQmCC",
         "alt": "Barcode for tracking number 1Z999AA10123456784"
       }
     }

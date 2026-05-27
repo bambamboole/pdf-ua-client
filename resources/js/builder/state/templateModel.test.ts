@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
+import { mergeDataMaps } from "../lib/dataLayers";
 import {
   fromTemplate,
   toTemplate,
   toDataMap,
-  previewDataMap,
   findBlock,
   addBlock,
   removeBlock,
@@ -264,7 +264,7 @@ describe("updateBlockId", () => {
   });
 });
 
-describe("previewDataMap", () => {
+describe("mergeDataMaps", () => {
   it("merges fallback, example, and locked data in preview order", () => {
     const m = fromTemplate({
       ...template,
@@ -275,7 +275,7 @@ describe("previewDataMap", () => {
       },
     });
 
-    expect(previewDataMap(m)).toEqual({
+    expect(mergeDataMaps(m.data.defaults, m.data.example, m.data.constants)).toEqual({
       title: { text: "Locked", subtitle: "Fallback subtitle" },
     });
   });
@@ -314,7 +314,9 @@ describe("updateDataField", () => {
     expect(toDataMap(m)).toEqual({});
     expect(m.data.constants.title).toEqual({ text: "Locked" });
     expect("data" in m.rows[0].blocks[0]).toBe(false);
-    expect(previewDataMap(m)).toEqual({ title: { text: "Locked" } });
+    expect(mergeDataMaps(m.data.defaults, m.data.example, m.data.constants)).toEqual({
+      title: { text: "Locked" },
+    });
   });
 });
 

@@ -45,10 +45,8 @@ it('opens block settings inline on the selected block', function (): void {
 });
 
 it('sizes the build canvas to the selected page format', function (): void {
-    $page = visit('/')
+    visit('/')
         ->click('Invoice')
-        ->assertSee('Page scale')
-        ->assertSee('Default')
         ->assertSee('Footer')
         ->assertSee('Page numbers')
         ->assertSee('Repeat')
@@ -58,12 +56,6 @@ it('sizes the build canvas to the selected page format', function (): void {
         ->assertScript('document.querySelectorAll("[data-footer-canvas] [data-new-row-zone=\"footer\"]").length === 1')
         ->assertScript('(() => { const body = document.querySelector("[data-body-canvas]"); const footer = document.querySelector("[data-footer-canvas]"); return body && footer ? Math.abs(body.getBoundingClientRect().width - footer.getBoundingClientRect().width) <= 1 : false; })()')
         ->assertNoJavaScriptErrors();
-
-    $before = $page->script('document.querySelector("[data-edit-canvas]")?.getBoundingClientRect().width');
-    $page->script('document.querySelector("[aria-label=\"Increase page scale\"]")?.click()');
-    $after = $page->script('document.querySelector("[data-edit-canvas]")?.getBoundingClientRect().width');
-
-    expect($after)->toBeGreaterThan($before);
 });
 
 it('renders the invoice example preview and matches the browser screenshot', function (): void {

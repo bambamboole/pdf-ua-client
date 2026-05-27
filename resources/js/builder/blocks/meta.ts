@@ -1,7 +1,7 @@
 import type { Json, TemplateDataLayers } from "../types";
 import { keyedFieldKeys, pruneDataFieldsForId, pruneDataRowsForId } from "./shared";
 
-export interface BlockMeta {
+interface BlockMeta {
   managedConfigKeys: string[];
   pruneDataForConfig: (
     layers: TemplateDataLayers,

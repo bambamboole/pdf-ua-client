@@ -1,5 +1,5 @@
 import type { DataMap, DataValue, TemplateDataLayers } from "../types";
-import { isPlainObject, mergeDataMaps, omitDataId } from "../lib/dataLayers";
+import { isPlainObject, mapLayers, mergeDataMaps, omitDataId } from "../lib/dataLayers";
 
 export { isPlainObject };
 
@@ -10,6 +10,21 @@ export interface KeyedField {
 
 export function stringValue(value: unknown): string {
   return value == null ? "" : String(value);
+}
+
+export function normalizeKey(value: string): string {
+  return value.replace(/[^A-Za-z0-9_]/g, "").replace(/^[^A-Za-z]+/, "");
+}
+
+export function nextKey(prefix: string, existing: string[]): string {
+  const keys = new Set(existing);
+  let index = keys.size + 1;
+
+  while (keys.has(`${prefix}${index}`)) {
+    index += 1;
+  }
+
+  return `${prefix}${index}`;
 }
 
 export function keyedFields(value: unknown): KeyedField[] {
@@ -86,11 +101,7 @@ export function pruneDataFieldsForId(
   blockId: string,
   keys: Set<string>,
 ): TemplateDataLayers {
-  return {
-    example: pruneDataMapFields(layers.example, blockId, keys),
-    defaults: pruneDataMapFields(layers.defaults, blockId, keys),
-    constants: pruneDataMapFields(layers.constants, blockId, keys),
-  };
+  return mapLayers(layers, (map) => pruneDataMapFields(map, blockId, keys));
 }
 
 function pruneDataMapFields(data: DataMap, blockId: string, keys: Set<string>): DataMap {
@@ -117,11 +128,7 @@ export function pruneDataRowsForId(
   blockId: string,
   keys: Set<string>,
 ): TemplateDataLayers {
-  return {
-    example: pruneDataMapRows(layers.example, blockId, keys),
-    defaults: pruneDataMapRows(layers.defaults, blockId, keys),
-    constants: pruneDataMapRows(layers.constants, blockId, keys),
-  };
+  return mapLayers(layers, (map) => pruneDataMapRows(map, blockId, keys));
 }
 
 function pruneDataMapRows(data: DataMap, blockId: string, keys: Set<string>): DataMap {

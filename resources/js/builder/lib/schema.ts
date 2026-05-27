@@ -23,7 +23,7 @@ export function listBlockTypes(schema: JsonSchema): string[] {
     .filter((type): type is string => typeof type === "string");
 }
 
-export function humanizeType(type: string): string {
+function humanizeType(type: string): string {
   return String(type)
     .split("-")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -109,7 +109,7 @@ export function getBlockTitle(schema: JsonSchema, type: string): string {
   return typeof props.title === "string" ? props.title : humanizeType(type);
 }
 
-export function getBlockConfigSchema(schema: JsonSchema, type: string): JsonSchema {
+function getBlockConfigSchema(schema: JsonSchema, type: string): JsonSchema {
   return getBlockSubschemas(schema, type).config;
 }
 

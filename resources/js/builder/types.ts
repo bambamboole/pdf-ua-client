@@ -5,7 +5,6 @@ export type JsonSchema = Record<string, unknown>;
 export interface TemplateBlock {
   type: string;
   id?: string;
-  props?: Json;
   config?: Json;
 }
 export interface TemplateRow {
@@ -46,6 +45,8 @@ export interface TemplateDataLayers {
 }
 
 export type EditorArea = "body" | "footer";
+
+export type PageNumberPosition = "disabled" | "left" | "center" | "right";
 
 export type DragData =
   | { source: "palette"; type: string }

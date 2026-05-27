@@ -76,16 +76,7 @@ const tableBlock: EditorBlock = {
 describe("InlineBlockEditor", () => {
   it("orders data first and merges settings into config", () => {
     const html = renderToStaticMarkup(
-      <InlineBlockEditor
-        block={tableBlock}
-        schema={schema}
-        data={data}
-        detailsOpen
-        onUpdateBlockId={() => undefined}
-        onUpdateBlockConfig={() => undefined}
-        onUpdateDataField={() => undefined}
-        onUpdateBlockData={() => undefined}
-      />,
+      <InlineBlockEditor block={tableBlock} schema={schema} data={data} detailsOpen />,
     );
 
     expect(html.indexOf("Data")).toBeLessThan(html.indexOf("Config"));

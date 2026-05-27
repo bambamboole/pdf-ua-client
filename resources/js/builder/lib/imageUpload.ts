@@ -1,4 +1,4 @@
-export const MAX_IMAGE_BYTES = 200 * 1024;
+const MAX_IMAGE_BYTES = 200 * 1024;
 export const IMAGE_ACCEPT = "image/*,.svg";
 
 interface ImageFileLike {

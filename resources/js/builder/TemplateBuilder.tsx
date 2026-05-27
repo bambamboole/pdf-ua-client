@@ -28,12 +28,15 @@ import {
   updateBlockConfig,
   updateBlockId,
   updateTemplateConfig,
+  updateFooterRepeat,
+  updatePageNumbers,
   setRowWidths,
   updateBlockData,
   updateDataField,
 } from "./state/templateModel";
 import { exampleFromSchema } from "./lib/exampleFromSchema";
 import { useLatest } from "./useLatest";
+import { BuilderActionsProvider, type BuilderActions } from "./state/builderActions";
 import type {
   DataMap,
   DragData,
@@ -43,7 +46,6 @@ import type {
   JsonSchema,
   Template,
 } from "./types";
-import CanvasZoomControls from "./CanvasZoomControls";
 
 const SchemaView = lazy(() => import("./SchemaView"));
 
@@ -55,10 +57,6 @@ const tabs: Array<{ key: BuilderTab; label: string }> = [
   { key: "html", label: "HTML" },
   { key: "pdf", label: "PDF" },
 ];
-
-const ZOOM_STEP = 0.05;
-const MIN_ZOOM = 0.75;
-const MAX_ZOOM = 1.6;
 
 export interface TemplateBuilderProps {
   schema: JsonSchema;
@@ -73,6 +71,44 @@ export interface TemplateBuilderProps {
 
 function errorMessage(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause);
+}
+
+interface DebouncedTask<T> {
+  run: () => Promise<T>;
+  onResult: (value: T) => void;
+  onError: (message: string) => void;
+  onStart?: () => void;
+  onSettle?: () => void;
+}
+
+function runDebounced<T>(task: DebouncedTask<T>): () => void {
+  let cancelled = false;
+  task.onStart?.();
+
+  const handle = setTimeout(() => {
+    task
+      .run()
+      .then((value) => {
+        if (!cancelled) {
+          task.onResult(value);
+        }
+      })
+      .catch((cause: unknown) => {
+        if (!cancelled) {
+          task.onError(errorMessage(cause));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          task.onSettle?.();
+        }
+      });
+  }, 300);
+
+  return () => {
+    cancelled = true;
+    clearTimeout(handle);
+  };
 }
 
 function rowIndexById(model: EditorModel, rowSortableId: string, area: EditorArea): number {
@@ -102,14 +138,10 @@ export default function TemplateBuilder({
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [dataSchema, setDataSchema] = useState<JsonSchema>({});
   const [schemaError, setSchemaError] = useState<string | null>(null);
-  const [canvasScale, setCanvasScale] = useState(1);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pdfDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const schemaDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pdfUrlRef = useRef<string | null>(null);
   const renderTemplateRef = useLatest(renderTemplate);
   const renderPdfRef = useLatest(renderPdf);
@@ -132,74 +164,6 @@ export default function TemplateBuilder({
     onChangeRef.current?.(template);
   }, [template, onChangeRef]);
 
-  useEffect(() => {
-    if (tab !== "html") {
-      return;
-    }
-
-    let cancelled = false;
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-
-    debounceRef.current = setTimeout(() => {
-      renderTemplateRef
-        .current(template, data)
-        .then((result) => {
-          if (!cancelled) {
-            setHtml(result);
-            setError(null);
-          }
-        })
-        .catch((cause: unknown) => {
-          if (!cancelled) {
-            setError(errorMessage(cause));
-          }
-        });
-    }, 300);
-
-    return () => {
-      cancelled = true;
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
-    };
-  }, [tab, template, data, renderTemplateRef]);
-
-  useEffect(() => {
-    if (tab !== "schema") {
-      return;
-    }
-
-    let cancelled = false;
-    if (schemaDebounceRef.current) {
-      clearTimeout(schemaDebounceRef.current);
-    }
-
-    schemaDebounceRef.current = setTimeout(() => {
-      fetchSchemaRef
-        .current(template)
-        .then((result) => {
-          if (!cancelled) {
-            setDataSchema(result);
-            setSchemaError(null);
-          }
-        })
-        .catch((cause: unknown) => {
-          if (!cancelled) {
-            setSchemaError(errorMessage(cause));
-          }
-        });
-    }, 300);
-
-    return () => {
-      cancelled = true;
-      if (schemaDebounceRef.current) {
-        clearTimeout(schemaDebounceRef.current);
-      }
-    };
-  }, [tab, template, fetchSchemaRef]);
-
   useEffect(
     () => () => {
       if (pdfUrlRef.current) {
@@ -210,50 +174,72 @@ export default function TemplateBuilder({
   );
 
   useEffect(() => {
+    if (tab !== "html") {
+      return;
+    }
+
+    return runDebounced({
+      run: () => renderTemplateRef.current(template, data),
+      onResult: (result) => {
+        setHtml(result);
+        setError(null);
+      },
+      onError: setError,
+    });
+  }, [tab, template, data, renderTemplateRef]);
+
+  useEffect(() => {
+    if (tab !== "schema") {
+      return;
+    }
+
+    return runDebounced({
+      run: () => fetchSchemaRef.current(template),
+      onResult: (result) => {
+        setDataSchema(result);
+        setSchemaError(null);
+      },
+      onError: setSchemaError,
+    });
+  }, [tab, template, fetchSchemaRef]);
+
+  useEffect(() => {
     if (tab !== "pdf") {
       return;
     }
 
-    let cancelled = false;
-    setPdfLoading(true);
-    setPdfError(null);
-
-    if (pdfDebounceRef.current) {
-      clearTimeout(pdfDebounceRef.current);
-    }
-
-    pdfDebounceRef.current = setTimeout(() => {
-      renderPdfRef
-        .current(template, data)
-        .then((blob) => {
-          if (cancelled) {
-            return;
-          }
-
-          replacePdfUrl(blob);
-          setPdfError(null);
-        })
-        .catch((cause: unknown) => {
-          if (!cancelled) {
-            setPdfError(errorMessage(cause));
-          }
-        })
-        .finally(() => {
-          if (!cancelled) {
-            setPdfLoading(false);
-          }
-        });
-    }, 300);
-
-    return () => {
-      cancelled = true;
-      if (pdfDebounceRef.current) {
-        clearTimeout(pdfDebounceRef.current);
-      }
-    };
+    return runDebounced({
+      run: () => renderPdfRef.current(template, data),
+      onStart: () => {
+        setPdfLoading(true);
+        setPdfError(null);
+      },
+      onResult: (blob) => {
+        replacePdfUrl(blob);
+        setPdfError(null);
+      },
+      onError: setPdfError,
+      onSettle: () => setPdfLoading(false),
+    });
   }, [tab, template, data, renderPdfRef, replacePdfUrl]);
 
-  const selectBlock = useCallback((uid: string) => setSelectedBlockUid(uid), []);
+  const actions = useMemo<BuilderActions>(
+    () => ({
+      onSelectBlock: (uid) => setSelectedBlockUid(uid),
+      onRemoveBlock: (uid) => setModel((m) => removeBlock(m, uid)),
+      onRemoveRow: (uid) => setModel((m) => removeRow(m, uid)),
+      onSetRowWidths: (rowUid, widths) => setModel((m) => setRowWidths(m, rowUid, widths)),
+      onUpdateBlockId: (uid, id) => setModel((m) => updateBlockId(m, uid, id)),
+      onUpdateBlockConfig: (uid, config) => setModel((m) => updateBlockConfig(m, uid, config)),
+      onUpdateDataField: (blockId, field, value, options) =>
+        setModel((m) => updateDataField(m, blockId, field, value, options)),
+      onUpdateBlockData: (blockId, value, options) =>
+        setModel((m) => updateBlockData(m, blockId, value, options)),
+      onUpdateFooterRepeat: (repeat) => setModel((m) => updateFooterRepeat(m, repeat)),
+      onUpdatePageNumbers: (position) => setModel((m) => updatePageNumbers(m, position)),
+    }),
+    [],
+  );
 
   const blockData = useCallback(
     (type: string): Json =>
@@ -347,133 +333,111 @@ export default function TemplateBuilder({
         setActiveLabel(a?.source === "palette" ? getBlockTitle(schema, a.type) : "Block");
       }}
     >
-      <div className="template-builder flex h-screen bg-[var(--builder-bg)] text-[var(--builder-ink)]">
-        <aside className="template-builder__sidebar w-72 shrink-0 overflow-y-auto border-r border-[var(--builder-sidebar-border)] bg-[var(--builder-sidebar)] p-4 text-[var(--builder-ink)]">
-          <BlockPalette
-            schema={schema}
-            examples={listExamples(examples)}
-            pageConfig={model.config}
-            onLoadExample={(entry) => {
-              setModel(loadExample(entry));
-              setSelectedBlockUid(null);
-            }}
-            onUpdateTemplateConfig={(config) =>
-              setModel((m) => updateTemplateConfig(m, config as Json))
-            }
-          />
-        </aside>
-        <main className="flex flex-1 flex-col overflow-hidden">
-          <div className="flex items-center justify-between gap-4 border-b border-[var(--builder-stroke)] bg-[var(--builder-panel)] px-5 py-3 shadow-sm">
-            <div>
-              <h1 className="text-sm font-semibold text-[var(--builder-ink)]">Template builder</h1>
-              <p className="text-xs text-[var(--builder-muted)]">
-                Compose blocks, inspect data, and preview HTML or PDF output.
-              </p>
+      <BuilderActionsProvider value={actions}>
+        <div className="template-builder flex h-screen bg-[var(--builder-bg)] text-[var(--builder-ink)]">
+          <aside className="template-builder__sidebar w-72 shrink-0 overflow-y-auto border-r border-[var(--builder-sidebar-border)] bg-[var(--builder-sidebar)] p-4 text-[var(--builder-ink)]">
+            <BlockPalette
+              schema={schema}
+              examples={listExamples(examples)}
+              pageConfig={model.config}
+              onLoadExample={(entry) => {
+                setModel(loadExample(entry));
+                setSelectedBlockUid(null);
+              }}
+              onUpdateTemplateConfig={(config) =>
+                setModel((m) => updateTemplateConfig(m, config as Json))
+              }
+            />
+          </aside>
+          <main className="flex flex-1 flex-col overflow-hidden">
+            <div className="flex items-center justify-between gap-4 border-b border-[var(--builder-stroke)] bg-[var(--builder-panel)] px-5 py-3 shadow-sm">
+              <div>
+                <h1 className="text-sm font-semibold text-[var(--builder-ink)]">
+                  Template builder
+                </h1>
+                <p className="text-xs text-[var(--builder-muted)]">
+                  Compose blocks, inspect data, and preview HTML or PDF output.
+                </p>
+              </div>
+              <div
+                data-builder-tabs
+                aria-label="Builder views"
+                className="flex gap-1 rounded-full border border-[var(--builder-stroke)] bg-[var(--builder-surface)] p-1"
+              >
+                {tabs.map((item) => (
+                  <button
+                    key={item.key}
+                    type="button"
+                    aria-pressed={tab === item.key}
+                    onClick={() => setTab(item.key)}
+                    className={`rounded-full px-3 py-1 text-sm font-medium transition ${tab === item.key ? "bg-[var(--builder-ink)] text-white shadow-sm" : "text-[var(--builder-muted-strong)] hover:bg-[var(--builder-panel)] hover:text-[var(--builder-ink)]"}`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div
-              data-builder-tabs
-              aria-label="Builder views"
-              className="flex gap-1 rounded-full border border-[var(--builder-stroke)] bg-[var(--builder-surface)] p-1"
-            >
-              {tabs.map((item) => (
-                <button
-                  key={item.key}
-                  type="button"
-                  aria-pressed={tab === item.key}
-                  onClick={() => setTab(item.key)}
-                  className={`rounded-full px-3 py-1 text-sm font-medium transition ${tab === item.key ? "bg-[var(--builder-ink)] text-white shadow-sm" : "text-[var(--builder-muted-strong)] hover:bg-[var(--builder-panel)] hover:text-[var(--builder-ink)]"}`}
+            <div className="flex-1 overflow-auto bg-[var(--builder-bg)] p-5">
+              {tab === "build" ? (
+                <div className="grid items-start gap-5">
+                  <EditCanvas
+                    model={model}
+                    schema={schema}
+                    format={format}
+                    selectedBlockUid={selectedBlockUid}
+                  />
+                </div>
+              ) : tab === "schema" && schemaError ? (
+                <div className="rounded-[var(--builder-radius)] border border-red-200 bg-red-50 p-4 text-red-700">
+                  {schemaError}
+                </div>
+              ) : tab === "schema" ? (
+                <Suspense
+                  fallback={
+                    <div className="h-24 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-panel)]" />
+                  }
                 >
-                  {item.label}
-                </button>
-              ))}
+                  <SchemaView
+                    template={template}
+                    dataSchema={dataSchema}
+                    onExportTemplate={handleExport}
+                  />
+                </Suspense>
+              ) : tab === "html" && error ? (
+                <div className="rounded-[var(--builder-radius)] border border-red-200 bg-red-50 p-4 text-red-700">
+                  {error}
+                </div>
+              ) : tab === "html" ? (
+                <Suspense
+                  fallback={
+                    <div className="h-96 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-panel)]" />
+                  }
+                >
+                  <PageCanvas format={format} html={html} />
+                </Suspense>
+              ) : pdfError ? (
+                <div className="rounded-[var(--builder-radius)] border border-red-200 bg-red-50 p-4 text-red-700">
+                  {pdfError}
+                </div>
+              ) : pdfLoading && pdfUrl === null ? (
+                <div className="h-96 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-panel)]" />
+              ) : pdfUrl ? (
+                <Suspense
+                  fallback={
+                    <div className="h-96 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-panel)]" />
+                  }
+                >
+                  <PdfCanvas url={pdfUrl} />
+                </Suspense>
+              ) : (
+                <div className="rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-panel)] p-4 text-sm text-[var(--builder-muted)]">
+                  PDF preview is waiting for generated output.
+                </div>
+              )}
             </div>
-          </div>
-          <div className="flex-1 overflow-auto bg-[var(--builder-bg)] p-5">
-            {tab === "build" ? (
-              <div className="grid items-start gap-5">
-                <CanvasZoomControls
-                  onDecrease={() => setCanvasScale((scale) => clampZoom(scale - ZOOM_STEP))}
-                  onIncrease={() => setCanvasScale((scale) => clampZoom(scale + ZOOM_STEP))}
-                  onReset={() => setCanvasScale(1)}
-                />
-                <EditCanvas
-                  model={model}
-                  schema={schema}
-                  format={format}
-                  scale={canvasScale}
-                  selectedBlockUid={selectedBlockUid}
-                  onSelectBlock={selectBlock}
-                  onRemoveBlock={(uid) => setModel((m) => removeBlock(m, uid))}
-                  onRemoveRow={(uid) => setModel((m) => removeRow(m, uid))}
-                  onUpdateFooterRepeat={(repeat) => setModel((m) => updateFooterRepeat(m, repeat))}
-                  onUpdatePageNumbers={(position) =>
-                    setModel((m) => updatePageNumbers(m, position))
-                  }
-                  onSetRowWidths={(rowUid, widths) =>
-                    setModel((m) => setRowWidths(m, rowUid, widths))
-                  }
-                  onUpdateBlockId={(uid, id) => setModel((m) => updateBlockId(m, uid, id))}
-                  onUpdateBlockConfig={(uid, config) =>
-                    setModel((m) => updateBlockConfig(m, uid, config as Json))
-                  }
-                  onUpdateDataField={(blockId, field, value, options) =>
-                    setModel((m) => updateDataField(m, blockId, field, value, options))
-                  }
-                  onUpdateBlockData={(blockId, value, options) =>
-                    setModel((m) => updateBlockData(m, blockId, value, options))
-                  }
-                />
-              </div>
-            ) : tab === "schema" && schemaError ? (
-              <div className="rounded-[var(--builder-radius)] border border-red-200 bg-red-50 p-4 text-red-700">
-                {schemaError}
-              </div>
-            ) : tab === "schema" ? (
-              <Suspense
-                fallback={
-                  <div className="h-24 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-panel)]" />
-                }
-              >
-                <SchemaView
-                  template={template}
-                  dataSchema={dataSchema}
-                  onExportTemplate={handleExport}
-                />
-              </Suspense>
-            ) : tab === "html" && error ? (
-              <div className="rounded-[var(--builder-radius)] border border-red-200 bg-red-50 p-4 text-red-700">
-                {error}
-              </div>
-            ) : tab === "html" ? (
-              <Suspense
-                fallback={
-                  <div className="h-96 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-panel)]" />
-                }
-              >
-                <PageCanvas format={format} html={html} />
-              </Suspense>
-            ) : pdfError ? (
-              <div className="rounded-[var(--builder-radius)] border border-red-200 bg-red-50 p-4 text-red-700">
-                {pdfError}
-              </div>
-            ) : pdfLoading && pdfUrl === null ? (
-              <div className="h-96 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-panel)]" />
-            ) : pdfUrl ? (
-              <Suspense
-                fallback={
-                  <div className="h-96 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-panel)]" />
-                }
-              >
-                <PdfCanvas url={pdfUrl} />
-              </Suspense>
-            ) : (
-              <div className="rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-panel)] p-4 text-sm text-[var(--builder-muted)]">
-                PDF preview is waiting for generated output.
-              </div>
-            )}
-          </div>
-        </main>
-      </div>
+          </main>
+        </div>
+      </BuilderActionsProvider>
       <DragOverlay>
         {activeLabel ? (
           <div className="rounded-[var(--builder-radius)] border border-[var(--builder-accent)] bg-[var(--builder-panel)] px-3 py-2 text-sm font-medium text-[var(--builder-ink)] shadow-[var(--builder-shadow)]">
@@ -483,54 +447,4 @@ export default function TemplateBuilder({
       </DragOverlay>
     </DndContext>
   );
-}
-
-function clampZoom(scale: number): number {
-  return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Number(scale.toFixed(2))));
-}
-
-function updateFooterRepeat(model: EditorModel, repeat: boolean): EditorModel {
-  const page = objectOrEmpty(model.config.page);
-  const footer = objectOrEmpty(page.footer);
-
-  return {
-    ...model,
-    config: {
-      ...model.config,
-      page: {
-        ...page,
-        footer: {
-          ...footer,
-          repeat,
-        },
-      },
-    },
-  };
-}
-
-function updatePageNumbers(
-  model: EditorModel,
-  position: "disabled" | "left" | "center" | "right",
-): EditorModel {
-  const page = objectOrEmpty(model.config.page);
-
-  return {
-    ...model,
-    config: {
-      ...model.config,
-      page: {
-        ...page,
-        pageNumbers:
-          position === "disabled"
-            ? { ...objectOrEmpty(page.pageNumbers), enabled: false }
-            : { ...objectOrEmpty(page.pageNumbers), enabled: true, position },
-      },
-    },
-  };
-}
-
-function objectOrEmpty(value: unknown): Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
 }

@@ -1,11 +1,12 @@
 import { lazy, Suspense, useEffect, useState } from "react";
-import type { DataValue, EditorBlock, Json, JsonSchema, TemplateDataLayers } from "./types";
+import type { EditorBlock, Json, JsonSchema, TemplateDataLayers } from "./types";
 import { blockDefinition } from "./blocks/registry";
 import {
   getBlockConfigGroupSchema,
   getBlockSubschemas,
   getNestedBlockConfigSchema,
 } from "./lib/schema";
+import { useBuilderActions } from "./state/builderActions";
 import BlockDataEditor from "./BlockDataEditor";
 
 const SettingsForm = lazy(() => import("./SettingsForm"));
@@ -16,31 +17,11 @@ interface Props {
   schema: JsonSchema;
   data: TemplateDataLayers;
   detailsOpen: boolean;
-  onUpdateBlockId: (uid: string, id: string) => void;
-  onUpdateBlockConfig: (uid: string, config: Json) => void;
-  onUpdateDataField: (
-    blockId: string,
-    field: string,
-    value: unknown,
-    options: { example: boolean; locked: boolean },
-  ) => void;
-  onUpdateBlockData: (
-    blockId: string,
-    value: DataValue,
-    options: { example: boolean; locked: boolean },
-  ) => void;
 }
 
-export default function InlineBlockEditor({
-  block,
-  schema,
-  data,
-  detailsOpen,
-  onUpdateBlockId,
-  onUpdateBlockConfig,
-  onUpdateDataField,
-  onUpdateBlockData,
-}: Props) {
+export default function InlineBlockEditor({ block, schema, data, detailsOpen }: Props) {
+  const { onUpdateBlockId, onUpdateBlockConfig, onUpdateDataField, onUpdateBlockData } =
+    useBuilderActions();
   const blockDataSchema = getBlockSubschemas(schema, block.type).props;
   const dataProperties = blockDataSchema.properties;
   const hasDataProperties =
@@ -51,7 +32,7 @@ export default function InlineBlockEditor({
   const configSchema = getBlockConfigGroupSchema(schema, block.type);
   const definition = blockDefinition(block.type);
   const hasGenericConfig = hasSchemaProperties(configSchema);
-  const hasConfigTab = hasGenericConfig || Boolean(definition.ConfigEditor);
+  const hasConfigTab = hasGenericConfig || Boolean(definition.ConfigFields);
   const typographySchema = getNestedBlockConfigSchema(schema, block.type, "typography");
   const spacingSchema = getNestedBlockConfigSchema(schema, block.type, "spacing");
   const [tab, setTab] = useState<InlineEditorTab>(() => (hasDataProperties ? "data" : "config"));
@@ -99,18 +80,15 @@ export default function InlineBlockEditor({
           onUpdateDataField={onUpdateDataField}
           onUpdateBlockData={onUpdateBlockData}
         />
-      ) : tab === "config" && definition.ConfigEditor ? (
-        <definition.ConfigEditor
-          block={block}
-          configSchema={configSchema}
-          onUpdateBlockId={onUpdateBlockId}
-          onUpdateBlockConfig={onUpdateBlockConfig}
-          BlockIdControl={BlockIdControl}
-          ConfigSettingsForm={ConfigSettingsForm}
-        />
       ) : tab === "config" ? (
         <div className="space-y-3">
           <BlockIdControl block={block} onUpdateBlockId={onUpdateBlockId} />
+          {definition.ConfigFields ? (
+            <definition.ConfigFields
+              config={block.config ?? {}}
+              onChange={(config) => onUpdateBlockConfig(block.uid, config)}
+            />
+          ) : null}
           <ConfigSettingsForm
             schema={configSchema}
             config={block.config ?? {}}

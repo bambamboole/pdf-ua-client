@@ -1,26 +1,19 @@
 import type { Json } from "./types";
-
-interface KeyValueField {
-  key: string;
-  label: string;
-}
+import { inputClass, keyedFields, nextKey, normalizeKey, type KeyedField } from "./blocks/shared";
 
 interface Props {
   config: Json;
   onChange: (config: Json) => void;
 }
 
-const inputClass =
-  "block min-w-0 w-full rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-field)] px-2 py-1 text-sm text-[var(--builder-field-ink)] focus:border-[var(--builder-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--builder-accent-soft)]";
-
 export default function KeyValueConfigFields({ config, onChange }: Props) {
-  const fields = keyValueFields(config.fields);
+  const fields = keyedFields(config.fields);
 
-  function updateFields(nextFields: KeyValueField[]): void {
+  function updateFields(nextFields: KeyedField[]): void {
     onChange({ ...config, fields: nextFields });
   }
 
-  function updateField(index: number, field: Partial<KeyValueField>): void {
+  function updateField(index: number, field: Partial<KeyedField>): void {
     updateFields(
       fields.map((current, currentIndex) =>
         currentIndex === index ? { ...current, ...field } : current,
@@ -46,7 +39,16 @@ export default function KeyValueConfigFields({ config, onChange }: Props) {
           type="button"
           className="shrink-0 rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-surface)] px-2 py-1 text-xs font-medium text-[var(--builder-muted-strong)] transition hover:border-[var(--builder-accent)]"
           onClick={() =>
-            updateFields([...fields, { key: nextFieldKey(fields), label: "New field" }])
+            updateFields([
+              ...fields,
+              {
+                key: nextKey(
+                  "field",
+                  fields.map((field) => field.key),
+                ),
+                label: "New field",
+              },
+            ])
           }
         >
           Add field
@@ -95,47 +97,4 @@ export default function KeyValueConfigFields({ config, onChange }: Props) {
       </div>
     </section>
   );
-}
-
-function keyValueFields(value: unknown): KeyValueField[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value
-    .map((field) => {
-      if (!field || typeof field !== "object") {
-        return null;
-      }
-
-      const record = field as Record<string, unknown>;
-      const key = stringValue(record.key);
-      if (key === "") {
-        return null;
-      }
-
-      return { key, label: stringValue(record.label) || key };
-    })
-    .filter((field): field is KeyValueField => field !== null);
-}
-
-function nextFieldKey(fields: KeyValueField[]): string {
-  const keys = new Set(fields.map((field) => field.key));
-  let index = fields.length + 1;
-  let key = `field${index}`;
-
-  while (keys.has(key)) {
-    index += 1;
-    key = `field${index}`;
-  }
-
-  return key;
-}
-
-function normalizeKey(value: string): string {
-  return value.replace(/[^A-Za-z0-9_]/g, "").replace(/^[^A-Za-z]+/, "");
-}
-
-function stringValue(value: unknown): string {
-  return value == null ? "" : String(value);
 }

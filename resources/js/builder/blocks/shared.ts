@@ -1,12 +1,11 @@
 import type { DataMap, DataValue, TemplateDataLayers } from "../types";
+import { isPlainObject, mergeDataMaps, omitDataId } from "../lib/dataLayers";
+
+export { isPlainObject };
 
 export interface KeyedField {
   key: string;
   label: string;
-}
-
-export function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 export function stringValue(value: unknown): string {
@@ -82,31 +81,6 @@ export function previewBlockValue(data: TemplateDataLayers, blockId: string): Da
   return mergeDataMaps(data.defaults, data.example, data.constants)[blockId] ?? {};
 }
 
-function mergeDataMaps(...maps: DataMap[]): DataMap {
-  const merged: DataMap = {};
-
-  for (const map of maps) {
-    for (const [id, value] of Object.entries(map)) {
-      merged[id] = mergeJson(merged[id] ?? {}, value) as DataValue;
-    }
-  }
-
-  return merged;
-}
-
-function mergeJson(base: unknown, override: unknown): unknown {
-  if (!isPlainObject(base) || !isPlainObject(override)) {
-    return override;
-  }
-
-  const merged: Record<string, unknown> = { ...base };
-  for (const [key, value] of Object.entries(override)) {
-    merged[key] = mergeJson(merged[key], value);
-  }
-
-  return merged;
-}
-
 export function pruneDataFieldsForId(
   layers: TemplateDataLayers,
   blockId: string,
@@ -165,17 +139,6 @@ function pruneDataMapRows(data: DataMap, blockId: string, keys: Set<string>): Da
   });
 
   return { ...data, [blockId]: rows };
-}
-
-function omitDataId(data: DataMap, id: string): DataMap {
-  if (!(id in data)) {
-    return data;
-  }
-
-  const next = { ...data };
-  delete next[id];
-
-  return next;
 }
 
 export function rowsToJson(value: unknown): string {

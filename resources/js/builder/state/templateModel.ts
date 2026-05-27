@@ -10,6 +10,7 @@ import type {
   TemplateDataLayers,
 } from "../types";
 import { blockMeta } from "../blocks/meta";
+import { cleanDataMap, isPlainObject, mergeDataMaps, omitDataId } from "../lib/dataLayers";
 
 function uid(): string {
   return crypto.randomUUID();
@@ -86,53 +87,12 @@ function normalizeDataLayers(
   };
 }
 
-function cleanDataMap(data: DataMap): DataMap {
-  const map: DataMap = {};
-
-  for (const [id, value] of Object.entries(data)) {
-    if (Object.keys(value ?? {}).length > 0) {
-      map[id] = value;
-    }
-  }
-
-  return map;
-}
-
 function compactDataLayers(layers: TemplateDataLayers): Partial<TemplateDataLayers> {
   return Object.fromEntries(
     Object.entries(layers)
       .map(([key, value]) => [key, cleanDataMap(value)])
       .filter(([, value]) => Object.keys(value as DataMap).length > 0),
   ) as Partial<TemplateDataLayers>;
-}
-
-function mergeDataMaps(...maps: DataMap[]): DataMap {
-  const merged: DataMap = {};
-
-  for (const map of maps) {
-    for (const [id, value] of Object.entries(map)) {
-      merged[id] = mergeJson(merged[id] ?? {}, value) as DataValue;
-    }
-  }
-
-  return cleanDataMap(merged);
-}
-
-function mergeJson(base: unknown, override: unknown): unknown {
-  if (!isPlainObject(base) || !isPlainObject(override)) {
-    return override;
-  }
-
-  const merged: Record<string, unknown> = { ...base };
-  for (const [key, value] of Object.entries(override)) {
-    merged[key] = mergeJson(merged[key], value);
-  }
-
-  return merged;
-}
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function newRow(block: EditorBlock): EditorRow {
@@ -424,17 +384,6 @@ function removeDataForId(layers: TemplateDataLayers, id: string): TemplateDataLa
     defaults: omitDataId(layers.defaults, id),
     constants: omitDataId(layers.constants, id),
   };
-}
-
-function omitDataId(data: DataMap, id: string): DataMap {
-  if (!(id in data)) {
-    return data;
-  }
-
-  const next = { ...data };
-  delete next[id];
-
-  return next;
 }
 
 function removeDataField(

@@ -128,3 +128,24 @@ it('models a dunning notice example document structure', function (): void {
             'amountDue' => '4.831,40 €',
         ]);
 });
+
+it('models a shipping label example document structure', function (): void {
+    $fixture = collect(app(TemplateFixtureRepository::class)->examples())->firstWhere('slug', 'shipping-label');
+
+    expect($fixture)->not->toBeNull()
+        ->and($fixture->title)->toBe('Shipping Label')
+        ->and($fixture->template['config']['page']['format'])->toBe('ParcelLabel4x6')
+        ->and($fixture->template['config']['page']['pageNumbers']['enabled'])->toBeFalse();
+
+    $blocks = collect($fixture->template['rows'])
+        ->flatMap(fn (array $row): array => $row['blocks'])
+        ->keyBy('id');
+
+    expect($blocks->keys()->all())->toContain('carrier', 'service', 'recipient', 'sender', 'tracking', 'routing-code', 'barcode')
+        ->and($blocks->get('barcode')['type'])->toBe('image');
+
+    expect($fixture->data)->toHaveKeys(['recipient', 'sender', 'service', 'tracking', 'routing-code'])
+        ->and($fixture->data['tracking'])->toMatchArray([
+            'number' => '1Z999AA10123456784',
+        ]);
+});

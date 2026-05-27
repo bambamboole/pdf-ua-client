@@ -1,0 +1,154 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://pdfuakit.com/schemas/pdf-ua-client-template-data-v1.json",
+    "type": "object",
+    "properties": {
+        "carrier": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "account": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "name",
+                "account"
+            ]
+        },
+        "service": {
+            "type": "object",
+            "properties": {
+                "level": {
+                    "type": "string"
+                },
+                "shipDate": {
+                    "type": "string"
+                },
+                "weight": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "level",
+                "shipDate",
+                "weight"
+            ]
+        },
+        "recipient": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "company": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "cityStatePostal": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "name",
+                "company",
+                "address",
+                "cityStatePostal",
+                "country"
+            ]
+        },
+        "sender": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "cityStatePostal": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "name",
+                "address",
+                "cityStatePostal",
+                "country"
+            ]
+        },
+        "tracking": {
+            "type": "object",
+            "properties": {
+                "number": {
+                    "type": "string"
+                },
+                "reference": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "number",
+                "reference"
+            ]
+        },
+        "routing-code": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "hub": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "code",
+                "hub"
+            ]
+        },
+        "handling": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string",
+                    "examples": [
+                        "Thank you for your business."
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "text"
+            ],
+            "title": "Text",
+            "description": "A paragraph of text."
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "carrier",
+        "service",
+        "recipient",
+        "sender",
+        "tracking",
+        "routing-code",
+        "handling"
+    ]
+}

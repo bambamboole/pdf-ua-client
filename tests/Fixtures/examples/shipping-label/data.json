@@ -1,0 +1,35 @@
+{
+  "carrier": {
+    "name": "UPS",
+    "account": "A1B2C3"
+  },
+  "service": {
+    "level": "Ground Commercial",
+    "shipDate": "2026-05-27",
+    "weight": "2.4 kg"
+  },
+  "recipient": {
+    "name": "Jordan Lee",
+    "company": "Acme Fulfillment Lab",
+    "address": "742 Evergreen Terrace",
+    "cityStatePostal": "Springfield, IL 62704",
+    "country": "US"
+  },
+  "sender": {
+    "name": "PDF UA Kit GmbH",
+    "address": "Musterstrasse 1",
+    "cityStatePostal": "10115 Berlin",
+    "country": "DE"
+  },
+  "tracking": {
+    "number": "1Z999AA10123456784",
+    "reference": "SO-2026-10482"
+  },
+  "routing-code": {
+    "code": "IL 627 9-04",
+    "hub": "ORD-03"
+  },
+  "handling": {
+    "text": "Keep dry. Deliver to receiving dock between 08:00 and 16:00."
+  }
+}

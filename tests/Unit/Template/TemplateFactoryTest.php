@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Bambamboole\PdfUaClient\Block\BlockRegistry;
 use Bambamboole\PdfUaClient\Block\PropsReflector;
 use Bambamboole\PdfUaClient\Enums\Align;
+use Bambamboole\PdfUaClient\Enums\AttachmentRelationship;
 use Bambamboole\PdfUaClient\Enums\PageFormat;
 use Bambamboole\PdfUaClient\Enums\PageNumberPosition;
 use Bambamboole\PdfUaClient\Exceptions\TemplateValidationException;
@@ -66,6 +67,27 @@ it('hydrates parcel label page format', function () {
     ]);
 
     expect($template->config->page->format)->toBe(PageFormat::ParcelLabel4x6);
+});
+
+it('hydrates root-level PDF attachments', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['format' => 'A4']],
+        'rows' => [],
+        'attachments' => [[
+            'name' => 'factur-x.xml',
+            'contentBase64' => base64_encode('<rsm:CrossIndustryInvoice/>'),
+            'mimeType' => 'application/xml',
+            'description' => 'Factur-X invoice data',
+            'relationship' => 'Alternative',
+        ]],
+    ]);
+
+    expect($template->attachments)->toHaveCount(1);
+    expect($template->attachments[0]->name)->toBe('factur-x.xml');
+    expect($template->attachments[0]->mimeType)->toBe('application/xml');
+    expect($template->attachments[0]->description)->toBe('Factur-X invoice data');
+    expect($template->attachments[0]->relationship)->toBe(AttachmentRelationship::Alternative);
 });
 
 it('builds page number settings with a backed enum position', function () {

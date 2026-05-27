@@ -8,6 +8,7 @@ import type {
   Json,
   PageNumberPosition,
   Template,
+  TemplateAttachment,
   TemplateDataLayers,
 } from "../types";
 import { blockMeta } from "../blocks/meta";
@@ -55,6 +56,7 @@ export function fromTemplate(template: Template, data: DataMap = {}): EditorMode
     data: layers,
     rows: rowsFromTemplate(template.rows ?? []),
     footerRows: rowsFromTemplate(footerRows),
+    attachments: normalizeAttachments(template.attachments),
   };
 }
 
@@ -66,7 +68,33 @@ export function toTemplate(model: EditorModel): Template {
     config: configWithFooterRows(model.config ?? {}, rowsToTemplate(model.footerRows)),
     rows: rowsToTemplate(model.rows),
     ...(Object.keys(data).length > 0 ? { data } : {}),
+    ...(model.attachments.length > 0 ? { attachments: model.attachments } : {}),
   };
+}
+
+function normalizeAttachments(attachments: TemplateAttachment[] | undefined): TemplateAttachment[] {
+  if (!Array.isArray(attachments)) {
+    return [];
+  }
+
+  return attachments
+    .filter(
+      (attachment) =>
+        typeof attachment?.name === "string" &&
+        typeof attachment.contentBase64 === "string" &&
+        typeof attachment.mimeType === "string",
+    )
+    .map((attachment) => ({
+      name: attachment.name,
+      contentBase64: attachment.contentBase64,
+      mimeType: attachment.mimeType,
+      ...(typeof attachment.description === "string"
+        ? { description: attachment.description }
+        : {}),
+      ...(typeof attachment.relationship === "string"
+        ? { relationship: attachment.relationship }
+        : {}),
+    }));
 }
 
 export function toDataMap(model: EditorModel): DataMap {

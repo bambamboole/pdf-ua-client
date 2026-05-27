@@ -24,8 +24,29 @@ it('compiles a root schema referencing config, $defs/row, $defs/block', function
     expect($schema['properties']['version'])->toBe(['const' => 1, 'type' => 'integer']);
     expect($schema['properties']['rows']['items']['$ref'])->toBe('#/$defs/row');
     expect($schema['properties']['config'])->toBe(['$ref' => '#/$defs/templateConfig']);
+    expect($schema['properties']['attachments'])->toBe([
+        'type' => 'array',
+        'items' => ['$ref' => '#/$defs/attachment'],
+    ]);
     expect($schema['$defs']['row']['properties']['blocks']['minItems'])->toBe(1);
     expect($schema['$defs']['row']['properties'])->not->toHaveKey('columnWidths');
+});
+
+it('emits a PDF attachment schema', function () {
+    $schema = $this->compiler->compile($this->registry);
+
+    expect($schema['$defs']['attachment'])->toMatchArray([
+        'type' => 'object',
+        'required' => ['name', 'contentBase64', 'mimeType'],
+        'additionalProperties' => false,
+    ]);
+    expect($schema['$defs']['attachment']['properties']['relationship']['enum'])->toBe([
+        'Source',
+        'Data',
+        'Alternative',
+        'Supplement',
+        'Unspecified',
+    ]);
 });
 
 it('declares a shared blockBase $def with the common envelope fields', function () {

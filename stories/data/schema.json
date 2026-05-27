@@ -38,6 +38,12 @@
                 }
             },
             "additionalProperties": false
+        },
+        "attachments": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/attachment"
+            }
         }
     },
     "$defs": {
@@ -685,6 +691,53 @@
                     "$ref": "#/$defs/tableBlock"
                 }
             ]
+        },
+        "attachment": {
+            "type": "object",
+            "required": [
+                "name",
+                "contentBase64",
+                "mimeType"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "title": "File name",
+                    "description": "File name shown in the PDF attachment list."
+                },
+                "contentBase64": {
+                    "type": "string",
+                    "minLength": 1,
+                    "contentEncoding": "base64",
+                    "title": "Content",
+                    "description": "Base64 encoded attachment content."
+                },
+                "mimeType": {
+                    "type": "string",
+                    "minLength": 1,
+                    "title": "MIME type",
+                    "description": "Attachment media type, for example application/xml."
+                },
+                "description": {
+                    "type": "string",
+                    "title": "Description",
+                    "description": "Optional human-readable attachment description."
+                },
+                "relationship": {
+                    "type": "string",
+                    "enum": [
+                        "Source",
+                        "Data",
+                        "Alternative",
+                        "Supplement",
+                        "Unspecified"
+                    ],
+                    "title": "Relationship",
+                    "description": "PDF associated-file relationship."
+                }
+            },
+            "additionalProperties": false
         },
         "pageFooterConfig": {
             "type": "object",

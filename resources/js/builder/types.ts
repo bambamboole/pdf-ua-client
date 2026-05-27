@@ -11,11 +11,19 @@ export interface TemplateRow {
   blocks: TemplateBlock[];
   gap?: number;
 }
+export interface TemplateAttachment {
+  name: string;
+  contentBase64: string;
+  mimeType: string;
+  description?: string;
+  relationship?: string;
+}
 export interface Template {
   version: number;
   config: Json;
   rows: TemplateRow[];
   data?: Partial<TemplateDataLayers>;
+  attachments?: TemplateAttachment[];
 }
 
 export interface EditorBlock {
@@ -35,6 +43,7 @@ export interface EditorModel {
   rows: EditorRow[];
   footerRows: EditorRow[];
   data: TemplateDataLayers;
+  attachments: TemplateAttachment[];
 }
 
 export type DataMap = Record<string, DataValue>;

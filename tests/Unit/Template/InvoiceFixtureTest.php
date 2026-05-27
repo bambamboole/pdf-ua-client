@@ -60,6 +60,12 @@ it('models a complete realistic invoice document structure', function (): void {
     expect($document['data']['example'])->toHaveKeys(['invoice-meta', 'buyer', 'lineItems', 'vat-breakdown', 'totals', 'payment']);
     expect($document['data']['defaults'])->toHaveKeys(['notice', 'payment']);
     expect($document['data']['constants'])->toHaveKeys(['logo', 'seller', 'invoice-meta', 'footer-legal', 'footer-meta']);
+    expect($document['attachments'][0])->toMatchArray([
+        'name' => 'factur-x.xml',
+        'mimeType' => 'application/xml',
+        'description' => 'Factur-X invoice data',
+        'relationship' => 'Alternative',
+    ]);
 });
 
 it('provides realistic runtime example data without locked constants', function (): void {

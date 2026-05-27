@@ -6,12 +6,14 @@ namespace Workbench\App\Http\Controllers;
 use Bambamboole\PdfUaClient\Block\BlockRegistry;
 use Bambamboole\PdfUaClient\Exceptions\DataValidationException;
 use Bambamboole\PdfUaClient\Exceptions\TemplateValidationException;
+use Bambamboole\PdfUaClient\Http\Attachment;
 use Bambamboole\PdfUaClient\Http\Exceptions\PdfApiException;
 use Bambamboole\PdfUaClient\Http\PdfApiClient;
 use Bambamboole\PdfUaClient\Rendering\RenderOptions;
 use Bambamboole\PdfUaClient\Rendering\TemplateRenderer;
 use Bambamboole\PdfUaClient\Template\DataSchemaCompiler;
 use Bambamboole\PdfUaClient\Template\Template;
+use Bambamboole\PdfUaClient\Template\TemplateAttachment;
 use Bambamboole\PdfUaClient\Template\TemplateFactory;
 use Bambamboole\PdfUaClient\Template\TemplateSchemaCompiler;
 use Illuminate\Http\JsonResponse;
@@ -67,7 +69,10 @@ final class TemplateBuilderController
         try {
             [$built, $data] = $this->buildTemplate($request, $factory);
             $html = $renderer->render($built, $data, new RenderOptions(mode: 'print', title: 'Preview'));
-            $pdf = $client->convert($html);
+            $pdf = $client->convert(
+                $html,
+                array_map(static fn (TemplateAttachment $attachment): Attachment => $attachment->toHttpAttachment(), $built->attachments),
+            );
         } catch (TemplateValidationException|DataValidationException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);
         } catch (PdfApiException $exception) {

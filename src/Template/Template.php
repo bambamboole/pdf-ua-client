@@ -7,11 +7,15 @@ use Bambamboole\PdfUaClient\Config\TemplateConfig;
 
 final readonly class Template
 {
-    /** @param list<Row> $rows */
+    /**
+     * @param  list<Row>  $rows
+     * @param  list<TemplateAttachment>  $attachments
+     */
     public function __construct(
         public int $version,
         public TemplateConfig $config,
         public array $rows,
         public TemplateData $data = new TemplateData,
+        public array $attachments = [],
     ) {}
 }

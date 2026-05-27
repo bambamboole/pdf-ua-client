@@ -7,6 +7,7 @@ use Bambamboole\PdfUaClient\Block\BlockRegistry;
 use Bambamboole\PdfUaClient\Block\PropsReflector;
 use Bambamboole\PdfUaClient\Config\PageFooterConfig;
 use Bambamboole\PdfUaClient\Config\TemplateConfig;
+use Bambamboole\PdfUaClient\Enums\AttachmentRelationship;
 use ReflectionClass;
 use stdClass;
 
@@ -69,6 +70,7 @@ final readonly class TemplateSchemaCompiler
         ]);
 
         $defs->ref('block', ['oneOf' => $blockRefs]);
+        $defs->ref('attachment', $this->attachmentSchema());
         $this->registerPageFooterConfig($defs);
 
         $templateConfigRef = $defs->ref('templateConfig', $this->reflector->reflectWithRefs(TemplateConfig::class, $defs));
@@ -96,11 +98,57 @@ final readonly class TemplateSchemaCompiler
                     ],
                     'additionalProperties' => false,
                 ],
+                'attachments' => [
+                    'type' => 'array',
+                    'items' => ['$ref' => '#/$defs/attachment'],
+                ],
             ],
             '$defs' => $allDefs === [] ? new stdClass : $allDefs,
         ];
 
         return $schema;
+    }
+
+    /** @return array<string, mixed> */
+    private function attachmentSchema(): array
+    {
+        return [
+            'type' => 'object',
+            'required' => ['name', 'contentBase64', 'mimeType'],
+            'properties' => [
+                'name' => [
+                    'type' => 'string',
+                    'minLength' => 1,
+                    'title' => 'File name',
+                    'description' => 'File name shown in the PDF attachment list.',
+                ],
+                'contentBase64' => [
+                    'type' => 'string',
+                    'minLength' => 1,
+                    'contentEncoding' => 'base64',
+                    'title' => 'Content',
+                    'description' => 'Base64 encoded attachment content.',
+                ],
+                'mimeType' => [
+                    'type' => 'string',
+                    'minLength' => 1,
+                    'title' => 'MIME type',
+                    'description' => 'Attachment media type, for example application/xml.',
+                ],
+                'description' => [
+                    'type' => 'string',
+                    'title' => 'Description',
+                    'description' => 'Optional human-readable attachment description.',
+                ],
+                'relationship' => [
+                    'type' => 'string',
+                    'enum' => array_map(static fn (AttachmentRelationship $relationship): string => $relationship->value, AttachmentRelationship::cases()),
+                    'title' => 'Relationship',
+                    'description' => 'PDF associated-file relationship.',
+                ],
+            ],
+            'additionalProperties' => false,
+        ];
     }
 
     /** @return array<string, mixed> */

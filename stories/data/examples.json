@@ -672,6 +672,15 @@
                     ]
                 }
             ],
+            "attachments": [
+                {
+                    "name": "factur-x.xml",
+                    "contentBase64": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48cnNtOkNyb3NzSW5kdXN0cnlJbnZvaWNlIHhtbG5zOnJzbT0idXJuOnVuOnVuZWNlOnVuY2VmYWN0OmRhdGE6c3RhbmRhcmQ6Q3Jvc3NJbmR1c3RyeUludm9pY2U6MTAwIj48cnNtOkV4Y2hhbmdlZERvY3VtZW50PjxyYW06SUQgeG1sbnM6cmFtPSJ1cm46dW46dW5lY2U6dW5jZWZhY3Q6ZGF0YTpzdGFuZGFyZDpSZXVzYWJsZUFnZ3JlZ2F0ZUJ1c2luZXNzSW5mb3JtYXRpb25FbnRpdHk6MTAwIj5SRS0yMDI2LTAwMTIzNDwvcmFtOklEPjwvcnNtOkV4Y2hhbmdlZERvY3VtZW50PjwvcnNtOkNyb3NzSW5kdXN0cnlJbnZvaWNlPg==",
+                    "mimeType": "application/xml",
+                    "description": "Factur-X invoice data",
+                    "relationship": "Alternative"
+                }
+            ],
             "data": {
                 "example": {
                     "invoice-meta": {

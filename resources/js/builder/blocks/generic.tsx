@@ -57,11 +57,23 @@ export function GenericDataEditor({
   );
 }
 
-function TextSummary({ block, data }: BlockSummaryProps) {
+function blockText({ block, data }: BlockSummaryProps): string {
   const blockData = previewBlockValue(data, block.id);
   const record = isPlainObject(blockData) ? blockData : {};
 
-  return <MutedSummary>{truncate(stringValue(record.text))}</MutedSummary>;
+  return stringValue(record.text);
+}
+
+function TextSummary(props: BlockSummaryProps) {
+  return (
+    <span className="block whitespace-pre-wrap break-words text-xs text-[var(--builder-muted)]">
+      {blockText(props)}
+    </span>
+  );
+}
+
+function HeadingSummary(props: BlockSummaryProps) {
+  return <MutedSummary>{truncate(blockText(props))}</MutedSummary>;
 }
 
 function HtmlSummary() {
@@ -79,7 +91,7 @@ export const textBlock: BlockDefinition = {
 
 export const headingBlock: BlockDefinition = {
   DataEditor: GenericDataEditor,
-  Summary: TextSummary,
+  Summary: HeadingSummary,
 };
 
 export const htmlBlock: BlockDefinition = {

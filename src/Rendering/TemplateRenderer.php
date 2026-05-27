@@ -307,7 +307,7 @@ hr { border: none; border-top: 1px solid #d1d5db; margin: 2.5mm 0; }
 .page-footer { color: #6b7280; font-size: 8pt; line-height: 1.25; }
 .page-footer .row { margin: 0; }
 .page-footer-repeated { position: running(pageFooter); width: 100%; }
-.page-footer-preview { margin-top: auto; padding-top: 2mm; border-top: 1px solid #d1d5db; }
+.page-footer-preview { margin-top: auto; padding-top: 2mm; }
 .page-number-preview { color: #9ca3af; font-size: 8pt; padding-top: 2mm; }
 .page-footer-page-numbers { color: #9ca3af; font-size: 8pt; padding-top: 2mm; text-align: center; }
 .page-footer-page-numbers::after { content: counter(page) " / " counter(pages); }

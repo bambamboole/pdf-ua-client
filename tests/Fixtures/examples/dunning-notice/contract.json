@@ -1,0 +1,166 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://pdfuakit.com/schemas/pdf-ua-client-template-data-v1.json",
+    "type": "object",
+    "properties": {
+        "notice-meta": {
+            "type": "object",
+            "properties": {
+                "noticeNumber": {
+                    "type": "string"
+                },
+                "noticeDate": {
+                    "type": "string"
+                },
+                "customerNumber": {
+                    "type": "string"
+                },
+                "paymentDueDate": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "noticeNumber",
+                "noticeDate",
+                "customerNumber",
+                "paymentDueDate"
+            ]
+        },
+        "debtor": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "reference": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "name",
+                "address",
+                "email",
+                "reference"
+            ]
+        },
+        "notice-text": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string",
+                    "examples": [
+                        "Thank you for your business."
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "text"
+            ],
+            "title": "Text",
+            "description": "A paragraph of text."
+        },
+        "overdue-invoices": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "invoiceNumber": {
+                        "type": "string"
+                    },
+                    "issueDate": {
+                        "type": "string"
+                    },
+                    "dueDate": {
+                        "type": "string"
+                    },
+                    "daysOverdue": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "invoiceNumber",
+                    "issueDate",
+                    "dueDate",
+                    "daysOverdue",
+                    "amount"
+                ]
+            }
+        },
+        "closing-note": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "examples": [
+                        "Thank you for your business."
+                    ],
+                    "default": "Please contact accounting@pdfua-kit.example if you need a copy invoice or want to clarify an already initiated payment."
+                }
+            },
+            "additionalProperties": false,
+            "title": "Text",
+            "description": "A paragraph of text."
+        },
+        "payment": {
+            "type": "object",
+            "properties": {
+                "amountDue": {
+                    "type": "string"
+                },
+                "bank": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": "Musterbank Berlin"
+                },
+                "iban": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": "DE89370400440532013000"
+                },
+                "bic": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": "COBADEFFXXX"
+                },
+                "reference": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "amountDue",
+                "reference"
+            ]
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "notice-meta",
+        "debtor",
+        "notice-text",
+        "overdue-invoices",
+        "payment"
+    ]
+}

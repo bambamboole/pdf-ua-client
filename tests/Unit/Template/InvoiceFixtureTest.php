@@ -5,7 +5,10 @@ declare(strict_types=1);
 use Workbench\App\Support\TemplateFixtureRepository;
 
 it('models a complete realistic invoice document structure', function (): void {
-    $document = app(TemplateFixtureRepository::class)->examples()[0]->template;
+    $fixture = collect(app(TemplateFixtureRepository::class)->examples())->firstWhere('slug', 'invoice');
+    expect($fixture)->not->toBeNull();
+
+    $document = $fixture->template;
     $blocks = collect($document['rows'])
         ->flatMap(fn (array $row): array => $row['blocks'])
         ->keyBy('id');
@@ -60,7 +63,10 @@ it('models a complete realistic invoice document structure', function (): void {
 });
 
 it('provides realistic runtime example data without locked constants', function (): void {
-    $data = app(TemplateFixtureRepository::class)->examples()[0]->data;
+    $fixture = collect(app(TemplateFixtureRepository::class)->examples())->firstWhere('slug', 'invoice');
+    expect($fixture)->not->toBeNull();
+
+    $data = $fixture->data;
 
     expect($data)->not->toHaveKeys(['logo', 'seller', 'footer-legal', 'footer-meta']);
     expect($data['buyer'])->toMatchArray([
@@ -86,4 +92,39 @@ it('provides realistic runtime example data without locked constants', function 
     expect($data['invoice-meta'])->toMatchArray([
         'invoiceNumber' => 'RE-2026-001234',
     ]);
+});
+
+it('models a dunning notice example document structure', function (): void {
+    $fixture = collect(app(TemplateFixtureRepository::class)->examples())->firstWhere('slug', 'dunning-notice');
+
+    expect($fixture)->not->toBeNull()
+        ->and($fixture->title)->toBe('Dunning Notice')
+        ->and($fixture->template['config']['page']['format'])->toBe('A4')
+        ->and($fixture->template['config']['page']['locale'])->toBe('de_DE');
+
+    $blocks = collect($fixture->template['rows'])
+        ->flatMap(fn (array $row): array => $row['blocks'])
+        ->keyBy('id');
+
+    expect($blocks->keys()->all())->toContain('creditor', 'debtor', 'notice-meta', 'overdue-invoices', 'payment', 'notice-text');
+
+    $columns = collect($blocks->get('overdue-invoices')['config']['columns'])->keyBy('key');
+
+    expect($columns->keys()->all())->toBe(['invoiceNumber', 'issueDate', 'dueDate', 'daysOverdue', 'amount']);
+    expect($columns->get('invoiceNumber'))->toMatchArray(['label' => 'Invoice no.', 'align' => 'left'])
+        ->and($columns->get('issueDate'))->toMatchArray(['label' => 'Issue date', 'align' => 'left'])
+        ->and($columns->get('dueDate'))->toMatchArray(['label' => 'Due date', 'align' => 'left'])
+        ->and($columns->get('daysOverdue'))->toMatchArray(['label' => 'Days overdue', 'align' => 'right'])
+        ->and($columns->get('amount'))->toMatchArray(['label' => 'Amount', 'align' => 'right']);
+
+    expect($fixture->data)->toHaveKeys(['debtor', 'notice-meta', 'overdue-invoices', 'payment'])
+        ->and($fixture->data['notice-meta'])->toMatchArray([
+            'noticeNumber' => 'MA-2026-00018',
+            'noticeDate' => '2026-04-24',
+        ])
+        ->and($fixture->data['overdue-invoices'])->toHaveCount(2)
+        ->and($fixture->data['payment'])->toMatchArray([
+            'reference' => 'MA-2026-00018',
+            'amountDue' => '4.831,40 €',
+        ]);
 });

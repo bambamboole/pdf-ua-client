@@ -28,3 +28,16 @@ it('validates every example structure and data contract', function (): void {
         expect($result->isValid())->toBeTrue("Example {$fixture->slug} data failed schema validation.");
     }
 });
+
+it('keeps example contract files in sync with compiled data schemas', function (): void {
+    foreach (app(TemplateFixtureRepository::class)->examples() as $fixture) {
+        if ($fixture->contract === null) {
+            continue;
+        }
+
+        $template = app(TemplateFactory::class)->fromArray($fixture->template);
+        $dataSchema = app(DataSchemaCompiler::class)->compile($template);
+
+        expect($fixture->contract)->toEqual($dataSchema, "Example {$fixture->slug} contract does not match compiled data schema.");
+    }
+});

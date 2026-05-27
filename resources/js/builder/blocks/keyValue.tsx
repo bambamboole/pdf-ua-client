@@ -9,12 +9,7 @@ import {
   previewBlockValue,
   stringValue,
 } from "./shared";
-import type {
-  BlockConfigEditorProps,
-  BlockDataEditorProps,
-  BlockDefinition,
-  BlockSummaryProps,
-} from "./types";
+import type { BlockDataEditorProps, BlockDefinition, BlockSummaryProps } from "./types";
 
 function KeyValueDataEditor({ block, data, onUpdateDataField }: BlockDataEditorProps) {
   const fields = keyedFields(block.config.fields);
@@ -89,34 +84,8 @@ function KeyValueSummary({ block, data }: BlockSummaryProps) {
   );
 }
 
-function KeyValueConfigEditor({
-  block,
-  configSchema,
-  onUpdateBlockId,
-  onUpdateBlockConfig,
-  BlockIdControl,
-  ConfigSettingsForm,
-}: BlockConfigEditorProps) {
-  return (
-    <div className="space-y-3">
-      <BlockIdControl block={block} onUpdateBlockId={onUpdateBlockId} />
-      <KeyValueConfigFields
-        config={block.config ?? {}}
-        onChange={(config) => onUpdateBlockConfig(block.uid, config)}
-      />
-      <ConfigSettingsForm
-        schema={configSchema}
-        config={block.config ?? {}}
-        onChange={(config) =>
-          onUpdateBlockConfig(block.uid, { ...config, fields: block.config.fields })
-        }
-      />
-    </div>
-  );
-}
-
 export const keyValueBlock: BlockDefinition = {
   DataEditor: KeyValueDataEditor,
   Summary: KeyValueSummary,
-  ConfigEditor: KeyValueConfigEditor,
+  ConfigFields: KeyValueConfigFields,
 };

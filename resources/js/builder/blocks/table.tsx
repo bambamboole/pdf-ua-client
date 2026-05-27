@@ -12,12 +12,7 @@ import {
   rowsToJson,
   stringValue,
 } from "./shared";
-import type {
-  BlockConfigEditorProps,
-  BlockDataEditorProps,
-  BlockDefinition,
-  BlockSummaryProps,
-} from "./types";
+import type { BlockDataEditorProps, BlockDefinition, BlockSummaryProps } from "./types";
 
 function TableDataEditor({ block, data, onUpdateBlockData }: BlockDataEditorProps) {
   const columns = keyedFields(block.config.columns);
@@ -164,39 +159,8 @@ function TableSummary({ block, data }: BlockSummaryProps) {
   );
 }
 
-function TableConfigEditor({
-  block,
-  configSchema,
-  onUpdateBlockId,
-  onUpdateBlockConfig,
-  BlockIdControl,
-  ConfigSettingsForm,
-}: BlockConfigEditorProps) {
-  return (
-    <div className="space-y-3">
-      <BlockIdControl block={block} onUpdateBlockId={onUpdateBlockId} />
-      <TableConfigColumns
-        config={block.config ?? {}}
-        onChange={(config) => onUpdateBlockConfig(block.uid, config)}
-      />
-      <ConfigSettingsForm
-        schema={configSchema}
-        config={block.config ?? {}}
-        onChange={(config) =>
-          onUpdateBlockConfig(block.uid, {
-            ...config,
-            columns: block.config.columns,
-            numberRows: block.config.numberRows,
-            style: block.config.style,
-          })
-        }
-      />
-    </div>
-  );
-}
-
 export const tableBlock: BlockDefinition = {
   DataEditor: TableDataEditor,
   Summary: TableSummary,
-  ConfigEditor: TableConfigEditor,
+  ConfigFields: TableConfigColumns,
 };

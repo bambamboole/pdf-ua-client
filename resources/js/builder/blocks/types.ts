@@ -14,8 +14,7 @@ export type UpdateBlockData = (
   options: { example: boolean; locked: boolean },
 ) => void;
 
-export type ConfigSettingsFormComponent = ComponentType<{
-  schema: JsonSchema;
+export type ConfigFieldsComponent = ComponentType<{
   config: Json;
   onChange: (config: Json) => void;
 }>;
@@ -33,20 +32,8 @@ export interface BlockSummaryProps {
   data: TemplateDataLayers;
 }
 
-export interface BlockConfigEditorProps {
-  block: EditorBlock;
-  configSchema: JsonSchema;
-  onUpdateBlockId: (uid: string, id: string) => void;
-  onUpdateBlockConfig: (uid: string, config: Json) => void;
-  BlockIdControl: ComponentType<{
-    block: EditorBlock;
-    onUpdateBlockId: (uid: string, id: string) => void;
-  }>;
-  ConfigSettingsForm: ConfigSettingsFormComponent;
-}
-
 export interface BlockDefinition {
   DataEditor?: ComponentType<BlockDataEditorProps>;
   Summary?: ComponentType<BlockSummaryProps>;
-  ConfigEditor?: ComponentType<BlockConfigEditorProps>;
+  ConfigFields?: ConfigFieldsComponent;
 }

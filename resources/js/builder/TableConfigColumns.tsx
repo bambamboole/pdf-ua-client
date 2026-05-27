@@ -1,4 +1,5 @@
 import type { Json } from "./types";
+import { inputClass, nextKey, normalizeKey, stringValue } from "./blocks/shared";
 
 interface TableColumn {
   key: string;
@@ -12,8 +13,6 @@ interface Props {
   onChange: (config: Json) => void;
 }
 
-const inputClass =
-  "block min-w-0 w-full rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-field)] px-2 py-1 text-sm text-[var(--builder-field-ink)] focus:border-[var(--builder-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--builder-accent-soft)]";
 const buttonClass =
   "rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-surface)] px-2 py-1 text-xs font-medium text-[var(--builder-muted-strong)] transition hover:border-[var(--builder-accent)]";
 const activeButtonClass =
@@ -56,7 +55,15 @@ export default function TableConfigColumns({ config, onChange }: Props) {
           onClick={() =>
             updateColumns([
               ...columns,
-              { key: nextColumnKey(columns), label: "New column", align: "left", width: "" },
+              {
+                key: nextKey(
+                  "column",
+                  columns.map((column) => column.key),
+                ),
+                label: "New column",
+                align: "left",
+                width: "",
+              },
             ])
           }
         >
@@ -189,27 +196,6 @@ function tableColumns(value: unknown): TableColumn[] {
       };
     })
     .filter((column): column is TableColumn => column !== null);
-}
-
-function nextColumnKey(columns: TableColumn[]): string {
-  const keys = new Set(columns.map((column) => column.key));
-  let index = columns.length + 1;
-  let key = `column${index}`;
-
-  while (keys.has(key)) {
-    index += 1;
-    key = `column${index}`;
-  }
-
-  return key;
-}
-
-function normalizeKey(value: string): string {
-  return value.replace(/[^A-Za-z0-9_]/g, "").replace(/^[^A-Za-z]+/, "");
-}
-
-function stringValue(value: unknown): string {
-  return value == null ? "" : String(value);
 }
 
 function optionalStringValue(value: unknown): string | undefined {

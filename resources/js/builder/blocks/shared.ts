@@ -12,6 +12,21 @@ export function stringValue(value: unknown): string {
   return value == null ? "" : String(value);
 }
 
+export function normalizeKey(value: string): string {
+  return value.replace(/[^A-Za-z0-9_]/g, "").replace(/^[^A-Za-z]+/, "");
+}
+
+export function nextKey(prefix: string, existing: string[]): string {
+  const keys = new Set(existing);
+  let index = keys.size + 1;
+
+  while (keys.has(`${prefix}${index}`)) {
+    index += 1;
+  }
+
+  return `${prefix}${index}`;
+}
+
 export function keyedFields(value: unknown): KeyedField[] {
   if (!Array.isArray(value)) {
     return [];

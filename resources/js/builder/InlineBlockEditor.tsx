@@ -32,7 +32,7 @@ export default function InlineBlockEditor({ block, schema, data, detailsOpen }: 
   const configSchema = getBlockConfigGroupSchema(schema, block.type);
   const definition = blockDefinition(block.type);
   const hasGenericConfig = hasSchemaProperties(configSchema);
-  const hasConfigTab = hasGenericConfig || Boolean(definition.ConfigEditor);
+  const hasConfigTab = hasGenericConfig || Boolean(definition.ConfigFields);
   const typographySchema = getNestedBlockConfigSchema(schema, block.type, "typography");
   const spacingSchema = getNestedBlockConfigSchema(schema, block.type, "spacing");
   const [tab, setTab] = useState<InlineEditorTab>(() => (hasDataProperties ? "data" : "config"));
@@ -80,18 +80,15 @@ export default function InlineBlockEditor({ block, schema, data, detailsOpen }: 
           onUpdateDataField={onUpdateDataField}
           onUpdateBlockData={onUpdateBlockData}
         />
-      ) : tab === "config" && definition.ConfigEditor ? (
-        <definition.ConfigEditor
-          block={block}
-          configSchema={configSchema}
-          onUpdateBlockId={onUpdateBlockId}
-          onUpdateBlockConfig={onUpdateBlockConfig}
-          BlockIdControl={BlockIdControl}
-          ConfigSettingsForm={ConfigSettingsForm}
-        />
       ) : tab === "config" ? (
         <div className="space-y-3">
           <BlockIdControl block={block} onUpdateBlockId={onUpdateBlockId} />
+          {definition.ConfigFields ? (
+            <definition.ConfigFields
+              config={block.config ?? {}}
+              onChange={(config) => onUpdateBlockConfig(block.uid, config)}
+            />
+          ) : null}
           <ConfigSettingsForm
             schema={configSchema}
             config={block.config ?? {}}

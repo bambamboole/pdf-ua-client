@@ -73,6 +73,15 @@ it('renders the invoice example preview and matches the browser screenshot', fun
         ->assertScreenshotMatches(fullPage: false, openDiff: false);
 })->skip(fn (): bool => filter_var(getenv('CI'), FILTER_VALIDATE_BOOLEAN), 'Visual regression baseline is environment-specific; run locally via composer test:browser.');
 
+it('renders the shipping label example preview without browser errors', function (): void {
+    visit('/')
+        ->click('Shipping Label')
+        ->click('HTML')
+        ->wait(1)
+        ->assertNoJavaScriptErrors()
+        ->withinFrame('iframe', fn ($frame) => $frame->assertSee('1Z999AA10123456784'));
+});
+
 it('pins the preview footer to the page bottom and shows the page number', function (): void {
     $page = visit('/')
         ->click('Invoice')

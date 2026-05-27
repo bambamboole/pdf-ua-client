@@ -9,11 +9,16 @@ use function Pest\Laravel\get;
 it('renders the builder page with the compiled schema prop', function (): void {
     $this->withoutVite();
 
+    $publicExampleTitles = ['Dunning Notice', 'Invoice', 'Packing Slip', 'Shipping Label'];
+
     get('/')
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('Builder')
-            ->where('schema.examples', fn ($examples): bool => $examples->contains('title', 'Invoice'))
+            ->where('schema.examples', fn ($examples): bool => collect($examples)
+                ->pluck('title')
+                ->intersect($publicExampleTitles)
+                ->count() === count($publicExampleTitles))
             ->where('schema.$defs.block.oneOf', [
                 ['$ref' => '#/$defs/headingBlock'],
                 ['$ref' => '#/$defs/textBlock'],
@@ -40,6 +45,10 @@ it('returns user-facing examples from the workbench endpoint', function (): void
             ],
         ]);
 
-    expect(collect($response->json('examples'))->firstWhere('title', 'Invoice'))
-        ->toHaveKeys(['title', 'template', 'data']);
+    $examples = collect($response->json('examples'));
+
+    expect($examples->pluck('title')->all())
+        ->toContain('Dunning Notice', 'Invoice', 'Packing Slip', 'Shipping Label');
+
+    $examples->each(fn (array $example) => expect($example)->toHaveKeys(['title', 'template', 'data']));
 });

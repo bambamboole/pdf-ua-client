@@ -16,13 +16,13 @@ it('resolves PdfApiClient from the container with config values', function () {
 });
 
 it('registers user-facing examples from fixture files', function (): void {
-    $fixtures = $this->app->make(TemplateFixtureRepository::class)->examples();
-    $examples = $this->app->make(ExampleRegistry::class)->all();
+    $fixtures = collect($this->app->make(TemplateFixtureRepository::class)->examples());
+    $examples = collect($this->app->make(ExampleRegistry::class)->all());
+    $invoice = $fixtures->firstWhere('slug', 'invoice');
+    $registeredInvoice = $examples->firstWhere('title', 'Invoice');
 
-    expect($fixtures)->toHaveCount(1)
-        ->and($fixtures[0]->slug)->toBe('invoice')
-        ->and($examples)->toHaveCount(1)
-        ->and($examples[0]['title'])->toBe('Invoice')
-        ->and($examples[0]['template'])->toBe($fixtures[0]->template)
-        ->and($examples[0]['data'])->toBe($fixtures[0]->data);
+    expect($fixtures->pluck('slug')->all())->toContain('invoice')
+        ->and($examples->pluck('title')->all())->toContain('Invoice')
+        ->and($registeredInvoice['template'])->toBe($invoice->template)
+        ->and($registeredInvoice['data'])->toBe($invoice->data);
 });

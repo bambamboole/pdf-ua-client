@@ -1,0 +1,37 @@
+{
+  "notice-meta": {
+    "noticeNumber": "MA-2026-00018",
+    "noticeDate": "2026-04-24",
+    "customerNumber": "K-10482",
+    "paymentDueDate": "2026-05-02"
+  },
+  "debtor": {
+    "name": "Musterkunde AG",
+    "address": "Käuferweg 2, 80331 München, DE",
+    "email": "accounting@musterkunde.example",
+    "reference": "04011000-12345-67"
+  },
+  "notice-text": {
+    "text": "According to our records, the invoices listed below remain unpaid after their agreed due dates. Please arrange payment of the outstanding balance no later than 2026-05-02. If payment has already been made, please disregard this reminder and send us the remittance advice."
+  },
+  "overdue-invoices": [
+    {
+      "invoiceNumber": "RE-2026-001104",
+      "issueDate": "2026-02-03",
+      "dueDate": "2026-03-04",
+      "daysOverdue": "51",
+      "amount": "2.856,00 €"
+    },
+    {
+      "invoiceNumber": "RE-2026-001137",
+      "issueDate": "2026-02-21",
+      "dueDate": "2026-03-23",
+      "daysOverdue": "32",
+      "amount": "1.975,40 €"
+    }
+  ],
+  "payment": {
+    "amountDue": "4.831,40 €",
+    "reference": "MA-2026-00018"
+  }
+}

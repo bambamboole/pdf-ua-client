@@ -58,6 +58,16 @@ it('applies defaults for omitted page fields', function () {
     expect($template->config->page->pageNumbers->position)->toBe(PageNumberPosition::Center);
 });
 
+it('hydrates parcel label page format', function () {
+    $template = $this->factory->fromArray([
+        'version' => 1,
+        'config' => ['page' => ['format' => 'ParcelLabel4x6']],
+        'rows' => [],
+    ]);
+
+    expect($template->config->page->format)->toBe(PageFormat::ParcelLabel4x6);
+});
+
 it('builds page number settings with a backed enum position', function () {
     $template = $this->factory->fromArray([
         'version' => 1,

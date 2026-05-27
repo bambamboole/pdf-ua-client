@@ -1,0 +1,47 @@
+{
+  "order-meta": {
+    "orderNumber": "SO-2026-10482",
+    "packingSlipNumber": "PS-2026-00418",
+    "shipDate": "2026-05-27",
+    "carrier": "UPS Ground"
+  },
+  "ship-to": {
+    "name": "Nina Patel",
+    "company": "Northwind Field Services",
+    "address": "420 Industrial Parkway",
+    "cityStatePostal": "Austin, TX 78744",
+    "country": "US"
+  },
+  "items": [
+    {
+      "sku": "DOC-KIT-001",
+      "description": "Accessible document starter kit",
+      "ordered": "4",
+      "shipped": "4",
+      "backordered": "0"
+    },
+    {
+      "sku": "LBL-THERM-46",
+      "description": "Thermal label roll 4 x 6 in",
+      "ordered": "2",
+      "shipped": "2",
+      "backordered": "0"
+    },
+    {
+      "sku": "KIT-ADP-014",
+      "description": "Adapter pack for desktop scanners",
+      "ordered": "3",
+      "shipped": "2",
+      "backordered": "1"
+    }
+  ],
+  "package-summary": {
+    "packages": "2 cartons",
+    "totalWeight": "8.6 kg",
+    "handling": "Keep dry",
+    "reference": "Receiving dock B"
+  },
+  "notes": {
+    "text": "No pricing is included on this packing slip. Verify item counts at receiving and report shortages within 5 business days."
+  }
+}

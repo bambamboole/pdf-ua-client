@@ -317,7 +317,7 @@ CSS;
     private function printPageCss(PageConfig $page): string
     {
         $margin = $this->printMarginShorthand($page);
-        $css = "@page { size: {$page->format->value}; margin: {$margin}; }";
+        $css = "@page { size: {$page->format->cssSize()}; margin: {$margin}; }";
 
         if ($page->footer->repeat && $page->footer->rows !== []) {
             $css .= ' @page { @bottom-center { content: element(pageFooter); } }';

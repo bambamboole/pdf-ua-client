@@ -3,6 +3,7 @@ const PAGE_SIZES_MM: Record<string, [number, number]> = {
   A5: [148, 210],
   Letter: [215.9, 279.4],
   Legal: [215.9, 355.6],
+  ParcelLabel4x6: [101.6, 152.4],
 };
 
 export function pageSizeForFormat(format: string): [number, number] {

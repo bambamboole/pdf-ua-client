@@ -1,0 +1,116 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://pdfuakit.com/schemas/pdf-ua-client-template-data-v1.json",
+    "type": "object",
+    "properties": {
+        "carrier": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "shipDate": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "name",
+                "shipDate"
+            ]
+        },
+        "service": {
+            "type": "object",
+            "properties": {
+                "level": {
+                    "type": "string"
+                },
+                "weight": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "level",
+                "weight"
+            ]
+        },
+        "recipient": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "cityStatePostal": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "name",
+                "address",
+                "cityStatePostal"
+            ]
+        },
+        "sender": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "cityStatePostal": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "name",
+                "address",
+                "cityStatePostal"
+            ]
+        },
+        "tracking": {
+            "type": "object",
+            "properties": {
+                "number": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "number"
+            ]
+        },
+        "routing-code": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "hub": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "code",
+                "hub"
+            ]
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "carrier",
+        "service",
+        "recipient",
+        "sender",
+        "tracking",
+        "routing-code"
+    ]
+}

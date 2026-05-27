@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use Workbench\App\Support\TemplateFixtureRepository;
 
+use function Pest\Laravel\getJson;
 use function Pest\Laravel\postJson;
 
 it('renders a posted template to html', function (): void {
@@ -71,7 +73,7 @@ it('returns 422 when posted data violates the template data contract', function 
 });
 
 it('renders the registered invoice example payload', function (): void {
-    $fixture = app(TemplateFixtureRepository::class)->examples()[0];
+    $fixture = collect(app(TemplateFixtureRepository::class)->examples())->firstWhere('slug', 'invoice');
 
     $response = postJson('/html', [
         'template' => $fixture->template,
@@ -81,6 +83,32 @@ it('renders the registered invoice example payload', function (): void {
     $response->assertSuccessful();
     expect($response->json('html'))->toContain('PDF UA Kit GmbH')
         ->toContain('RE-2026-001234');
+});
+
+it('renders every public example after loading through the workbench payload shape', function (): void {
+    $examples = getJson('/examples')
+        ->assertSuccessful()
+        ->json('examples');
+
+    expect($examples)->toBeArray()->not->toBeEmpty();
+
+    foreach ($examples as $example) {
+        $title = (string) $example['title'];
+        $slug = Str::slug($title);
+        $template = (array) $example['template'];
+        $embeddedExampleData = (array) ($template['data']['example'] ?? []);
+        $standaloneData = (array) $example['data'];
+        $runtimeData = [...$embeddedExampleData, ...$standaloneData];
+
+        $response = postJson('/html', [
+            'template' => $template,
+            'data' => $runtimeData,
+        ]);
+
+        expect($response->isSuccessful())->toBeTrue(
+            "Example {$title} ({$slug}) failed workbench render validation with status {$response->status()}: {$response->getContent()}"
+        );
+    }
 });
 
 it('converts a posted template to pdf bytes', function (): void {

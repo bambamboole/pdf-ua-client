@@ -132,6 +132,12 @@ it('emits pagination enabled and enum position settings', function () {
     ]);
 });
 
+it('emits parcel label as a page format option', function () {
+    $schema = $this->compiler->compile($this->registry);
+
+    expect($schema['$defs']['pageConfig']['properties']['format']['enum'])->toContain('ParcelLabel4x6');
+});
+
 it('composes a per-block config schema from its parent via allOf and only emits own properties', function () {
     $schema = $this->compiler->compile($this->registry);
 

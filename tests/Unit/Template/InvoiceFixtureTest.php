@@ -5,7 +5,10 @@ declare(strict_types=1);
 use Workbench\App\Support\TemplateFixtureRepository;
 
 it('models a complete realistic invoice document structure', function (): void {
-    $document = app(TemplateFixtureRepository::class)->examples()[0]->template;
+    $fixture = collect(app(TemplateFixtureRepository::class)->examples())->firstWhere('slug', 'invoice');
+    expect($fixture)->not->toBeNull();
+
+    $document = $fixture->template;
     $blocks = collect($document['rows'])
         ->flatMap(fn (array $row): array => $row['blocks'])
         ->keyBy('id');
@@ -60,7 +63,10 @@ it('models a complete realistic invoice document structure', function (): void {
 });
 
 it('provides realistic runtime example data without locked constants', function (): void {
-    $data = app(TemplateFixtureRepository::class)->examples()[0]->data;
+    $fixture = collect(app(TemplateFixtureRepository::class)->examples())->firstWhere('slug', 'invoice');
+    expect($fixture)->not->toBeNull();
+
+    $data = $fixture->data;
 
     expect($data)->not->toHaveKeys(['logo', 'seller', 'footer-legal', 'footer-meta']);
     expect($data['buyer'])->toMatchArray([
@@ -86,4 +92,103 @@ it('provides realistic runtime example data without locked constants', function 
     expect($data['invoice-meta'])->toMatchArray([
         'invoiceNumber' => 'RE-2026-001234',
     ]);
+});
+
+it('models a dunning notice example document structure', function (): void {
+    $fixture = collect(app(TemplateFixtureRepository::class)->examples())->firstWhere('slug', 'dunning-notice');
+
+    expect($fixture)->not->toBeNull()
+        ->and($fixture->title)->toBe('Dunning Notice')
+        ->and($fixture->template['config']['page']['format'])->toBe('A4')
+        ->and($fixture->template['config']['page']['locale'])->toBe('de_DE');
+
+    $blocks = collect($fixture->template['rows'])
+        ->flatMap(fn (array $row): array => $row['blocks'])
+        ->keyBy('id');
+
+    expect($blocks->keys()->all())->toContain('creditor', 'debtor', 'notice-meta', 'overdue-invoices', 'payment', 'notice-text');
+
+    $columns = collect($blocks->get('overdue-invoices')['config']['columns'])->keyBy('key');
+
+    expect($columns->keys()->all())->toBe(['invoiceNumber', 'issueDate', 'dueDate', 'daysOverdue', 'amount']);
+    expect($columns->get('invoiceNumber'))->toMatchArray(['label' => 'Invoice no.', 'align' => 'left'])
+        ->and($columns->get('issueDate'))->toMatchArray(['label' => 'Issue date', 'align' => 'left'])
+        ->and($columns->get('dueDate'))->toMatchArray(['label' => 'Due date', 'align' => 'left'])
+        ->and($columns->get('daysOverdue'))->toMatchArray(['label' => 'Days overdue', 'align' => 'right'])
+        ->and($columns->get('amount'))->toMatchArray(['label' => 'Amount', 'align' => 'right']);
+
+    expect($fixture->data)->toHaveKeys(['debtor', 'notice-meta', 'overdue-invoices', 'payment'])
+        ->and($fixture->data['notice-meta'])->toMatchArray([
+            'noticeNumber' => 'MA-2026-00018',
+            'noticeDate' => '2026-04-24',
+        ])
+        ->and($fixture->data['overdue-invoices'])->toHaveCount(2)
+        ->and($fixture->data['payment'])->toMatchArray([
+            'reference' => 'MA-2026-00018',
+            'amountDue' => '4.831,40 €',
+        ]);
+});
+
+it('models a shipping label example document structure', function (): void {
+    $fixture = collect(app(TemplateFixtureRepository::class)->examples())->firstWhere('slug', 'shipping-label');
+
+    expect($fixture)->not->toBeNull()
+        ->and($fixture->title)->toBe('Shipping Label')
+        ->and($fixture->template['config']['page']['format'])->toBe('ParcelLabel4x6')
+        ->and($fixture->template['config']['page']['pageNumbers']['enabled'])->toBeFalse();
+
+    $blocks = collect($fixture->template['rows'])
+        ->flatMap(fn (array $row): array => $row['blocks'])
+        ->keyBy('id');
+
+    expect($blocks->keys()->all())->toContain('carrier', 'service', 'recipient', 'sender', 'tracking', 'routing-code', 'barcode')
+        ->and($blocks->get('barcode')['type'])->toBe('image');
+
+    expect($fixture->data)->toHaveKeys(['recipient', 'sender', 'service', 'tracking', 'routing-code'])
+        ->and($fixture->data['tracking'])->toMatchArray([
+            'number' => '1Z999AA10123456784',
+        ]);
+});
+
+it('models a packing slip example document structure', function (): void {
+    $fixture = collect(app(TemplateFixtureRepository::class)->examples())->firstWhere('slug', 'packing-slip');
+
+    expect($fixture)->not->toBeNull()
+        ->and($fixture->title)->toBe('Packing Slip')
+        ->and($fixture->template['config']['page']['format'])->toBe('Letter')
+        ->and($fixture->template['config']['page']['locale'])->toBe('en_US')
+        ->and($fixture->template['config']['typography'])->toBe(['family' => 'Inter', 'size' => 10]);
+
+    $blocks = collect($fixture->template['rows'])
+        ->flatMap(fn (array $row): array => $row['blocks'])
+        ->keyBy('id');
+
+    expect($blocks->keys()->all())->toContain('warehouse', 'ship-to', 'order-meta', 'items', 'package-summary', 'notes');
+
+    $columns = collect($blocks->get('items')['config']['columns'])->keyBy('key');
+
+    expect($columns->keys()->all())->toBe(['sku', 'description', 'ordered', 'shipped', 'backordered']);
+    expect($columns->get('sku'))->toMatchArray(['label' => 'SKU', 'align' => 'left'])
+        ->and($columns->get('description'))->toMatchArray(['label' => 'Description', 'align' => 'left'])
+        ->and($columns->get('ordered'))->toMatchArray(['label' => 'Ordered', 'align' => 'right'])
+        ->and($columns->get('shipped'))->toMatchArray(['label' => 'Shipped', 'align' => 'right'])
+        ->and($columns->get('backordered'))->toMatchArray(['label' => 'Backordered', 'align' => 'right']);
+
+    expect($fixture->data)->toHaveKeys(['ship-to', 'order-meta', 'items', 'package-summary', 'notes'])
+        ->and($fixture->data['ship-to'])->toMatchArray([
+            'name' => 'Nina Patel',
+            'company' => 'Northwind Field Services',
+        ])
+        ->and($fixture->data['order-meta'])->toMatchArray([
+            'orderNumber' => 'SO-2026-10482',
+        ])
+        ->and($fixture->data['items'])->toHaveCount(3)
+        ->and($fixture->data['items'][2])->toMatchArray([
+            'sku' => 'KIT-ADP-014',
+            'backordered' => '1',
+        ])
+        ->and($fixture->data['package-summary'])->toMatchArray([
+            'packages' => '2 cartons',
+            'totalWeight' => '8.6 kg',
+        ]);
 });

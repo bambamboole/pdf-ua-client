@@ -15,15 +15,29 @@ it('keeps example documents out of the package schema compiler', function (): vo
     expect($schema)->not->toHaveKey('examples');
 });
 
-it('the invoice structure validates against schema #1 and its data against schema #2', function (): void {
-    $fixture = app(TemplateFixtureRepository::class)->examples()[0];
-    $template = app(TemplateFactory::class)->fromArray($fixture->template);
+it('validates every example structure and data contract', function (): void {
+    foreach (app(TemplateFixtureRepository::class)->examples() as $fixture) {
+        $template = app(TemplateFactory::class)->fromArray($fixture->template);
 
-    $dataSchema = app(DataSchemaCompiler::class)->compile($template);
-    $result = (new Validator)->validate(
-        json_decode((string) json_encode($fixture->data)),
-        json_decode((string) json_encode($dataSchema)),
-    );
+        $dataSchema = app(DataSchemaCompiler::class)->compile($template);
+        $result = (new Validator)->validate(
+            json_decode((string) json_encode($fixture->data)),
+            json_decode((string) json_encode($dataSchema)),
+        );
 
-    expect($result->isValid())->toBeTrue();
+        expect($result->isValid())->toBeTrue("Example {$fixture->slug} data failed schema validation.");
+    }
+});
+
+it('keeps example contract files in sync with compiled data schemas', function (): void {
+    foreach (app(TemplateFixtureRepository::class)->examples() as $fixture) {
+        if ($fixture->contract === null) {
+            continue;
+        }
+
+        $template = app(TemplateFactory::class)->fromArray($fixture->template);
+        $dataSchema = app(DataSchemaCompiler::class)->compile($template);
+
+        expect($fixture->contract)->toEqual($dataSchema, "Example {$fixture->slug} contract does not match compiled data schema.");
+    }
 });

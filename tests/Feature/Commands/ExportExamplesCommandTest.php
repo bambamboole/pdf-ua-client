@@ -22,8 +22,11 @@ it('writes the registered examples to the specified path', function () {
 
     expect($examples)->toBeArray();
     expect($examples)->not->toBeEmpty();
-    expect($examples[0])->toHaveKeys(['title', 'template', 'data']);
-    expect($examples[0]['title'])->toBe('Invoice');
+    expect(collect($examples)->pluck('title')->all())->toContain('Invoice');
+
+    foreach ($examples as $example) {
+        expect($example)->toHaveKeys(['title', 'template', 'data']);
+    }
 });
 
 it('uses the default path when none given', function () {

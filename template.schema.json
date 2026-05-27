@@ -739,7 +739,8 @@
                         "A4",
                         "A5",
                         "Letter",
-                        "Legal"
+                        "Legal",
+                        "ParcelLabel4x6"
                     ],
                     "title": "Format",
                     "description": "Physical page size used for rendering.",

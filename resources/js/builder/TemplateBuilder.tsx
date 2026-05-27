@@ -28,6 +28,8 @@ import {
   updateBlockConfig,
   updateBlockId,
   updateTemplateConfig,
+  updateFooterRepeat,
+  updatePageNumbers,
   setRowWidths,
   updateBlockData,
   updateDataField,
@@ -471,50 +473,4 @@ export default function TemplateBuilder({
       </DragOverlay>
     </DndContext>
   );
-}
-
-function updateFooterRepeat(model: EditorModel, repeat: boolean): EditorModel {
-  const page = objectOrEmpty(model.config.page);
-  const footer = objectOrEmpty(page.footer);
-
-  return {
-    ...model,
-    config: {
-      ...model.config,
-      page: {
-        ...page,
-        footer: {
-          ...footer,
-          repeat,
-        },
-      },
-    },
-  };
-}
-
-function updatePageNumbers(
-  model: EditorModel,
-  position: "disabled" | "left" | "center" | "right",
-): EditorModel {
-  const page = objectOrEmpty(model.config.page);
-
-  return {
-    ...model,
-    config: {
-      ...model.config,
-      page: {
-        ...page,
-        pageNumbers:
-          position === "disabled"
-            ? { ...objectOrEmpty(page.pageNumbers), enabled: false }
-            : { ...objectOrEmpty(page.pageNumbers), enabled: true, position },
-      },
-    },
-  };
-}
-
-function objectOrEmpty(value: unknown): Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
 }

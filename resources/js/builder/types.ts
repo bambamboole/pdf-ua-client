@@ -46,6 +46,8 @@ export interface TemplateDataLayers {
 
 export type EditorArea = "body" | "footer";
 
+export type PageNumberPosition = "disabled" | "left" | "center" | "right";
+
 export type DragData =
   | { source: "palette"; type: string }
   | { source: "block"; rowUid: string; area: EditorArea }

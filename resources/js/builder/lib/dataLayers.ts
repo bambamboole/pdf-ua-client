@@ -1,7 +1,18 @@
-import type { DataMap, DataValue } from "../types";
+import type { DataMap, DataValue, TemplateDataLayers } from "../types";
 
 export function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+export function mapLayers(
+  layers: TemplateDataLayers,
+  fn: (map: DataMap) => DataMap,
+): TemplateDataLayers {
+  return {
+    example: fn(layers.example),
+    defaults: fn(layers.defaults),
+    constants: fn(layers.constants),
+  };
 }
 
 function mergeJson(base: unknown, override: unknown): unknown {

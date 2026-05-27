@@ -6,11 +6,12 @@ import type {
   EditorModel,
   EditorRow,
   Json,
+  PageNumberPosition,
   Template,
   TemplateDataLayers,
 } from "../types";
 import { blockMeta } from "../blocks/meta";
-import { cleanDataMap, isPlainObject, omitDataId } from "../lib/dataLayers";
+import { cleanDataMap, isPlainObject, mapLayers, omitDataId } from "../lib/dataLayers";
 
 function uid(): string {
   return crypto.randomUUID();
@@ -142,13 +143,9 @@ export function addBlock(
 
 export function removeBlock(model: EditorModel, blockUid: string): EditorModel {
   const block = findBlock(model, blockUid)?.block;
+  const data = block ? removeDataForId(model.data, block.id) : model.data;
 
-  return {
-    ...model,
-    data: block ? removeDataForId(model.data, block.id) : model.data,
-    rows: removeBlockFromRows(model.rows, blockUid),
-    footerRows: removeBlockFromRows(model.footerRows, blockUid),
-  };
+  return mapAreas({ ...model, data }, (rows) => removeBlockFromRows(rows, blockUid));
 }
 
 export function removeRow(model: EditorModel, rowUid: string): EditorModel {
@@ -157,12 +154,9 @@ export function removeRow(model: EditorModel, rowUid: string): EditorModel {
     ? removedRow.blocks.reduce((layers, block) => removeDataForId(layers, block.id), model.data)
     : model.data;
 
-  return {
-    ...model,
-    data,
-    rows: model.rows.filter((candidate) => candidate.uid !== rowUid),
-    footerRows: model.footerRows.filter((candidate) => candidate.uid !== rowUid),
-  };
+  return mapAreas({ ...model, data }, (rows) =>
+    rows.filter((candidate) => candidate.uid !== rowUid),
+  );
 }
 
 export function moveBlock(
@@ -242,32 +236,23 @@ export function moveRow(
   return area === "footer" ? { ...model, footerRows: rows } : { ...model, rows };
 }
 
+function mapAreas(model: EditorModel, fn: (rows: EditorRow[]) => EditorRow[]): EditorModel {
+  return { ...model, rows: fn(model.rows), footerRows: fn(model.footerRows) };
+}
+
 export function setRowWidths(model: EditorModel, rowUid: string, widths: string[]): EditorModel {
-  return {
-    ...model,
-    rows: model.rows.map((row) => {
-      if (row.uid !== rowUid) {
-        return row;
-      }
-      return {
-        ...row,
-        blocks: row.blocks.map((b, i) =>
-          i < widths.length ? { ...b, config: { ...b.config, width: widths[i] } } : b,
-        ),
-      };
-    }),
-    footerRows: model.footerRows.map((row) => {
-      if (row.uid !== rowUid) {
-        return row;
-      }
-      return {
-        ...row,
-        blocks: row.blocks.map((b, i) =>
-          i < widths.length ? { ...b, config: { ...b.config, width: widths[i] } } : b,
-        ),
-      };
-    }),
-  };
+  return mapAreas(model, (rows) =>
+    rows.map((row) =>
+      row.uid === rowUid
+        ? {
+            ...row,
+            blocks: row.blocks.map((b, i) =>
+              i < widths.length ? { ...b, config: { ...b.config, width: widths[i] } } : b,
+            ),
+          }
+        : row,
+    ),
+  );
 }
 
 function mapBlock(
@@ -275,17 +260,12 @@ function mapBlock(
   blockUid: string,
   fn: (b: EditorBlock) => EditorBlock,
 ): EditorModel {
-  return {
-    ...model,
-    rows: model.rows.map((row) => ({
+  return mapAreas(model, (rows) =>
+    rows.map((row) => ({
       ...row,
       blocks: row.blocks.map((b) => (b.uid === blockUid ? fn(b) : b)),
     })),
-    footerRows: model.footerRows.map((row) => ({
-      ...row,
-      blocks: row.blocks.map((b) => (b.uid === blockUid ? fn(b) : b)),
-    })),
-  };
+  );
 }
 
 export function updateBlockConfig(model: EditorModel, blockUid: string, config: Json): EditorModel {
@@ -356,11 +336,7 @@ export function updateBlockData(
 }
 
 function renameDataId(layers: TemplateDataLayers, from: string, to: string): TemplateDataLayers {
-  return {
-    example: renameInDataMap(layers.example, from, to),
-    defaults: renameInDataMap(layers.defaults, from, to),
-    constants: renameInDataMap(layers.constants, from, to),
-  };
+  return mapLayers(layers, (map) => renameInDataMap(map, from, to));
 }
 
 function renameInDataMap(data: DataMap, from: string, to: string): DataMap {
@@ -375,11 +351,7 @@ function renameInDataMap(data: DataMap, from: string, to: string): DataMap {
 }
 
 function removeDataForId(layers: TemplateDataLayers, id: string): TemplateDataLayers {
-  return {
-    example: omitDataId(layers.example, id),
-    defaults: omitDataId(layers.defaults, id),
-    constants: omitDataId(layers.constants, id),
-  };
+  return mapLayers(layers, (map) => omitDataId(map, id));
 }
 
 function removeDataField(
@@ -387,11 +359,7 @@ function removeDataField(
   blockId: string,
   field: string,
 ): TemplateDataLayers {
-  return {
-    example: omitDataField(layers.example, blockId, field),
-    defaults: omitDataField(layers.defaults, blockId, field),
-    constants: omitDataField(layers.constants, blockId, field),
-  };
+  return mapLayers(layers, (map) => omitDataField(map, blockId, field));
 }
 
 function omitDataField(data: DataMap, blockId: string, field: string): DataMap {
@@ -445,6 +413,39 @@ function writeDataBlock(
 
 export function updateTemplateConfig(model: EditorModel, config: Json): EditorModel {
   return { ...model, config };
+}
+
+export function updateFooterRepeat(model: EditorModel, repeat: boolean): EditorModel {
+  const page = objectOrEmpty(model.config.page);
+  const footer = objectOrEmpty(page.footer);
+
+  return {
+    ...model,
+    config: {
+      ...model.config,
+      page: { ...page, footer: { ...footer, repeat } },
+    },
+  };
+}
+
+export function updatePageNumbers(model: EditorModel, position: PageNumberPosition): EditorModel {
+  const page = objectOrEmpty(model.config.page);
+  const pageNumbers =
+    position === "disabled"
+      ? { ...objectOrEmpty(page.pageNumbers), enabled: false }
+      : { ...objectOrEmpty(page.pageNumbers), enabled: true, position };
+
+  return {
+    ...model,
+    config: {
+      ...model.config,
+      page: { ...page, pageNumbers },
+    },
+  };
+}
+
+function objectOrEmpty(value: unknown): Record<string, unknown> {
+  return isPlainObject(value) ? value : {};
 }
 
 export interface FoundBlock {

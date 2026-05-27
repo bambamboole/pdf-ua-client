@@ -1,5 +1,5 @@
 import type { DataMap, DataValue, TemplateDataLayers } from "../types";
-import { isPlainObject, mergeDataMaps, omitDataId } from "../lib/dataLayers";
+import { isPlainObject, mapLayers, mergeDataMaps, omitDataId } from "../lib/dataLayers";
 
 export { isPlainObject };
 
@@ -86,11 +86,7 @@ export function pruneDataFieldsForId(
   blockId: string,
   keys: Set<string>,
 ): TemplateDataLayers {
-  return {
-    example: pruneDataMapFields(layers.example, blockId, keys),
-    defaults: pruneDataMapFields(layers.defaults, blockId, keys),
-    constants: pruneDataMapFields(layers.constants, blockId, keys),
-  };
+  return mapLayers(layers, (map) => pruneDataMapFields(map, blockId, keys));
 }
 
 function pruneDataMapFields(data: DataMap, blockId: string, keys: Set<string>): DataMap {
@@ -117,11 +113,7 @@ export function pruneDataRowsForId(
   blockId: string,
   keys: Set<string>,
 ): TemplateDataLayers {
-  return {
-    example: pruneDataMapRows(layers.example, blockId, keys),
-    defaults: pruneDataMapRows(layers.defaults, blockId, keys),
-    constants: pruneDataMapRows(layers.constants, blockId, keys),
-  };
+  return mapLayers(layers, (map) => pruneDataMapRows(map, blockId, keys));
 }
 
 function pruneDataMapRows(data: DataMap, blockId: string, keys: Set<string>): DataMap {

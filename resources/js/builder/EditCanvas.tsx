@@ -1,4 +1,4 @@
-import { Fragment, useRef, useState, type CSSProperties } from "react";
+import { Fragment, memo, useRef, useState, type CSSProperties } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -14,41 +14,22 @@ import { getBlockTitle } from "./lib/schema";
 import BlockDataSummary from "./BlockDataSummary";
 import ColumnResizer from "./ColumnResizer";
 import InlineBlockEditor from "./InlineBlockEditor";
+import { useBuilderActions } from "./state/builderActions";
 import type {
   DragData,
   EditorBlock,
   EditorArea,
+  EditorModel,
   EditorRow,
-  DataValue,
-  Json,
   JsonSchema,
   TemplateDataLayers,
 } from "./types";
 
 interface Props {
-  model: { rows: EditorRow[]; footerRows: EditorRow[]; data: TemplateDataLayers; config: Json };
+  model: EditorModel;
   schema: JsonSchema;
   format: string;
   selectedBlockUid: string | null;
-  onSelectBlock: (uid: string) => void;
-  onRemoveBlock: (uid: string) => void;
-  onRemoveRow: (uid: string) => void;
-  onUpdateFooterRepeat: (repeat: boolean) => void;
-  onUpdatePageNumbers: (position: "disabled" | "left" | "center" | "right") => void;
-  onSetRowWidths: (rowUid: string, widths: string[]) => void;
-  onUpdateBlockId: (uid: string, id: string) => void;
-  onUpdateBlockConfig: (uid: string, config: Json) => void;
-  onUpdateDataField: (
-    blockId: string,
-    field: string,
-    value: unknown,
-    options: { example: boolean; locked: boolean },
-  ) => void;
-  onUpdateBlockData: (
-    blockId: string,
-    value: DataValue,
-    options: { example: boolean; locked: boolean },
-  ) => void;
 }
 
 interface BlockBoxProps {
@@ -58,41 +39,21 @@ interface BlockBoxProps {
   selected: boolean;
   initiallyOpen: boolean;
   style?: CSSProperties;
-  onSelect: (uid: string) => void;
-  onRemove: (uid: string) => void;
   schema: JsonSchema;
   data: TemplateDataLayers;
-  onUpdateBlockId: (uid: string, id: string) => void;
-  onUpdateBlockConfig: (uid: string, config: Json) => void;
-  onUpdateDataField: (
-    blockId: string,
-    field: string,
-    value: unknown,
-    options: { example: boolean; locked: boolean },
-  ) => void;
-  onUpdateBlockData: (
-    blockId: string,
-    value: DataValue,
-    options: { example: boolean; locked: boolean },
-  ) => void;
 }
 
-function BlockBox({
+const BlockBox = memo(function BlockBox({
   block,
   rowUid,
   area,
   selected,
   initiallyOpen,
   style: layoutStyle,
-  onSelect,
-  onRemove,
   schema,
   data,
-  onUpdateBlockId,
-  onUpdateBlockConfig,
-  onUpdateDataField,
-  onUpdateBlockData,
 }: BlockBoxProps) {
+  const { onSelectBlock, onRemoveBlock } = useBuilderActions();
   const [settingsOpen, setSettingsOpen] = useState(initiallyOpen);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: block.uid,
@@ -104,7 +65,7 @@ function BlockBox({
     <div
       ref={setNodeRef}
       style={style}
-      onPointerDownCapture={() => onSelect(block.uid)}
+      onPointerDownCapture={() => onSelectBlock(block.uid)}
       data-builder-block
       data-builder-block-type={block.type}
       className={`${layoutStyle ? "" : "flex-1"} rounded-[var(--builder-radius)] border bg-[var(--builder-panel)] px-3 py-2 text-sm shadow-sm transition ${selected ? "border-[var(--builder-accent)] ring-2 ring-[var(--builder-accent-soft)]" : "border-[var(--builder-stroke)] hover:border-[var(--builder-stroke-strong)]"} ${isDragging ? "opacity-50" : ""}`}
@@ -129,7 +90,7 @@ function BlockBox({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              onRemove(block.uid);
+              onRemoveBlock(block.uid);
             }}
             onPointerDown={(e) => e.stopPropagation()}
             className="text-[var(--builder-muted)] transition hover:text-[var(--builder-danger)]"
@@ -145,7 +106,7 @@ function BlockBox({
         className="mt-3 border-t border-[var(--builder-stroke)] pt-2"
         onToggle={(event) => {
           if (event.currentTarget.open) {
-            onSelect(block.uid);
+            onSelectBlock(block.uid);
           }
         }}
       >
@@ -154,27 +115,18 @@ function BlockBox({
             event.preventDefault();
             event.stopPropagation();
             setSettingsOpen((open) => !open);
-            onSelect(block.uid);
+            onSelectBlock(block.uid);
           }}
           onPointerDown={(event) => event.stopPropagation()}
           className="cursor-pointer text-xs font-medium text-[var(--builder-muted)] transition hover:text-[var(--builder-ink)]"
         >
           More
         </summary>
-        <InlineBlockEditor
-          block={block}
-          schema={schema}
-          data={data}
-          detailsOpen={settingsOpen}
-          onUpdateBlockId={onUpdateBlockId}
-          onUpdateBlockConfig={onUpdateBlockConfig}
-          onUpdateDataField={onUpdateDataField}
-          onUpdateBlockData={onUpdateBlockData}
-        />
+        <InlineBlockEditor block={block} schema={schema} data={data} detailsOpen={settingsOpen} />
       </details>
     </div>
   );
-}
+});
 
 interface RowProps {
   row: EditorRow;
@@ -183,41 +135,10 @@ interface RowProps {
   schema: JsonSchema;
   data: TemplateDataLayers;
   selectedBlockUid: string | null;
-  onSelectBlock: (uid: string) => void;
-  onRemoveBlock: (uid: string) => void;
-  onRemoveRow: (uid: string) => void;
-  onSetRowWidths: (rowUid: string, widths: string[]) => void;
-  onUpdateBlockId: (uid: string, id: string) => void;
-  onUpdateBlockConfig: (uid: string, config: Json) => void;
-  onUpdateDataField: (
-    blockId: string,
-    field: string,
-    value: unknown,
-    options: { example: boolean; locked: boolean },
-  ) => void;
-  onUpdateBlockData: (
-    blockId: string,
-    value: DataValue,
-    options: { example: boolean; locked: boolean },
-  ) => void;
 }
 
-function Row({
-  row,
-  rowIndex,
-  area,
-  schema,
-  data,
-  selectedBlockUid,
-  onSelectBlock,
-  onRemoveBlock,
-  onRemoveRow,
-  onSetRowWidths,
-  onUpdateBlockId,
-  onUpdateBlockConfig,
-  onUpdateDataField,
-  onUpdateBlockData,
-}: RowProps) {
+const Row = memo(function Row({ row, rowIndex, area, schema, data, selectedBlockUid }: RowProps) {
+  const { onRemoveRow, onSetRowWidths } = useBuilderActions();
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: `row-${row.uid}`,
     data: { source: "row", rowUid: row.uid, area } satisfies DragData,
@@ -274,14 +195,8 @@ function Row({
                 selected={block.uid === selectedBlockUid}
                 initiallyOpen={rowIndex === 0 && i === 0}
                 style={widths ? { minWidth: 0 } : undefined}
-                onSelect={onSelectBlock}
-                onRemove={onRemoveBlock}
                 schema={schema}
                 data={data}
-                onUpdateBlockId={onUpdateBlockId}
-                onUpdateBlockConfig={onUpdateBlockConfig}
-                onUpdateDataField={onUpdateDataField}
-                onUpdateBlockData={onUpdateBlockData}
               />
               {i < row.blocks.length - 1 ? (
                 <ColumnResizer
@@ -299,7 +214,7 @@ function Row({
       </div>
     </div>
   );
-}
+});
 
 function NewRowZone({ area = "body" }: { area?: EditorArea }) {
   const { setNodeRef, isOver } = useDroppable({
@@ -321,40 +236,12 @@ function FooterCanvas({
   model,
   schema,
   selectedBlockUid,
-  onSelectBlock,
-  onRemoveBlock,
-  onRemoveRow,
-  onSetRowWidths,
-  onUpdateBlockId,
-  onUpdateBlockConfig,
-  onUpdateDataField,
-  onUpdateBlockData,
-  onUpdateFooterRepeat,
-  onUpdatePageNumbers,
 }: {
-  model: Props["model"];
+  model: EditorModel;
   schema: JsonSchema;
   selectedBlockUid: string | null;
-  onSelectBlock: (uid: string) => void;
-  onRemoveBlock: (uid: string) => void;
-  onRemoveRow: (uid: string) => void;
-  onSetRowWidths: (rowUid: string, widths: string[]) => void;
-  onUpdateBlockId: (uid: string, id: string) => void;
-  onUpdateBlockConfig: (uid: string, config: Json) => void;
-  onUpdateDataField: (
-    blockId: string,
-    field: string,
-    value: unknown,
-    options: { example: boolean; locked: boolean },
-  ) => void;
-  onUpdateBlockData: (
-    blockId: string,
-    value: DataValue,
-    options: { example: boolean; locked: boolean },
-  ) => void;
-  onUpdateFooterRepeat: (repeat: boolean) => void;
-  onUpdatePageNumbers: (position: "disabled" | "left" | "center" | "right") => void;
 }) {
+  const { onUpdateFooterRepeat, onUpdatePageNumbers } = useBuilderActions();
   const page = model.config.page as Record<string, unknown> | undefined;
   const footer = page?.footer as Record<string, unknown> | undefined;
   const pageNumbers = page?.pageNumbers as Record<string, unknown> | undefined;
@@ -401,14 +288,6 @@ function FooterCanvas({
                 schema={schema}
                 data={model.data}
                 selectedBlockUid={selectedBlockUid}
-                onSelectBlock={onSelectBlock}
-                onRemoveBlock={onRemoveBlock}
-                onRemoveRow={onRemoveRow}
-                onSetRowWidths={onSetRowWidths}
-                onUpdateBlockId={onUpdateBlockId}
-                onUpdateBlockConfig={onUpdateBlockConfig}
-                onUpdateDataField={onUpdateDataField}
-                onUpdateBlockData={onUpdateBlockData}
               />
             ))}
           </SortableContext>
@@ -438,22 +317,7 @@ function FooterCanvas({
   );
 }
 
-export default function EditCanvas({
-  model,
-  schema,
-  format,
-  selectedBlockUid,
-  onSelectBlock,
-  onRemoveBlock,
-  onRemoveRow,
-  onUpdateFooterRepeat,
-  onUpdatePageNumbers,
-  onSetRowWidths,
-  onUpdateBlockId,
-  onUpdateBlockConfig,
-  onUpdateDataField,
-  onUpdateBlockData,
-}: Props) {
+export default function EditCanvas({ model, schema, format, selectedBlockUid }: Props) {
   const [width] = pageSizeForFormat(format);
   const maxWidth = mmToPx(width);
 
@@ -480,34 +344,12 @@ export default function EditCanvas({
               schema={schema}
               data={model.data}
               selectedBlockUid={selectedBlockUid}
-              onSelectBlock={onSelectBlock}
-              onRemoveBlock={onRemoveBlock}
-              onRemoveRow={onRemoveRow}
-              onSetRowWidths={onSetRowWidths}
-              onUpdateBlockId={onUpdateBlockId}
-              onUpdateBlockConfig={onUpdateBlockConfig}
-              onUpdateDataField={onUpdateDataField}
-              onUpdateBlockData={onUpdateBlockData}
             />
           ))}
         </SortableContext>
         <NewRowZone />
       </div>
-      <FooterCanvas
-        model={model}
-        schema={schema}
-        selectedBlockUid={selectedBlockUid}
-        onSelectBlock={onSelectBlock}
-        onRemoveBlock={onRemoveBlock}
-        onRemoveRow={onRemoveRow}
-        onSetRowWidths={onSetRowWidths}
-        onUpdateBlockId={onUpdateBlockId}
-        onUpdateBlockConfig={onUpdateBlockConfig}
-        onUpdateDataField={onUpdateDataField}
-        onUpdateBlockData={onUpdateBlockData}
-        onUpdateFooterRepeat={onUpdateFooterRepeat}
-        onUpdatePageNumbers={onUpdatePageNumbers}
-      />
+      <FooterCanvas model={model} schema={schema} selectedBlockUid={selectedBlockUid} />
     </div>
   );
 }

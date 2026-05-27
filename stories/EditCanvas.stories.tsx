@@ -35,23 +35,9 @@ type Story = StoryObj<typeof EditCanvas>;
 
 export const Invoice: Story = {
   args: {
-    model: {
-      rows: model.rows,
-      footerRows: model.footerRows,
-      data: model.data,
-      config: model.config,
-    },
+    model,
     schema: typedSchema,
     format: getPageFormat(typedSchema),
     selectedBlockUid: null,
-    onSelectBlock: () => {},
-    onRemoveBlock: () => {},
-    onRemoveRow: () => {},
-    onUpdateFooterRepeat: () => {},
-    onUpdatePageNumbers: () => {},
-    onSetRowWidths: () => {},
-    onUpdateBlockId: () => {},
-    onUpdateBlockConfig: () => {},
-    onUpdateDataField: () => {},
   },
 };

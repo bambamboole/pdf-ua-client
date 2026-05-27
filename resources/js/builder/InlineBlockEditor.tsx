@@ -1,11 +1,12 @@
 import { lazy, Suspense, useEffect, useState } from "react";
-import type { DataValue, EditorBlock, Json, JsonSchema, TemplateDataLayers } from "./types";
+import type { EditorBlock, Json, JsonSchema, TemplateDataLayers } from "./types";
 import { blockDefinition } from "./blocks/registry";
 import {
   getBlockConfigGroupSchema,
   getBlockSubschemas,
   getNestedBlockConfigSchema,
 } from "./lib/schema";
+import { useBuilderActions } from "./state/builderActions";
 import BlockDataEditor from "./BlockDataEditor";
 
 const SettingsForm = lazy(() => import("./SettingsForm"));
@@ -16,31 +17,11 @@ interface Props {
   schema: JsonSchema;
   data: TemplateDataLayers;
   detailsOpen: boolean;
-  onUpdateBlockId: (uid: string, id: string) => void;
-  onUpdateBlockConfig: (uid: string, config: Json) => void;
-  onUpdateDataField: (
-    blockId: string,
-    field: string,
-    value: unknown,
-    options: { example: boolean; locked: boolean },
-  ) => void;
-  onUpdateBlockData: (
-    blockId: string,
-    value: DataValue,
-    options: { example: boolean; locked: boolean },
-  ) => void;
 }
 
-export default function InlineBlockEditor({
-  block,
-  schema,
-  data,
-  detailsOpen,
-  onUpdateBlockId,
-  onUpdateBlockConfig,
-  onUpdateDataField,
-  onUpdateBlockData,
-}: Props) {
+export default function InlineBlockEditor({ block, schema, data, detailsOpen }: Props) {
+  const { onUpdateBlockId, onUpdateBlockConfig, onUpdateDataField, onUpdateBlockData } =
+    useBuilderActions();
   const blockDataSchema = getBlockSubschemas(schema, block.type).props;
   const dataProperties = blockDataSchema.properties;
   const hasDataProperties =

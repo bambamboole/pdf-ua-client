@@ -36,6 +36,7 @@ import {
 } from "./state/templateModel";
 import { exampleFromSchema } from "./lib/exampleFromSchema";
 import { useLatest } from "./useLatest";
+import { BuilderActionsProvider, type BuilderActions } from "./state/builderActions";
 import type {
   DataMap,
   DragData,
@@ -222,7 +223,23 @@ export default function TemplateBuilder({
     });
   }, [tab, template, data, renderPdfRef, replacePdfUrl]);
 
-  const selectBlock = useCallback((uid: string) => setSelectedBlockUid(uid), []);
+  const actions = useMemo<BuilderActions>(
+    () => ({
+      onSelectBlock: (uid) => setSelectedBlockUid(uid),
+      onRemoveBlock: (uid) => setModel((m) => removeBlock(m, uid)),
+      onRemoveRow: (uid) => setModel((m) => removeRow(m, uid)),
+      onSetRowWidths: (rowUid, widths) => setModel((m) => setRowWidths(m, rowUid, widths)),
+      onUpdateBlockId: (uid, id) => setModel((m) => updateBlockId(m, uid, id)),
+      onUpdateBlockConfig: (uid, config) => setModel((m) => updateBlockConfig(m, uid, config)),
+      onUpdateDataField: (blockId, field, value, options) =>
+        setModel((m) => updateDataField(m, blockId, field, value, options)),
+      onUpdateBlockData: (blockId, value, options) =>
+        setModel((m) => updateBlockData(m, blockId, value, options)),
+      onUpdateFooterRepeat: (repeat) => setModel((m) => updateFooterRepeat(m, repeat)),
+      onUpdatePageNumbers: (position) => setModel((m) => updatePageNumbers(m, position)),
+    }),
+    [],
+  );
 
   const blockData = useCallback(
     (type: string): Json =>
@@ -316,127 +333,111 @@ export default function TemplateBuilder({
         setActiveLabel(a?.source === "palette" ? getBlockTitle(schema, a.type) : "Block");
       }}
     >
-      <div className="template-builder flex h-screen bg-[var(--builder-bg)] text-[var(--builder-ink)]">
-        <aside className="template-builder__sidebar w-72 shrink-0 overflow-y-auto border-r border-[var(--builder-sidebar-border)] bg-[var(--builder-sidebar)] p-4 text-[var(--builder-ink)]">
-          <BlockPalette
-            schema={schema}
-            examples={listExamples(examples)}
-            pageConfig={model.config}
-            onLoadExample={(entry) => {
-              setModel(loadExample(entry));
-              setSelectedBlockUid(null);
-            }}
-            onUpdateTemplateConfig={(config) =>
-              setModel((m) => updateTemplateConfig(m, config as Json))
-            }
-          />
-        </aside>
-        <main className="flex flex-1 flex-col overflow-hidden">
-          <div className="flex items-center justify-between gap-4 border-b border-[var(--builder-stroke)] bg-[var(--builder-panel)] px-5 py-3 shadow-sm">
-            <div>
-              <h1 className="text-sm font-semibold text-[var(--builder-ink)]">Template builder</h1>
-              <p className="text-xs text-[var(--builder-muted)]">
-                Compose blocks, inspect data, and preview HTML or PDF output.
-              </p>
+      <BuilderActionsProvider value={actions}>
+        <div className="template-builder flex h-screen bg-[var(--builder-bg)] text-[var(--builder-ink)]">
+          <aside className="template-builder__sidebar w-72 shrink-0 overflow-y-auto border-r border-[var(--builder-sidebar-border)] bg-[var(--builder-sidebar)] p-4 text-[var(--builder-ink)]">
+            <BlockPalette
+              schema={schema}
+              examples={listExamples(examples)}
+              pageConfig={model.config}
+              onLoadExample={(entry) => {
+                setModel(loadExample(entry));
+                setSelectedBlockUid(null);
+              }}
+              onUpdateTemplateConfig={(config) =>
+                setModel((m) => updateTemplateConfig(m, config as Json))
+              }
+            />
+          </aside>
+          <main className="flex flex-1 flex-col overflow-hidden">
+            <div className="flex items-center justify-between gap-4 border-b border-[var(--builder-stroke)] bg-[var(--builder-panel)] px-5 py-3 shadow-sm">
+              <div>
+                <h1 className="text-sm font-semibold text-[var(--builder-ink)]">
+                  Template builder
+                </h1>
+                <p className="text-xs text-[var(--builder-muted)]">
+                  Compose blocks, inspect data, and preview HTML or PDF output.
+                </p>
+              </div>
+              <div
+                data-builder-tabs
+                aria-label="Builder views"
+                className="flex gap-1 rounded-full border border-[var(--builder-stroke)] bg-[var(--builder-surface)] p-1"
+              >
+                {tabs.map((item) => (
+                  <button
+                    key={item.key}
+                    type="button"
+                    aria-pressed={tab === item.key}
+                    onClick={() => setTab(item.key)}
+                    className={`rounded-full px-3 py-1 text-sm font-medium transition ${tab === item.key ? "bg-[var(--builder-ink)] text-white shadow-sm" : "text-[var(--builder-muted-strong)] hover:bg-[var(--builder-panel)] hover:text-[var(--builder-ink)]"}`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div
-              data-builder-tabs
-              aria-label="Builder views"
-              className="flex gap-1 rounded-full border border-[var(--builder-stroke)] bg-[var(--builder-surface)] p-1"
-            >
-              {tabs.map((item) => (
-                <button
-                  key={item.key}
-                  type="button"
-                  aria-pressed={tab === item.key}
-                  onClick={() => setTab(item.key)}
-                  className={`rounded-full px-3 py-1 text-sm font-medium transition ${tab === item.key ? "bg-[var(--builder-ink)] text-white shadow-sm" : "text-[var(--builder-muted-strong)] hover:bg-[var(--builder-panel)] hover:text-[var(--builder-ink)]"}`}
+            <div className="flex-1 overflow-auto bg-[var(--builder-bg)] p-5">
+              {tab === "build" ? (
+                <div className="grid items-start gap-5">
+                  <EditCanvas
+                    model={model}
+                    schema={schema}
+                    format={format}
+                    selectedBlockUid={selectedBlockUid}
+                  />
+                </div>
+              ) : tab === "schema" && schemaError ? (
+                <div className="rounded-[var(--builder-radius)] border border-red-200 bg-red-50 p-4 text-red-700">
+                  {schemaError}
+                </div>
+              ) : tab === "schema" ? (
+                <Suspense
+                  fallback={
+                    <div className="h-24 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-panel)]" />
+                  }
                 >
-                  {item.label}
-                </button>
-              ))}
+                  <SchemaView
+                    template={template}
+                    dataSchema={dataSchema}
+                    onExportTemplate={handleExport}
+                  />
+                </Suspense>
+              ) : tab === "html" && error ? (
+                <div className="rounded-[var(--builder-radius)] border border-red-200 bg-red-50 p-4 text-red-700">
+                  {error}
+                </div>
+              ) : tab === "html" ? (
+                <Suspense
+                  fallback={
+                    <div className="h-96 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-panel)]" />
+                  }
+                >
+                  <PageCanvas format={format} html={html} />
+                </Suspense>
+              ) : pdfError ? (
+                <div className="rounded-[var(--builder-radius)] border border-red-200 bg-red-50 p-4 text-red-700">
+                  {pdfError}
+                </div>
+              ) : pdfLoading && pdfUrl === null ? (
+                <div className="h-96 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-panel)]" />
+              ) : pdfUrl ? (
+                <Suspense
+                  fallback={
+                    <div className="h-96 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-panel)]" />
+                  }
+                >
+                  <PdfCanvas url={pdfUrl} />
+                </Suspense>
+              ) : (
+                <div className="rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-panel)] p-4 text-sm text-[var(--builder-muted)]">
+                  PDF preview is waiting for generated output.
+                </div>
+              )}
             </div>
-          </div>
-          <div className="flex-1 overflow-auto bg-[var(--builder-bg)] p-5">
-            {tab === "build" ? (
-              <div className="grid items-start gap-5">
-                <EditCanvas
-                  model={model}
-                  schema={schema}
-                  format={format}
-                  selectedBlockUid={selectedBlockUid}
-                  onSelectBlock={selectBlock}
-                  onRemoveBlock={(uid) => setModel((m) => removeBlock(m, uid))}
-                  onRemoveRow={(uid) => setModel((m) => removeRow(m, uid))}
-                  onUpdateFooterRepeat={(repeat) => setModel((m) => updateFooterRepeat(m, repeat))}
-                  onUpdatePageNumbers={(position) =>
-                    setModel((m) => updatePageNumbers(m, position))
-                  }
-                  onSetRowWidths={(rowUid, widths) =>
-                    setModel((m) => setRowWidths(m, rowUid, widths))
-                  }
-                  onUpdateBlockId={(uid, id) => setModel((m) => updateBlockId(m, uid, id))}
-                  onUpdateBlockConfig={(uid, config) =>
-                    setModel((m) => updateBlockConfig(m, uid, config as Json))
-                  }
-                  onUpdateDataField={(blockId, field, value, options) =>
-                    setModel((m) => updateDataField(m, blockId, field, value, options))
-                  }
-                  onUpdateBlockData={(blockId, value, options) =>
-                    setModel((m) => updateBlockData(m, blockId, value, options))
-                  }
-                />
-              </div>
-            ) : tab === "schema" && schemaError ? (
-              <div className="rounded-[var(--builder-radius)] border border-red-200 bg-red-50 p-4 text-red-700">
-                {schemaError}
-              </div>
-            ) : tab === "schema" ? (
-              <Suspense
-                fallback={
-                  <div className="h-24 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-panel)]" />
-                }
-              >
-                <SchemaView
-                  template={template}
-                  dataSchema={dataSchema}
-                  onExportTemplate={handleExport}
-                />
-              </Suspense>
-            ) : tab === "html" && error ? (
-              <div className="rounded-[var(--builder-radius)] border border-red-200 bg-red-50 p-4 text-red-700">
-                {error}
-              </div>
-            ) : tab === "html" ? (
-              <Suspense
-                fallback={
-                  <div className="h-96 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-panel)]" />
-                }
-              >
-                <PageCanvas format={format} html={html} />
-              </Suspense>
-            ) : pdfError ? (
-              <div className="rounded-[var(--builder-radius)] border border-red-200 bg-red-50 p-4 text-red-700">
-                {pdfError}
-              </div>
-            ) : pdfLoading && pdfUrl === null ? (
-              <div className="h-96 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-panel)]" />
-            ) : pdfUrl ? (
-              <Suspense
-                fallback={
-                  <div className="h-96 animate-pulse rounded-[var(--builder-radius)] bg-[var(--builder-panel)]" />
-                }
-              >
-                <PdfCanvas url={pdfUrl} />
-              </Suspense>
-            ) : (
-              <div className="rounded-[var(--builder-radius)] border border-[var(--builder-stroke)] bg-[var(--builder-panel)] p-4 text-sm text-[var(--builder-muted)]">
-                PDF preview is waiting for generated output.
-              </div>
-            )}
-          </div>
-        </main>
-      </div>
+          </main>
+        </div>
+      </BuilderActionsProvider>
       <DragOverlay>
         {activeLabel ? (
           <div className="rounded-[var(--builder-radius)] border border-[var(--builder-accent)] bg-[var(--builder-panel)] px-3 py-2 text-sm font-medium text-[var(--builder-ink)] shadow-[var(--builder-shadow)]">

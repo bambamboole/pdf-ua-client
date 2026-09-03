@@ -13,158 +13,29 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
-  js:
-    name: JS (lint, format, typecheck, vitest)
+  check:
+    name: PHP ${{ matrix.php }} / ${{ matrix.dependencies }}
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.4', '8.5']
+        dependencies: [lowest, highest]
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-          cache: npm
+    steps:
+      - uses: actions/checkout@v6
 
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.4"
+          php-version: ${{ matrix.php }}
           coverage: none
           tools: composer:v2
 
-      - name: Resolve composer cache directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
-
-      - uses: actions/cache@v4
+      - uses: ramsey/composer-install@v3
         with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: composer-${{ runner.os }}-${{ hashFiles('**/composer.json') }}
-          restore-keys: composer-${{ runner.os }}-
+          dependency-versions: ${{ matrix.dependencies }}
 
-      - run: composer install --prefer-dist --no-progress --no-interaction
+      - name: Verify package scaffold
+        run: php artisan package:init --no-workbench --no-browser --phpstan-level=8 --rector --pint --check --no-interaction
 
-      - run: npm ci
-
-      - run: npm run fmt:check
-
-      - run: npm run lint:github
-
-      - run: npm run typecheck
-
-      - run: npm test
-
-      - run: npm run build-storybook
-
-  php:
-    name: PHP (pint, phpstan, pest)
-    runs-on: ubuntu-latest
-
-    services:
-      pdf-ua-api:
-        image: bambamboole/pdf-ua-api:latest
-        ports:
-          - 8080:8080
-        options: >-
-          --health-cmd "curl -fsS http://localhost:8080/health || exit 1"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 24
-          --health-start-period 10s
-
-    env:
-      PDF_UA_API_URL: http://localhost:8080
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.4"
-          coverage: none
-          extensions: imagick
-          tools: composer:v2
-
-      - name: Enable Imagick PDF rasterization
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ghostscript
-          policy="$(find /etc -name policy.xml -path '*ImageMagick*' 2>/dev/null | head -n1)"
-          if [ -n "$policy" ]; then
-            sudo sed -i 's/rights="none" pattern="PDF"/rights="read|write" pattern="PDF"/' "$policy"
-          fi
-
-      - name: Resolve composer cache directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
-
-      - uses: actions/cache@v4
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: composer-${{ runner.os }}-${{ hashFiles('**/composer.json') }}
-          restore-keys: composer-${{ runner.os }}-
-
-      - run: composer install --prefer-dist --no-progress --no-interaction
-
-      - name: Verify committed Storybook data is up to date
-        run: |
-          composer build:storybook-data
-          git diff --exit-code stories/data
-
-      - name: Pint (style check)
-        run: composer test:lint
-
-      - name: PHPStan
-        run: composer analyse
-
-      - name: Wait for pdf-ua-api
-        run: |
-          for i in $(seq 1 30); do
-            if curl -fsS "$PDF_UA_API_URL/health" >/dev/null 2>&1; then
-              echo "pdf-ua-api healthy after ${i}s"
-              exit 0
-            fi
-            sleep 2
-          done
-          echo "pdf-ua-api did not become healthy in time"
-          exit 1
-
-      - name: Pest
-        run: composer test
-
-  browser:
-    name: Browser (Pest)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.4"
-          coverage: none
-          tools: composer:v2
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-          cache: npm
-
-      - name: Resolve composer cache directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
-
-      - uses: actions/cache@v4
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: composer-${{ runner.os }}-${{ hashFiles('**/composer.json') }}
-          restore-keys: composer-${{ runner.os }}-
-
-      - run: composer install --prefer-dist --no-progress --no-interaction
-
-      - run: npm ci
-
-      - run: npm run build
-
-      - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: Pest (browser)
-        run: composer test:browser
+      - run: composer ${{ matrix.dependencies == 'highest' && 'check' || 'test' }}

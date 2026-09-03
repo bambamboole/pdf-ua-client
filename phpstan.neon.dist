@@ -1,12 +1,10 @@
 includes:
     - vendor/larastan/larastan/extension.neon
-    - phpstan-baseline.neon
+    - vendor/pestphp/pest/extension.neon
+    - vendor/pestphp/pest-plugin-phpstan/extension.neon
 
 parameters:
-    level: 5
+    level: 8
     paths:
         - src
-        - tests/Support
-        - workbench/app
-    excludePaths:
-        - vendor
+        - tests

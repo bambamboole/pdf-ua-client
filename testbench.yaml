@@ -1,17 +1,8 @@
 laravel: '@testbench'
 
+env:
+  APP_ENV: local
+
 providers:
   - Bambamboole\PdfUaClient\PdfUaClientServiceProvider
-  - Inertia\ServiceProvider
-  - Workbench\App\Providers\WorkbenchServiceProvider
 
-workbench:
-  start: '/'
-  welcome: false
-  discovers:
-    web: true
-    api: false
-    commands: false
-    components: false
-    views: true
-  build: []

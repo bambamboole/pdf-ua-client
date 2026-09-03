@@ -1,136 +1,114 @@
 # pdf-ua-client
 
-HTTP client for [`bambamboole/pdf-ua-api`](https://github.com/bambamboole/pdf-ua-api) plus an extensible row/block PDF template engine. Templates are defined as JSON, validated against a JSON Schema 2020-12 document derived via reflection over registered block classes, then rendered to print-ready HTML and posted to the API for PDF conversion.
+Laravel client for rendering accessible PDF/UA documents with
+[`bambamboole/pdf-ua-api`](https://github.com/bambamboole/pdf-ua-api).
+
+This package targets the template v2 API. Template authoring belongs to
+[`@bambamboole/pdf-ua-template-builder`](https://www.npmjs.com/package/@bambamboole/pdf-ua-template-builder).
 
 ## Requirements
 
-- PHP `^8.3`
-- Laravel `^11 | ^12 | ^13`
+- PHP `^8.4`
+- Laravel `^13.0`
 
-## Pipeline
+## Installation
 
-```mermaid
-flowchart TD
-    JSON[Template JSON<br/>array] --> Factory[TemplateFactory.fromArray]
-    Factory --> Compile[TemplateSchemaCompiler.compile<br/>BlockRegistry &rarr; JSON Schema 2020-12]
-    Factory --> Validate[opis validate]
-    Factory --> Template[Template<br/>TemplateConfig + Row + BlockInstance]
-
-    Template --> Renderer[TemplateRenderer.render]
-    Runtime[runtime data<br/>array keyed by block id] --> Renderer
-
-    subgraph Phases[Renderer phases]
-        direction TB
-        P1[1. HYDRATE<br/>merge runtime data, validate,<br/>BlockHydrator &rarr; typed Block via reflection]
-        P2[2. RENDER BLOCKS<br/> &rarr; Stringable;<br/>ctx collects css/fonts/headTags]
-        P3[3. ASSEMBLE ROWS<br/>1 block &rarr; div.pdf-row;<br/>N blocks &rarr; table.pdf-row role=presentation]
-        P4[4. WRAP DOCUMENT<br/>head with @font-face + @page<br/>or body padding + collected css]
-        P1 --> P2 --> P3 --> P4
-    end
-
-    Renderer --> Phases
-    Phases --> HTML[HTML string]
-
-    HTML --> Client[PdfApiClient.convert<br/>POST base/convert]
-    Client --> PDF[application/pdf bytes]
+```bash
+composer require bambamboole/pdf-ua-client
 ```
 
-## Quick start
+Configure the API through environment variables:
 
-Build and render a template inline:
+```dotenv
+PDF_UA_API_URL=https://pdf-ua-api.example.com
+PDF_UA_API_TOKEN=
+PDF_UA_API_CONNECT_TIMEOUT=5
+PDF_UA_API_TIMEOUT=120
+```
+
+## Render a v2 template
+
+The package registers `PdfClient` as a Laravel container binding.
 
 ```php
-use Bambamboole\PdfUaClient\Template\TemplateFactory;
-use Bambamboole\PdfUaClient\Rendering\TemplateRenderer;
-use Bambamboole\PdfUaClient\Http\PdfApiClient;
+use Bambamboole\PdfUaClient\Contracts\PdfClient;
+use Bambamboole\PdfUaClient\PdfTemplate;
 
-$template = app(TemplateFactory::class)->fromArray([
-    'version' => 1,
-    'config'  => ['page' => ['format' => 'A4']],
-    'rows'    => [
-        ['blocks' => [['type' => 'heading', 'id' => 'title', 'config' => ['level' => 1]]]],
-    ],
-]);
+$document = app(PdfClient::class)->renderTemplate(new PdfTemplate(
+    template: $template,
+    data: $data,
+));
 
-$html = app(TemplateRenderer::class)->render($template, [
-    'title' => ['text' => 'Hello'],
-]);
-
-$pdf  = app(PdfApiClient::class)->convert($html);
+Storage::put('quotes/Q-1000.pdf', $document->contents);
 ```
 
-Register a custom block:
+`RenderedPdf` also exposes the optional `documentUuid` returned by the API.
+
+## Attach files and XMP metadata
+
+Attachments and custom XMP schemas are added to the v2 template before it is sent to the API.
 
 ```php
-use Bambamboole\PdfUaClient\Attributes\Block as BlockAttr;
-use Bambamboole\PdfUaClient\Block\BlockRegistry;
-use Bambamboole\PdfUaClient\Config\BlockConfig;
-use Bambamboole\PdfUaClient\Contracts\BlockInterface;
+use Bambamboole\PdfUaClient\Attachment;
+use Bambamboole\PdfUaClient\Contracts\PdfClient;
+use Bambamboole\PdfUaClient\PdfTemplate;
+use Bambamboole\PdfUaClient\XmpProperty;
+use Bambamboole\PdfUaClient\XmpSchema;
 
-#[BlockAttr('badge')]
-final readonly class BadgeBlock implements BlockInterface
-{
-    public function __construct(
-        public string $label,
-        public string $color = '#2563eb',
-    ) {}
-
-    public function render(BlockConfig $config): string
-    {
-        return '<span style="color: '.e($this->color).'">'.e($this->label).'</span>';
-    }
-}
-
-app(BlockRegistry::class)->register(BadgeBlock::class);
+$document = app(PdfClient::class)->renderTemplate(new PdfTemplate(
+    template: $template,
+    data: $data,
+    attachments: [Attachment::facturX($invoiceXml)],
+    xmpSchemas: [new XmpSchema(
+        namespace: 'urn:example:invoice:pdfa:CrossIndustryDocument:invoice:1p0#',
+        prefix: 'fx',
+        name: 'Invoice metadata',
+        properties: [new XmpProperty('DocumentType', 'INVOICE')],
+    )],
+));
 ```
 
-## Built-in blocks
+## Render HTML
 
-| Type | Purpose |
-|---|---|
-| `heading` | h1–h6 headings with align + typography |
-| `text` | Multi-paragraph text with align + typography |
-| `html` | Escape hatch for raw HTML |
-| `image` | `<img>` with alt, max-height, alignment |
-| `spacer` | Vertical space (mm) |
-| `divider` | `<hr>` with thickness/color/style |
-| `key-value` | Label/value table |
-| `table` | Generic data table with optional column alignments |
+```php
+use Bambamboole\PdfUaClient\Contracts\PdfClient;
+use Bambamboole\PdfUaClient\HtmlDocument;
 
-## Schema
-
-The compiled JSON Schema for the template document lives in [`template.schema.json`](./template.schema.json) — committed to the repo so consumers and tooling can reference it without running anything. It's regenerated from the registered block catalog whenever the built-in blocks or configs change.
-
-Regenerate after changing blocks:
-
-```
-composer schema
+$document = app(PdfClient::class)->renderHtml(new HtmlDocument(
+    html: $html,
+    baseUrl: 'https://assets.example.com/',
+));
 ```
 
-The `SchemaFileTest` test guards against drift — it fails if the committed file doesn't match what the compiler would emit right now, so CI catches forgotten regenerations.
+## Direct upload
 
-To validate a template against the schema in an IDE, point your JSON tooling at the local file or at `https://pdfuakit.com/schemas/pdf-ua-client-template-v1.json` (the `$id` URL).
+Use `renderTemplateTo()` or `renderHtmlTo()` with a presigned upload URL. The API uploads the PDF and the client returns an `UploadedPdf` result instead of transferring the PDF bytes back through Laravel.
 
-## Spec viewer
-
-A self-contained HTML viewer for the schema lives at [`viewer/index.html`](./viewer/index.html). Open it directly in a browser (`file://…/viewer/index.html`) or serve it via any static server. The page loads `template.schema.json` and renders it as an expandable tree with cross-references between `$defs` entries.
-
-## Template builder (workbench)
-
-A schema-driven React template builder scaffold lives in the Testbench workbench. It renders the available blocks from the compiled schema and previews a sample template via the PHP render engine.
-
-```
-npm install
-npm run dev        # in one terminal (Vite dev server)
-composer serve     # in another (Testbench app on http://127.0.0.1:8000)
+```php
+$result = app(PdfClient::class)->renderTemplateTo(
+    new PdfTemplate(template: $template, data: $data),
+    $presignedUploadUrl,
+);
 ```
 
-The shippable, Inertia-free builder core lives in `resources/js/builder/`; the workbench under `workbench/` is one consumer of its `{ schema, initialTemplate, renderTemplate }` contract.
+## Template data helpers
 
-## Testing
+`TemplateData` contains the reusable v2 data-shaping operations used by consumers:
 
-`composer test` runs Pest. Fixture-based rendering tests live at `tests/Fixtures/render/*.php` — each fixture is a PHP file returning a `TestFixture(spec, data, html)`. To refresh fixture HTML after intentional renderer changes, run `UPDATE_FIXTURES=1 composer test`. To refresh `template.schema.json` after intentional block changes, run `composer schema`.
+- interpolate `{{ dot.notation }}` placeholders throughout a template;
+- enumerate body and footer blocks;
+- build safe text, HTML, key-value, and table overrides;
+- normalize authored multiline text.
+
+## Development
+
+```bash
+composer install
+composer check
+```
+
+The package skeleton is maintained by `bambamboole/extended-testbench`. Run `composer fix` before committing.
 
 ## License
 
-MIT.
+The MIT License (MIT). See [LICENSE.md](LICENSE.md).

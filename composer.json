@@ -1,36 +1,39 @@
 {
     "name": "bambamboole/pdf-ua-client",
-    "description": "HTTP client + row/block PDF template engine for the pdf-ua-api service.",
+    "description": "Laravel client for rendering accessible PDF/UA documents with pdf-ua-api.",
     "type": "library",
     "license": "MIT",
     "keywords": [
         "pdf",
         "pdf-ua",
         "accessibility",
-        "template",
         "laravel"
     ],
+    "support": {
+        "issues": "https://github.com/bambamboole/pdf-ua-client/issues",
+        "source": "https://github.com/bambamboole/pdf-ua-client"
+    },
+    "authors": [
+        {
+            "name": "Manuel Christlieb",
+            "email": "manuel@christlieb.eu"
+        }
+    ],
     "require": {
-        "php": "^8.3",
+        "php": "^8.4",
         "ext-json": "*",
-        "illuminate/http": "^11.0 || ^12.0 || ^13.0",
-        "illuminate/support": "^11.0 || ^12.0 || ^13.0",
-        "illuminate/view": "^11.0 || ^12.0 || ^13.0",
-        "spatie/laravel-package-tools": "^1.16 || ^2.0",
-        "opis/json-schema": "^2.3",
-        "phpstan/phpdoc-parser": "^1.29 || ^2.0"
+        "illuminate/http": "^13.0",
+        "illuminate/support": "^13.0",
+        "spatie/laravel-package-tools": "^1.93 || ^2.0"
     },
     "require-dev": {
-        "ext-imagick": "*",
-        "inertiajs/inertia-laravel": "^3.1",
-        "larastan/larastan": "^3.0",
-        "laravel/boost": "^2.4",
-        "laravel/pint": "^1.16",
-        "orchestra/testbench": "^9.0 || ^10.0 || ^11.0",
-        "pestphp/pest": "^4.0",
-        "pestphp/pest-plugin-browser": "^4.3",
-        "pestphp/pest-plugin-laravel": "^4.0",
-        "rector/rector": "^2.0"
+        "bambamboole/extended-testbench": "^0.6.1",
+        "larastan/larastan": "^3.10",
+        "laravel/pint": "^1.30",
+        "pestphp/pest": "^5.0",
+        "pestphp/pest-plugin-laravel": "^5.0",
+        "pestphp/pest-plugin-phpstan": "^5.0",
+        "rector/rector": "^2.6"
     },
     "autoload": {
         "psr-4": {
@@ -39,47 +42,48 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Bambamboole\\PdfUaClient\\Tests\\": "tests/",
-            "Workbench\\App\\": "workbench/app/",
-            "Workbench\\Database\\Factories\\": "workbench/database/factories/",
-            "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
+            "Bambamboole\\PdfUaClient\\Tests\\": "tests/"
         }
     },
     "scripts": {
-        "test": "./vendor/bin/pest",
-        "test:browser": "./vendor/bin/pest tests/Browser",
-        "test:lint": "./vendor/bin/pint --test",
-        "test:refactor": "./vendor/bin/rector --dry-run",
-        "lint": "./vendor/bin/pint",
-        "refactor": "./vendor/bin/rector",
-        "analyse": "./vendor/bin/phpstan analyse",
-        "fix": [
-            "@lint",
-            "npm run lint:fix",
-            "npm run fmt"
+        "check": [
+            "pint --test",
+            "phpstan analyse",
+            "rector --dry-run",
+            "@test"
         ],
-        "schema": "@php bin/export-schema.php",
-        "build:storybook-data": [
-            "@php artisan pdf-ua-client:schema-export stories/data/schema.json",
-            "@php artisan pdf-ua-client:examples-export stories/data/examples.json"
+        "lint": "pint --format agent",
+        "stan": "phpstan analyse",
+        "refactor": "rector",
+        "test": "pest",
+        "test:coverage": "pest --coverage",
+        "fix": [
+            "@refactor",
+            "@lint"
         ],
         "post-autoload-dump": [
-            "@clear",
-            "@prepare"
+            "@php vendor/bin/testbench package:purge-skeleton --ansi",
+            "@php vendor/bin/testbench package:discover --ansi"
         ],
-        "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
-        "prepare": "@php vendor/bin/testbench package:discover --ansi",
-        "build": "@php vendor/bin/testbench workbench:build --ansi",
-        "serve": [
-            "Composer\\Config::disableProcessTimeout",
-            "@build",
-            "@php vendor/bin/testbench serve --ansi"
-        ]
+        "post-install-cmd": [
+            "@boost:refresh"
+        ],
+        "post-update-cmd": [
+            "@boost:refresh"
+        ],
+        "boost:refresh": "[ -n \"$CI\" ] || [ ! -f vendor/bin/testbench ] || [ ! -f boost.json ] || vendor/bin/testbench boost:update --no-interaction || true"
     },
     "extra": {
         "laravel": {
             "providers": [
                 "Bambamboole\\PdfUaClient\\PdfUaClientServiceProvider"
+            ]
+        },
+        "extended-testbench": {
+            "check-ignore": [
+                "phpstan.neon.dist",
+                "rector.php",
+                "composer script: boost:refresh"
             ]
         }
     },
@@ -90,6 +94,6 @@
             "php-http/discovery": true
         }
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true
 }
